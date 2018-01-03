@@ -1,0 +1,28 @@
+import os
+
+Import('env')
+Import('grain_lib')
+
+test_files = ['main.cpp',
+              'testwaveform.cpp'
+]
+
+include_dirs = [
+    '../../third_party/include',
+    '../grain',
+]
+
+lib_dirs = [
+    '../../third_party/lib'
+]
+
+libs = [
+    'gtest',
+    'gtest_main'
+]
+
+env.Append(CPPPATH=include_dirs)
+env.Append(LIBPATH=lib_dirs)
+env.Append(LIBS=libs)
+env.Program('run_ut',test_files+[grain_lib])
+

@@ -1,0 +1,9 @@
+import os
+
+Import('env')
+
+source_files = ['waveform.cpp', 'grain.cpp']
+
+grain_lib = env.Library('grain', source_files)
+
+Return('grain_lib')
