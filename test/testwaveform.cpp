@@ -21,20 +21,18 @@ protected:
     }
     //Check element access with doubles
     for (double j=0.0; j<3.1; j+=0.1) {
-      double d = wf[j];
+      double d = wf.interpolate(j);
       EXPECT_EQ(d,j);
-      const double& dconst = wf[j];
-      EXPECT_EQ(d,dconst);
     }
   }
   
   /* Since the values in wf have a constant slope of 1, iterations should increment at the same rate as speed
    */
   void testIterSpeed(double speed) {
-    auto wfiter = wf.begin();
+    auto wfiter = wf.ibegin();
     double val = *wfiter;
     ASSERT_EQ(val, wf[0]);
-    while (wfiter != wf.end()) {
+    while (wfiter != wf.iend()) {
       EXPECT_EQ(val,*wfiter);
       val += speed;
       EXPECT_EQ(val,*(++wfiter));

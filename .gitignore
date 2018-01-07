@@ -37,3 +37,7 @@ compile_commands.json
 
 # Scons
 .sconsign.dblite
+/test/run_ut
+/GPATH
+/GRTAGS
+/GTAGS
