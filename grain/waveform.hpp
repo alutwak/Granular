@@ -21,25 +21,28 @@ namespace audioelectric {
      */
     class iterator {
     public:
-      iterator(T* ary, double start, double speed, InterpType it);
+      iterator(const Waveform<T>& wf, double start, double speed);
+      iterator(const Waveform<T>& wf, long start_pos, double speed);
       iterator(const iterator& other);
       iterator& operator++(void);               //!<\brief Prefix increment
       iterator operator++(int);                 //!<\brief Postfix increment
-      iterator operator+(std::size_t n) const;  //!<\brief Random access +
+      iterator operator+(long n) const;  //!<\brief Random access +
       //iterator operator-(std::size_t n) const;  //!<\brief Random access -
       T operator*(void) const;                  //!<\brief Data retrieval (not a reference since the interpolation doesn't exist in mem)
       bool operator==(const iterator& other) const;
       bool operator!=(const iterator& other) const;
+
     private:
-      const InterpType _interptype;
       const double _speed;
-      double _offset;
-      T* _p;
+      long _pos;
+      const Waveform<T>& _wf;
 
       void increment(void);
     };
 
     typedef const iterator const_iterator;
+
+    Waveform(void);
 
     Waveform(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
     
@@ -63,6 +66,7 @@ namespace audioelectric {
      */
     T interpolate(double pos) const;
 
+    Waveform<T>& operator=(const Waveform<T>& other);
     T& operator[](std::size_t pos) {return _data[pos];}
     const T& operator[](std::size_t pos) const {return _data[pos];}
 
@@ -74,12 +78,12 @@ namespace audioelectric {
   private:
 
     InterpType _interptype;
-    std::size_t _size;
+    long _size;
     T* _data;
     
     void alloc(std::size_t len);
     void dealloc(void);
-  
+    T interpLinear(double pos) const;
   };
 
 }
