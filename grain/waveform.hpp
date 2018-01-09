@@ -21,8 +21,8 @@ namespace audioelectric {
      */
     class interpolator {
     public:
-      interpolator(const Waveform<T>& wf, double start, double speed);
-      interpolator(const Waveform<T>& wf, long start_pos, double speed);
+      interpolator(const Waveform<T>& wf, double start, double velocity);
+      interpolator(const Waveform<T>& wf, long start_pos, double velocity);
       interpolator(const interpolator& other);
       interpolator& operator++(void);               //!<\brief Prefix increment
       interpolator operator++(int);                 //!<\brief Postfix increment
@@ -34,12 +34,26 @@ namespace audioelectric {
 
     private:
       const double _speed;
+      const long _velocity;
       long _pos;
       const Waveform<T>& _wf;
 
       void increment(void);
     };
 
+    class iterator {
+    public:
+      iterator(T* data) : _data(data) {};
+      iterator(const iterator& other) : _data(other._data) {};
+      iterator& operator++(void);
+      iterator operator++(int);
+      T& operator*(void);
+      bool operator==(const iterator& other) const;
+      bool operator!=(const iterator& other) const;      
+    private:
+      T* _data;
+    };
+    
     Waveform(void);
 
     Waveform(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
@@ -50,8 +64,12 @@ namespace audioelectric {
 
     ~Waveform(void);
 
+    /*!\brief Sets the interpolation type
+     */
     void setInterpType(InterpType it) {_interptype = it;}
 
+    /*!\brief Returns the current interpolation type
+     */
     InterpType getInterpType(void) const {return _interptype;}
 
     /*!\brief Returns the interpolated value at a position in the waveform.
@@ -68,33 +86,72 @@ namespace audioelectric {
     T& operator[](std::size_t pos) {return _data[pos];}
     const T& operator[](std::size_t pos) const {return _data[pos];}
 
-    /*!\brief Returns a forward interpolator that points to the beginning of the waveform
+    /*!\brief Returns a forward interpolator 
+     * 
+     * There is no checking for start positions that are outside of the waveform or speeds that are <= 0. The caller must be
+     * careful not to use such values or it will be possible to get an iterator that never hits the end. Even very small
+     * speeds should probably be avoided.
+     * 
+     * \param start The starting position (in the original waveform, not the interpolated one)
+     * \param speed The speed at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    interpolator ibegin(double speed=1) const;
+    interpolator ibegin(long start, double speed) const;
+
+    /*!\brief Returns a forward interpolator that points to the beginning of the waveform \see ibegin(long,double)
+     *
+     * \param speed The speed at which to advance through the waveform (>0, <1 is slower, >1 is faster)
+     */
+    interpolator ibegin(double speed) const;
     
     /*!\brief Returns a forward interpolator that points to the end of the waveform
      */
-    interpolator iend(double speed=1) const;
+    interpolator iend(double speed) const;
 
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
+     *
+     * Like the forward interpolator, there is no bounds or speed checking. The caller must take care.
+     * 
+     * \param start The starting position (in the original waveform, not the interpolated one)
+     * \param speed The speed at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    interpolator ribegin(double speed=1) const;
+    interpolator ribegin(long start, double speed) const;
+
+    /*!\brief Returns a reverse interpolator that points to the end of the waveform
+     *
+     * \param speed The speed at which to advance through the waveform (>0, <1 is slower, >1 is faster)
+     */    
+    interpolator ribegin(double speed) const;
 
     /*!\brief Returns a reverse interpolator that points to the beginning of the waveform
      */
-    interpolator riend(double speed=1) const;
-    
+    interpolator riend(double speed) const;
+
+    /*!\brief Returns the number of samples in the waveform
+     */
     std::size_t size(void) const {return _size;}
+
+    /*!\brief Returns a pointer to the raw data
+     */
     T* data(void) {return _data;}
     
   private:
 
-    InterpType _interptype;
-    long _size;
-    T* _data;
-    
+    InterpType _interptype;     //!< The interpolation type
+    long _size;                 //!< The size of _data
+    T* _data;                   //!< The raw data
+
+    /*!\brief Allocates a data array of length len
+     */
     void alloc(std::size_t len);
+
+    /*!\brief Deallocates _data
+     */
     void dealloc(void);
+
+    /*!\brief Performs a linear interpolation of the point at posi
+     *
+     * If pos is <0 or >_size-1, this will always return 0
+     */
     T interpLinear(double pos) const;
   };
 

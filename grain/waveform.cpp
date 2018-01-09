@@ -52,31 +52,43 @@ namespace audioelectric {
   }
 
   template<typename T>
+  typename Waveform<T>::interpolator Waveform<T>::ibegin(long start, double speed) const
+  {
+    // if (speed<=0.0)
+    //   return iend(1);
+    return interpolator(*this,start,speed);
+  }
+
+  template<typename T>
   typename Waveform<T>::interpolator Waveform<T>::ibegin(double speed) const
   {
-    if (speed<=0.0)
-      return iend(1);
-    return interpolator(*this,(long)0,speed);
+    return ibegin(0,speed);
   }
 
   template<typename T>
   typename Waveform<T>::interpolator Waveform<T>::iend(double speed) const
   {
-    if (speed<=0.0)
-      speed = 1;
+    // if (speed<=0.0)
+    //   speed = 1;
     long end = 1 + (long)((double)(_size-1)/speed);
     return interpolator(*this,end,speed);
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::ribegin(double speed) const
+  typename Waveform<T>::interpolator Waveform<T>::ribegin(long start, double speed) const
   {
-    if (speed<=0.0)
-      speed = 1;
-    long start = (long)((double)(_size-1)/speed);
+    // if (speed<=0.0)
+    //   speed = 1;
+    start = (long)((double)start/speed); //We need to adjust the interpolated start position
     return interpolator(*this,start,-speed);
   }
 
+  template<typename T>
+  typename Waveform<T>::interpolator Waveform<T>::ribegin(double speed) const
+  {
+    return ribegin(_size-1,speed);
+  }
+  
   template<typename T>
   typename Waveform<T>::interpolator Waveform<T>::riend(double speed) const
   {
@@ -119,25 +131,25 @@ namespace audioelectric {
     return (b-a)*diff + a;
   }
   
-  
   /*********************** interpolator *******************************/
 
   template<typename T>
-  Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, double start, double speed) : _wf(wf), _speed(speed)
+  Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, double start, double velocity) :
+    _wf(wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1)
   {
-    _pos = start/speed;
+    _pos = start/_speed;
   }
 
   template<typename T>
-  Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, long start_pos, double speed) :
-    _wf(wf), _speed(speed), _pos(start_pos)
+  Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, long start_pos, double velocity) :
+    _wf(wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1), _pos(start_pos)
   {
 
   }
 
   template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>::interpolator& other) :
-    _wf(other._wf), _pos(other._pos), _speed(other._speed)
+    _wf(other._wf), _pos(other._pos), _speed(other._speed), _velocity(other._velocity)
   {
     
   }
@@ -160,13 +172,15 @@ namespace audioelectric {
   template<typename T>
   void Waveform<T>::interpolator::increment(void)
   {
-    _pos++;
+    _pos+=_velocity;
   }
 
   template<typename T>
   typename Waveform<T>::interpolator Waveform<T>::interpolator::operator+(long n) const
   {
-    return interpolator(_wf, _pos+n, _speed);
+    long newpos = _pos+n;
+    newpos = newpos > 0 ? 0 : newpos>_wf.size() ? _wf.size() : newpos;
+    return interpolator(_wf, _pos+n, _velocity*_speed);
   }
 
   // template<typename T>
@@ -176,13 +190,13 @@ namespace audioelectric {
   // }
 
   template<typename T>
-  bool Waveform<T>::interpolator::operator==(const Waveform<T>::interpolator &other) const
+  bool Waveform<T>::interpolator::operator==(const Waveform<T>::interpolator& other) const
   {
     return _wf._data == other._wf._data && _pos==other._pos;
   }
 
   template<typename T>
-  bool Waveform<T>::interpolator::operator!=(const Waveform<T>::interpolator &other) const
+  bool Waveform<T>::interpolator::operator!=(const Waveform<T>::interpolator& other) const
   {
     return !(*this == other);
   }
@@ -193,31 +207,63 @@ namespace audioelectric {
     return _wf.interpolate(_pos*_speed);
   }
 
-
-  /********************* Interpolation functions ********************/
-
+  /********************* iterator ********************/
+  
   template<typename T>
-  T interpLinear(const T* ary, double offset)
+  typename Waveform<T>::iterator& Waveform<T>::iterator::operator++(void)
   {
-    T a = ary[(std::size_t)offset];
-    T b = ary[(std::size_t)offset+1];
-    double diff = fmod(offset,1.0);
-    return (b-a)*diff + a;
+    _data++;
+    return *this;
   }
 
   template<typename T>
-  T doInterpolate(const T* ary, double offset, InterpType it)
+  typename Waveform<T>::iterator Waveform<T>::iterator::operator++(int)
   {
-    switch (it) {
-    case InterpType::LINEAR:
-      return interpLinear(ary, offset);
-    }
+    iterator temp = *this;
+    _data++;
+    return temp;
   }
+
+  template<typename T>
+  T& Waveform<T>::iterator::operator*(void)
+  {
+    return *_data;
+  }
+
+  template<typename T>
+  bool Waveform<T>::iterator::operator==(const Waveform<T>::iterator& other) const
+  {
+    return _data == other._data;
+  }
+  
+  template<typename T>
+  bool Waveform<T>::iterator::operator!=(const Waveform<T>::iterator& other) const
+  {
+    return _data != other._data;
+  }
+
+  // template<typename T>
+  // T interpLinear(const T* ary, double offset)
+  // {
+  //   T a = ary[(std::size_t)offset];
+  //   T b = ary[(std::size_t)offset+1];
+  //   double diff = fmod(offset,1.0);
+  //   return (b-a)*diff + a;
+  // }
+
+  // template<typename T>
+  // T doInterpolate(const T* ary, double offset, InterpType it)
+  // {
+  //   switch (it) {
+  //   case InterpType::LINEAR:
+  //     return interpLinear(ary, offset);
+  //   }
+  // }
 
   template class Waveform<double>;
   template class Waveform<float>;
-  template double doInterpolate<double>(const double*,double,InterpType);
-  template double interpLinear<double>(const double*,double);  
-  template float doInterpolate<float>(const float*,double,InterpType);
-  template float interpLinear<float>(const float*,double);  
+  // template double doInterpolate<double>(const double*,double,InterpType);
+  // template double interpLinear<double>(const double*,double);  
+  // template float doInterpolate<float>(const float*,double,InterpType);
+  // template float interpLinear<float>(const float*,double);  
 }
