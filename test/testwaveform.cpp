@@ -38,7 +38,16 @@ protected:
     while (wfiter != wf.iend(speed)) {
       EXPECT_FLOAT_EQ(val,*(wfiter++)) << "when speed = " << speed;
       val += speed;
-      //EXPECT_FLOAT_EQ(val,*(++wfiter))
+    }
+  }
+
+  void testReverseIter(double speed) {
+    auto riter = wf.ribegin(speed);
+    double val = *riter;
+    ASSERT_EQ(val,wf[wf.size()-1]);
+    while (riter != wf.riend(speed)) {
+      EXPECT_FLOAT_EQ(val,*(riter++)) << "when speed = " << speed;
+      val -= speed;
     }
   }
 
@@ -52,18 +61,8 @@ protected:
         break;
       EXPECT_FLOAT_EQ(wf.interpolate(i*speed),wf_new[i]);
     }
-    // //Front and back should be the same
-    // if (len == 0) {
-    //   EXPECT_EQ(wf_new.interpolate(0),0);
-    //   EXPECT_EQ(wf_new.interpolate(wf_new.size()-1),0);
-    // }
-    // else {
-    //   EXPECT_EQ(wf[0],wf_new[0]) << "len = " << len;
-    //   // if (wf_new.size() > 1)
-    //   //   EXPECT_FLOAT_EQ(wf[wf.size()-1],wf_new[wf_new.size()-1]) << "len = " << len;
-    // }
   }
-  
+
 };
 
 TEST_F(SimpleWaveformTest, basic) {
@@ -75,6 +74,8 @@ TEST_F(SimpleWaveformTest, basic) {
   testIterSpeed(4.0);
   testIterSpeed(0.3428);
   testIterSpeed(1.2864);
+  testIterSpeed(0);
+  testIterSpeed(-1);
 
   for (int i=0;i<10;i++)
     testCopy(i);

@@ -19,18 +19,18 @@ namespace audioelectric {
 
     /*!\brief An iterator that generalizes element access to allow for interpolation between elements
      */
-    class iterator {
+    class interpolator {
     public:
-      iterator(const Waveform<T>& wf, double start, double speed);
-      iterator(const Waveform<T>& wf, long start_pos, double speed);
-      iterator(const iterator& other);
-      iterator& operator++(void);               //!<\brief Prefix increment
-      iterator operator++(int);                 //!<\brief Postfix increment
-      iterator operator+(long n) const;  //!<\brief Random access +
-      //iterator operator-(std::size_t n) const;  //!<\brief Random access -
+      interpolator(const Waveform<T>& wf, double start, double speed);
+      interpolator(const Waveform<T>& wf, long start_pos, double speed);
+      interpolator(const interpolator& other);
+      interpolator& operator++(void);               //!<\brief Prefix increment
+      interpolator operator++(int);                 //!<\brief Postfix increment
+      interpolator operator+(long n) const;         //!<\brief Random access +
+      //interpolator operator-(std::size_t n) const;  //!<\brief Random access -
       T operator*(void) const;                  //!<\brief Data retrieval (not a reference since the interpolation doesn't exist in mem)
-      bool operator==(const iterator& other) const;
-      bool operator!=(const iterator& other) const;
+      bool operator==(const interpolator& other) const;
+      bool operator!=(const interpolator& other) const;
 
     private:
       const double _speed;
@@ -39,8 +39,6 @@ namespace audioelectric {
 
       void increment(void);
     };
-
-    typedef const iterator const_iterator;
 
     Waveform(void);
 
@@ -70,8 +68,22 @@ namespace audioelectric {
     T& operator[](std::size_t pos) {return _data[pos];}
     const T& operator[](std::size_t pos) const {return _data[pos];}
 
-    iterator ibegin(double speed=1) const;
-    iterator iend(double speed=1) const;
+    /*!\brief Returns a forward interpolator that points to the beginning of the waveform
+     */
+    interpolator ibegin(double speed=1) const;
+    
+    /*!\brief Returns a forward interpolator that points to the end of the waveform
+     */
+    interpolator iend(double speed=1) const;
+
+    /*!\brief Returns a reverse interpolator that points to the end of the waveform
+     */
+    interpolator ribegin(double speed=1) const;
+
+    /*!\brief Returns a reverse interpolator that points to the beginning of the waveform
+     */
+    interpolator riend(double speed=1) const;
+    
     std::size_t size(void) const {return _size;}
     T* data(void) {return _data;}
     
