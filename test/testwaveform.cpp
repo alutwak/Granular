@@ -137,9 +137,12 @@ private:
                                 paCallback, /* this is your callback function */
                                 &wfiter);
     ASSERT_EQ(err, paNoError) << "PA error when opening stream: " << Pa_GetErrorText(err);
+    err = Pa_StartStream(stream);
+    ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);    
   }
 
   void closePA(void) {
+    Pa_StopStream(stream);
     Pa_CloseStream(stream);
     Pa_Terminate();
   }
@@ -152,14 +155,18 @@ static int paCallback(const void *input, void *output, unsigned long frames, con
   Waveform<float>::interpolator *interp = static_cast<Waveform<float>::interpolator*>(wfinterp_data);
   float *out = (float*)output;
   while (frames--) {
-    *out++ = *(*interp);
+    *out++ = *(*interp)++;
   }
   return 0;
 }
 
 TEST_F(AudioPlaybackTest, speed) {
-  playBack(1);
-  playBack(0.5);
-  playBack(2);
-  playBack(1.232);
+  // playBack(1);
+  // playBack(0.5);
+  // playBack(2);
+  // playBack(1.232);
+  playBack(-1);
+  playBack(-0.5);
+  playBack(-2);
+  playBack(-1.232);
 }

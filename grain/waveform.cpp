@@ -248,25 +248,25 @@ namespace audioelectric {
   template<typename T>
   bool Waveform<T>::interpolator::operator<(const Waveform<T>::interpolator& other) const
   {
-    return (_pos*_speed) < (other._pos*other._speed);
+    return (_velocity*_pos*_speed) < (other._velocity*other._pos*other._speed);
   }
   
   template<typename T>
   bool Waveform<T>::interpolator::operator>(const Waveform<T>::interpolator& other) const
   {
-    return (_pos*_speed) > (other._pos*other._speed);
+    return (_velocity*_pos*_speed) > (other._velocity*other._pos*other._speed);
   }
 
     template<typename T>
   bool Waveform<T>::interpolator::operator<=(const Waveform<T>::interpolator& other) const
   {
-    return (_pos*_speed) <= (other._pos*other._speed);
+    return (_velocity*_pos*_speed) <= (other._velocity*other._pos*other._speed);
   }
 
   template<typename T>
   bool Waveform<T>::interpolator::operator>=(const Waveform<T>::interpolator& other) const
   {
-    return (_pos*_speed) >= (other._pos*other._speed);
+    return (_velocity*_pos*_speed) >= (other._velocity*other._pos*other._speed);
   }
   
   /********************* iterator ********************/
