@@ -14,6 +14,12 @@ namespace audioelectric {
   {
     
   }
+
+  template<typename T>
+  Waveform<T>::Waveform(std::size_t len) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0)
+  {
+    alloc(len);
+  }
   
   template<typename T>
   Waveform<T>::Waveform(std::initializer_list<T> init, InterpType it) : _interptype(it), _data(nullptr), _size(0)
@@ -51,6 +57,18 @@ namespace audioelectric {
     return interpLinear(pos);
   }
 
+  template<typename T>
+  typename Waveform<T>::iterator Waveform<T>::begin(void)
+  {
+    return iterator(_data);
+  }
+
+  template<typename T>
+  typename Waveform<T>::iterator Waveform<T>::end(void)
+  {
+    return iterator(_data+_size);
+  }
+    
   template<typename T>
   typename Waveform<T>::interpolator Waveform<T>::ibegin(long start, double speed) const
   {
@@ -109,6 +127,7 @@ namespace audioelectric {
   template<typename T>
   void Waveform<T>::alloc(std::size_t len)
   {
+    dealloc();
     _data = new T[len];
     _size = len;
   }
@@ -134,15 +153,22 @@ namespace audioelectric {
   /*********************** interpolator *******************************/
 
   template<typename T>
+  Waveform<T>::interpolator::interpolator(void) :
+    _wf(nullptr), _speed(1), _velocity(1)
+  {
+    
+  }
+  
+  template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, double start, double velocity) :
-    _wf(wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1)
+    _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1)
   {
     _pos = start/_speed;
   }
 
   template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, long start_pos, double velocity) :
-    _wf(wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1), _pos(start_pos)
+    _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1), _pos(start_pos)
   {
 
   }
@@ -151,7 +177,19 @@ namespace audioelectric {
   Waveform<T>::interpolator::interpolator(const Waveform<T>::interpolator& other) :
     _wf(other._wf), _pos(other._pos), _speed(other._speed), _velocity(other._velocity)
   {
-    
+
+  }
+
+  template<typename T>
+  typename Waveform<T>::interpolator& Waveform<T>::interpolator::operator=(const Waveform<T>::interpolator& other)
+  {
+    if (&other == this)
+      return *this;
+    _wf = other._wf;
+    _pos = other._pos;
+    _speed = other._speed;
+    _velocity = other._velocity;
+    return *this;
   }
 
   template<typename T>
@@ -179,8 +217,14 @@ namespace audioelectric {
   typename Waveform<T>::interpolator Waveform<T>::interpolator::operator+(long n) const
   {
     long newpos = _pos+n;
-    newpos = newpos > 0 ? 0 : newpos>_wf.size() ? _wf.size() : newpos;
-    return interpolator(_wf, _pos+n, _velocity*_speed);
+    newpos = newpos > 0 ? 0 : newpos>_wf->size() ? _wf->size() : newpos;
+    return interpolator(*_wf, _pos+n, _velocity*_speed);
+  }
+
+  template<typename T>
+  T Waveform<T>::interpolator::operator*(void) const
+  {
+    return _wf->interpolate(_pos*_speed);
   }
 
   // template<typename T>
@@ -192,7 +236,7 @@ namespace audioelectric {
   template<typename T>
   bool Waveform<T>::interpolator::operator==(const Waveform<T>::interpolator& other) const
   {
-    return _wf._data == other._wf._data && _pos==other._pos;
+    return _wf->_data == other._wf->_data && _pos==other._pos;
   }
 
   template<typename T>
@@ -200,13 +244,31 @@ namespace audioelectric {
   {
     return !(*this == other);
   }
+
+  template<typename T>
+  bool Waveform<T>::interpolator::operator<(const Waveform<T>::interpolator& other) const
+  {
+    return (_pos*_speed) < (other._pos*other._speed);
+  }
   
   template<typename T>
-  T Waveform<T>::interpolator::operator*(void) const
+  bool Waveform<T>::interpolator::operator>(const Waveform<T>::interpolator& other) const
   {
-    return _wf.interpolate(_pos*_speed);
+    return (_pos*_speed) > (other._pos*other._speed);
   }
 
+    template<typename T>
+  bool Waveform<T>::interpolator::operator<=(const Waveform<T>::interpolator& other) const
+  {
+    return (_pos*_speed) <= (other._pos*other._speed);
+  }
+
+  template<typename T>
+  bool Waveform<T>::interpolator::operator>=(const Waveform<T>::interpolator& other) const
+  {
+    return (_pos*_speed) >= (other._pos*other._speed);
+  }
+  
   /********************* iterator ********************/
   
   template<typename T>

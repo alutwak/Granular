@@ -1,6 +1,18 @@
 import os
 
-env = Environment(CXXFLAGS="-g -O0 -std=c++14")
+def try_get_env(var):
+    try:
+        return os.environ[var].split()
+    except:
+        return []
+
+cpppath = try_get_env('CPPPATH')
+cxxflags = try_get_env('CXXFLAGS')
+libpath = try_get_env('LD_LIBRARY_PATH')
+
+cxxflags += "-g -O0 -std=c++14".split()
+
+env = Environment(CXXFLAGS=cxxflags,CPPPATH=cpppath,LIBPATH=libpath)
 
 #We now need to use intercept-build instead of bear (thanks to osx 10.11 security measures)
 if 'INTERCEPT_BUILD' in os.environ:

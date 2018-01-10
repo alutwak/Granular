@@ -18,7 +18,9 @@ lib_dirs = [
 
 libs = [
     'gtest',
-    'gtest_main'
+    'gtest_main',
+    'sndfile',
+    'portaudio'
 ]
 
 env.Append(CPPPATH=include_dirs)

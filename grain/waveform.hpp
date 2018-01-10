@@ -21,9 +21,11 @@ namespace audioelectric {
      */
     class interpolator {
     public:
+      interpolator(void);
       interpolator(const Waveform<T>& wf, double start, double velocity);
       interpolator(const Waveform<T>& wf, long start_pos, double velocity);
       interpolator(const interpolator& other);
+      interpolator& operator=(const interpolator& other);
       interpolator& operator++(void);               //!<\brief Prefix increment
       interpolator operator++(int);                 //!<\brief Postfix increment
       interpolator operator+(long n) const;         //!<\brief Random access +
@@ -32,11 +34,18 @@ namespace audioelectric {
       bool operator==(const interpolator& other) const;
       bool operator!=(const interpolator& other) const;
 
+      /*\brief Compare operators compare the location in the uninterpolated waveform (essentially position*speed)
+       */
+      bool operator<(const interpolator& other) const;
+      bool operator>(const interpolator& other) const;
+      bool operator<=(const interpolator& other) const;
+      bool operator>=(const interpolator& other) const;
+
     private:
-      const double _speed;
-      const long _velocity;
+      double _speed;
+      long _velocity;
       long _pos;
-      const Waveform<T>& _wf;
+      const Waveform<T>* _wf;
 
       void increment(void);
     };
@@ -53,8 +62,14 @@ namespace audioelectric {
     private:
       T* _data;
     };
-    
+
+    /*!\brief Creates a waveform of size 0
+     */
     Waveform(void);
+
+    /*!\brief Creates a waveform with size len with all values set to 0
+     */
+    Waveform(std::size_t len);
 
     Waveform(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
     
@@ -122,6 +137,9 @@ namespace audioelectric {
      */    
     interpolator ribegin(double speed) const;
 
+    iterator begin(void);
+    iterator end(void);
+    
     /*!\brief Returns a reverse interpolator that points to the beginning of the waveform
      */
     interpolator riend(double speed) const;
