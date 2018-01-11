@@ -10,8 +10,15 @@ namespace audioelectric {
     LINEAR,
   };
 
-  /*!\brief Conatins and manages a set of audio data. Useful for samples, grains or any other chunk of audio data that needs
+  /*!\brief Contains and manages a set of audio data. Useful for samples, grains or any other chunk of audio data that needs
    * needs to be stored and manipulated.
+   * 
+   * \note Waveform has been purposely left as a single-channel base class in order to keep the overhead of multiple channels
+   * out of sublasses that only need one channel (like Grain or probably a handful of other potential waveforms that are used
+   * for their waveform properties rather than their pure audio properties). It should be pretty easy for subclasses to add 
+   * channels though. You'll just need to fix the indexing of the interpolations and then make separate interpolators for each
+   * channel. The more interesting challenge will be fixing operator[] so that you can use syntax like sample[chan][pos]. 
+   * That's not strictly necessary, but it would be a nice touch and make indexing multi-channel waveforms much easier.
    */
   template<typename T>
   class Waveform {
@@ -31,6 +38,7 @@ namespace audioelectric {
       interpolator operator+(long n) const;         //!<\brief Random access +
       //interpolator operator-(std::size_t n) const;  //!<\brief Random access -
       T operator*(void) const;                  //!<\brief Data retrieval (not a reference since the interpolation doesn't exist in mem)
+      operator bool(void) const;
       bool operator==(const interpolator& other) const;
       bool operator!=(const interpolator& other) const;
 
@@ -40,11 +48,12 @@ namespace audioelectric {
       bool operator>(const interpolator& other) const;
       bool operator<=(const interpolator& other) const;
       bool operator>=(const interpolator& other) const;
-
+      
     private:
       double _speed;
       long _velocity;
       long _pos;
+      long _end;
       const Waveform<T>* _wf;
 
       void increment(void);
@@ -67,9 +76,13 @@ namespace audioelectric {
      */
     Waveform(void);
 
-    /*!\brief Creates a waveform with size len with all values set to 0
+    /*!\brief Creates and allocates a waveform of size len with all values set to 0
      */
-    Waveform(std::size_t len);
+    Waveform(std::size_t len, InterpType it=InterpType::LINEAR);
+
+    /*!\brief Wraps an array of size len in a Waveform to allow it to be interpolated
+     */
+    Waveform(T* data, std::size_t len, InterpType it=InterpType::LINEAR);
 
     Waveform(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
     
@@ -95,7 +108,7 @@ namespace audioelectric {
      * \param pos The position on the waveform
      * \return The interpolated value at pos
      */
-    T interpolate(double pos) const;
+    virtual T interpolate(double pos) const;
 
     Waveform<T>& operator=(const Waveform<T>& other);
     T& operator[](std::size_t pos) {return _data[pos];}
@@ -170,7 +183,7 @@ namespace audioelectric {
      *
      * If pos is <0 or >_size-1, this will always return 0
      */
-    T interpLinear(double pos) const;
+    virtual T interpLinear(double pos) const;
   };
 
 }

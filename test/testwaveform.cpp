@@ -161,10 +161,10 @@ static int paCallback(const void *input, void *output, unsigned long frames, con
 }
 
 TEST_F(AudioPlaybackTest, speed) {
-  // playBack(1);
-  // playBack(0.5);
-  // playBack(2);
-  // playBack(1.232);
+  playBack(1);
+  playBack(0.5);
+  playBack(2);
+  playBack(1.232);
   playBack(-1);
   playBack(-0.5);
   playBack(-2);

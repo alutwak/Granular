@@ -16,11 +16,18 @@ namespace audioelectric {
   }
 
   template<typename T>
-  Waveform<T>::Waveform(std::size_t len) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0)
+  Waveform<T>::Waveform(std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0)
   {
     alloc(len);
+    memset(_data, 0, sizeof(T)*len);
   }
   
+  template<typename T>
+  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(data), _size(len)
+  {
+
+  }
+
   template<typename T>
   Waveform<T>::Waveform(std::initializer_list<T> init, InterpType it) : _interptype(it), _data(nullptr), _size(0)
   {
@@ -154,16 +161,24 @@ namespace audioelectric {
 
   template<typename T>
   Waveform<T>::interpolator::interpolator(void) :
-    _wf(nullptr), _speed(1), _velocity(1)
+    _wf(nullptr), _speed(1), _velocity(1), _end(0), _pos(0)
   {
     
   }
   
   template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, double start, double velocity) :
-    _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1)
+    _wf(&wf), _speed(fabs(velocity))
   {
     _pos = start/_speed;
+    if (velocity > 0) {
+      _velocity = 1;
+      _end = 1 + (long)((double)(wf._size-1)/_speed);
+    }
+    else {
+      _velocity = -1;
+      _end = -1;
+    }
   }
 
   template<typename T>
@@ -227,6 +242,12 @@ namespace audioelectric {
     return _wf->interpolate(_pos*_speed);
   }
 
+  template<typename T>
+  Waveform<T>::interpolator::operator bool(void) const
+  {
+    return _velocity > 0 ? _pos<_end : _pos>_end;
+  }
+  
   // template<typename T>
   // typename Waveform<T>::interpolator Waveform<T>::interpolator::operator-(std::size_t n) const
   // {
