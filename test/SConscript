@@ -4,7 +4,8 @@ Import('env')
 Import('grain_lib')
 
 test_files = ['main.cpp',
-              'testwaveform.cpp'
+              'testwaveform.cpp',
+              'testgrain.cpp'
 ]
 
 include_dirs = [

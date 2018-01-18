@@ -33,11 +33,11 @@ namespace audioelectric {
     
   }
 
-  template<typename T>
-  Grain<T>::~Grain(void)
-  {
-    ~Waveform<T>();
-  }
+  // template<typename T>
+  // Grain<T>::~Grain(void)
+  // {
+  //   ;
+  // }
 
   template<typename T>
   typename Grain<T>::granulator Grain<T>::gmake(long start, double speed,
@@ -84,6 +84,7 @@ namespace audioelectric {
       return *this;
     _interp_this = other._interp_this;
     _interp_other = other._interp_other;
+    return *this;
   }
 
   template<typename T>
@@ -114,5 +115,8 @@ namespace audioelectric {
   {
     return _interp_this && _interp_other;
   }
+
+  template class Grain<double>;
+  template class Grain<float>;
   
 }

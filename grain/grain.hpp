@@ -44,7 +44,7 @@ namespace audioelectric {
      */
     Grain(const Waveform<T>& other, std::size_t len, InterpType it=InterpType::LINEAR);
 
-    ~Grain(void);
+    //~Grain(void);
 
     granulator gmake(long start, double speed, const typename Waveform<T>::interpolator& interp_other) const;
 
