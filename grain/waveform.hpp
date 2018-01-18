@@ -57,6 +57,7 @@ namespace audioelectric {
       const Waveform<T>* _wf;
 
       void increment(void);
+      void setEnd(void);
     };
 
     class iterator {

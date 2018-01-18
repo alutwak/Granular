@@ -23,9 +23,10 @@ namespace audioelectric {
   }
   
   template<typename T>
-  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(data), _size(len)
+  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(len)
   {
-
+    alloc(len);
+    memcpy(_data, data, sizeof(T)*len);
   }
 
   template<typename T>
@@ -168,31 +169,24 @@ namespace audioelectric {
   
   template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, double start, double velocity) :
-    _wf(&wf), _speed(fabs(velocity))
+    _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1)
   {
     _pos = start/_speed;
-    if (velocity > 0) {
-      _velocity = 1;
-      _end = 1 + (long)((double)(wf._size-1)/_speed);
-    }
-    else {
-      _velocity = -1;
-      _end = -1;
-    }
+    setEnd();
   }
 
   template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, long start_pos, double velocity) :
     _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1), _pos(start_pos)
   {
-
+    setEnd();
   }
 
   template<typename T>
   Waveform<T>::interpolator::interpolator(const Waveform<T>::interpolator& other) :
     _wf(other._wf), _pos(other._pos), _speed(other._speed), _velocity(other._velocity)
   {
-
+    setEnd();
   }
 
   template<typename T>
@@ -220,12 +214,6 @@ namespace audioelectric {
     auto old = *this;
     increment();
     return old;
-  }
-
-  template<typename T>
-  void Waveform<T>::interpolator::increment(void)
-  {
-    _pos+=_velocity;
   }
 
   template<typename T>
@@ -290,6 +278,21 @@ namespace audioelectric {
     return (_velocity*_pos*_speed) >= (other._velocity*other._pos*other._speed);
   }
   
+  template<typename T>
+  void Waveform<T>::interpolator::setEnd(void)
+  {
+    if (_velocity > 0)
+      _end = 1 + (long)((double)(_wf->_size-1)/_speed);
+    else
+      _end = -1;
+  }
+
+  template<typename T>
+  void Waveform<T>::interpolator::increment(void)
+  {
+    _pos+=_velocity;
+  }
+
   /********************* iterator ********************/
   
   template<typename T>

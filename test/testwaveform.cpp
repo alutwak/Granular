@@ -35,9 +35,12 @@ protected:
    */
   void testIterSpeed(double speed) {
     auto wfiter = wf.ibegin(speed);
+    auto begin = wfiter;
     double val = *wfiter;
     ASSERT_EQ(val, wf[0]);
     while (wfiter != wf.iend(speed)) {
+      EXPECT_TRUE(wfiter<wf.iend(speed));
+      EXPECT_TRUE(wfiter>=begin);
       EXPECT_FLOAT_EQ(val,*(wfiter++)) << "when speed = " << speed;
       val += speed;
     }
