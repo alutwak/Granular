@@ -25,4 +25,4 @@ if 'INTERCEPT_BUILD' in os.environ:
 grain_lib = env.SConscript(dirs=['grain'], exports = 'env')
 
 # Build the unit tests
-env.SConscript(['test/SConscript'], exports=['env', 'grain_lib'])
+#env.SConscript(['test/SConscript'], exports=['env', 'grain_lib'])

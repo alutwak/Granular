@@ -3,12 +3,12 @@
 
 #include <utility>
 
-#include "waveform.hpp"
+#include "wavetable.hpp"
 
 namespace audioelectric {
 
   template<typename T>
-  class Grain : public Waveform<T> {
+  class Grain : public Wavetable<T> {
   public:
 
     class granulator {

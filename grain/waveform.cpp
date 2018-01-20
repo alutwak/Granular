@@ -3,213 +3,89 @@
 #include "waveform.hpp"
 
 namespace audioelectric {
-
-  template<typename T>
-  T doInterpolate(const T* a, double offset, InterpType it);
   
   /*********************** Public Waveform *******************************/
 
   template<typename T>
-  Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0)
+  typename std::unique_ptr<typename Waveform<T>::phasor> Waveform<T>::pbegin(double start, double rate) const
   {
-    
-  }
-
-  template<typename T>
-  Waveform<T>::Waveform(std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0)
-  {
-    alloc(len);
-    memset(_data, 0, sizeof(T)*len);
-  }
-  
-  template<typename T>
-  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(len)
-  {
-    alloc(len);
-    memcpy(_data, data, sizeof(T)*len);
-  }
-
-  template<typename T>
-  Waveform<T>::Waveform(std::initializer_list<T> init, InterpType it) : _interptype(it), _data(nullptr), _size(0)
-  {
-    alloc(init.size());
-    T* p = _data;
-    for (auto& val : init)
-      *(p++) = val;
-  }
-
-  template<typename T>
-  Waveform<T>::Waveform(const Waveform<T>& other, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0)
-  {
-    if (len == 0)
-      return;
-    alloc(len);
-    double speed = (double)other.size()/(double)len;
-    auto itr = other.ibegin(speed);
-    T* p = _data;
-    for (;itr!=other.iend(speed); ++itr, p++)
-      *p = *itr;
-  }
-
-  template<typename T>
-  Waveform<T>::~Waveform(void)
-  {
-    dealloc();
-  }
-
-  template<typename T>
-  T Waveform<T>::interpolate(double pos) const
-  {
-    if (pos < 0 || pos > _size-1)
-      return 0;
-    return interpLinear(pos);
-  }
-
-  template<typename T>
-  typename Waveform<T>::iterator Waveform<T>::begin(void)
-  {
-    return iterator(_data);
-  }
-
-  template<typename T>
-  typename Waveform<T>::iterator Waveform<T>::end(void)
-  {
-    return iterator(_data+_size);
-  }
-    
-  template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::ibegin(long start, double speed) const
-  {
-    // if (speed<=0.0)
+    // if (rate<=0.0)
     //   return iend(1);
-    return interpolator(*this,start,speed);
+    return std::make_unique<phasor>(*this,start,rate);
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::ibegin(double speed) const
+  typename std::unique_ptr<typename Waveform<T>::phasor> Waveform<T>::pbegin(double rate) const
   {
-    return ibegin(0,speed);
+    return pbegin(0,rate);
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::iend(double speed) const
+  typename std::unique_ptr<typename Waveform<T>::phasor> Waveform<T>::rpbegin(double start, double rate) const
   {
-    // if (speed<=0.0)
-    //   speed = 1;
-    long end = 1 + (long)((double)(_size-1)/speed);
-    return interpolator(*this,end,speed);
+    // if (rate<=0.0)
+    //   rate = 1;
+    start = (long)(start/rate); //We need to adjust the interpolated start position
+    return std::make_unique<phasor>(*this,start,-rate);
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::ribegin(long start, double speed) const
+  typename std::unique_ptr<typename Waveform<T>::phasor> Waveform<T>::rpbegin(double rate) const
   {
-    // if (speed<=0.0)
-    //   speed = 1;
-    start = (long)((double)start/speed); //We need to adjust the interpolated start position
-    return interpolator(*this,start,-speed);
-  }
-
-  template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::ribegin(double speed) const
-  {
-    return ribegin(_size-1,speed);
+    return rpbegin(0,rate);
   }
   
-  template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::riend(double speed) const
-  {
-    return interpolator(*this,(long)-1,-speed); //Reverse equivalent of size
-  }
-  
-  template<typename T>
-  Waveform<T>& Waveform<T>::operator=(const Waveform<T>& other)
-  {
-    alloc(other._size);
-    _interptype = other._interptype;
-    memcpy(_data,other._data,sizeof(T)*_size);
-    return *this;
-  }
-
-  /*********************** Private Waveform *******************************/
+  /*********************** phasor *******************************/
 
   template<typename T>
-  void Waveform<T>::alloc(std::size_t len)
-  {
-    dealloc();
-    _data = new T[len];
-    _size = len;
-  }
-
-  template<typename T>
-  void Waveform<T>::dealloc(void)
-  {
-    if (_data)
-      delete[] _data;
-    _size = 0;
-  }
-
-  template<typename T>
-  T Waveform<T>::interpLinear(double pos) const
-  {
-    long p = pos;
-    T a = _data[p];
-    T b = _data[p+1];
-    double diff = fmod(pos,1.0);
-    return (b-a)*diff + a;
-  }
-  
-  /*********************** interpolator *******************************/
-
-  template<typename T>
-  Waveform<T>::interpolator::interpolator(void) :
-    _wf(nullptr), _speed(1), _velocity(1), _end(0), _pos(0)
+  Waveform<T>::phasor::phasor(void) :
+    _wf(nullptr), _rate(1), _dir(1), _phase(0)
   {
     
   }
   
   template<typename T>
-  Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, double start, double velocity) :
-    _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1)
+  Waveform<T>::phasor::phasor(const Waveform<T>& wf, double start, double rate) :
+    _wf(&wf), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1)
   {
-    _pos = start/_speed;
-    setEnd();
+    _phase = start/_rate;
   }
 
   template<typename T>
-  Waveform<T>::interpolator::interpolator(const Waveform<T>& wf, long start_pos, double velocity) :
-    _wf(&wf), _speed(fabs(velocity)), _velocity(velocity < 0 ? -1 : 1), _pos(start_pos)
+  Waveform<T>::phasor::phasor(const Waveform<T>& wf, long start_phase, double rate) :
+    _wf(&wf), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1), _phase(start_phase)
   {
-    setEnd();
+
   }
 
   template<typename T>
-  Waveform<T>::interpolator::interpolator(const Waveform<T>::interpolator& other) :
-    _wf(other._wf), _pos(other._pos), _speed(other._speed), _velocity(other._velocity)
+  Waveform<T>::phasor::phasor(const Waveform<T>::phasor& other) :
+    _wf(other._wf), _phase(other._phase), _rate(other._rate), _dir(other._dir)
   {
-    setEnd();
+
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator& Waveform<T>::interpolator::operator=(const Waveform<T>::interpolator& other)
+  typename Waveform<T>::phasor& Waveform<T>::phasor::operator=(const Waveform<T>::phasor& other)
   {
     if (&other == this)
       return *this;
     _wf = other._wf;
-    _pos = other._pos;
-    _speed = other._speed;
-    _velocity = other._velocity;
+    _phase = other._phase;
+    _rate = other._rate;
+    _dir = other._dir;
     return *this;
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator& Waveform<T>::interpolator::operator++(void)
+  typename Waveform<T>::phasor& Waveform<T>::phasor::operator++(void)
   {
     increment();
     return *this;
   }
   
   template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::interpolator::operator++(int)
+  typename Waveform<T>::phasor Waveform<T>::phasor::operator++(int)
   {
     auto old = *this;
     increment();
@@ -217,139 +93,72 @@ namespace audioelectric {
   }
 
   template<typename T>
-  typename Waveform<T>::interpolator Waveform<T>::interpolator::operator+(long n) const
+  typename Waveform<T>::phasor Waveform<T>::phasor::operator+(long n) const
   {
-    long newpos = _pos+n;
-    newpos = newpos > 0 ? 0 : newpos>_wf->size() ? _wf->size() : newpos;
-    return interpolator(*_wf, _pos+n, _velocity*_speed);
+    return phasor(*_wf, _phase+n, _dir*_rate);
   }
 
   template<typename T>
-  T Waveform<T>::interpolator::operator*(void) const
+  T Waveform<T>::phasor::operator*(void) const
   {
-    return _wf->interpolate(_pos*_speed);
+    return _wf->waveform(_phase*_rate);
   }
 
   template<typename T>
-  Waveform<T>::interpolator::operator bool(void) const
+  Waveform<T>::phasor::operator bool(void) const
   {
-    return _velocity > 0 ? _pos<_end : _pos>_end;
+    return true;  //Default will be to return true
   }
   
   // template<typename T>
-  // typename Waveform<T>::interpolator Waveform<T>::interpolator::operator-(std::size_t n) const
+  // typename Waveform<T>::phasor Waveform<T>::phasor::operator-(std::size_t n) const
   // {
-  //   return interpolator(_wf, _loc-(_speed*n), _speed);
+  //   return phasor(_wf, _loc-(_rate*n), _rate);
   // }
 
   template<typename T>
-  bool Waveform<T>::interpolator::operator==(const Waveform<T>::interpolator& other) const
+  bool Waveform<T>::phasor::operator==(const Waveform<T>::phasor& other) const
   {
-    return _wf->_data == other._wf->_data && _pos==other._pos;
+    return _wf == other._wf && _phase==other._phase;
   }
 
   template<typename T>
-  bool Waveform<T>::interpolator::operator!=(const Waveform<T>::interpolator& other) const
+  bool Waveform<T>::phasor::operator!=(const Waveform<T>::phasor& other) const
   {
     return !(*this == other);
   }
 
   template<typename T>
-  bool Waveform<T>::interpolator::operator<(const Waveform<T>::interpolator& other) const
+  bool Waveform<T>::phasor::operator<(const Waveform<T>::phasor& other) const
   {
-    return (_velocity*_pos*_speed) < (other._velocity*other._pos*other._speed);
+    return (_dir*_phase*_rate) < (other._dir*other._phase*other._rate);
   }
   
   template<typename T>
-  bool Waveform<T>::interpolator::operator>(const Waveform<T>::interpolator& other) const
+  bool Waveform<T>::phasor::operator>(const Waveform<T>::phasor& other) const
   {
-    return (_velocity*_pos*_speed) > (other._velocity*other._pos*other._speed);
+    return (_dir*_phase*_rate) > (other._dir*other._phase*other._rate);
   }
 
     template<typename T>
-  bool Waveform<T>::interpolator::operator<=(const Waveform<T>::interpolator& other) const
+  bool Waveform<T>::phasor::operator<=(const Waveform<T>::phasor& other) const
   {
-    return (_velocity*_pos*_speed) <= (other._velocity*other._pos*other._speed);
+    return (_dir*_phase*_rate) <= (other._dir*other._phase*other._rate);
   }
 
   template<typename T>
-  bool Waveform<T>::interpolator::operator>=(const Waveform<T>::interpolator& other) const
+  bool Waveform<T>::phasor::operator>=(const Waveform<T>::phasor& other) const
   {
-    return (_velocity*_pos*_speed) >= (other._velocity*other._pos*other._speed);
+    return (_dir*_phase*_rate) >= (other._dir*other._phase*other._rate);
   }
   
   template<typename T>
-  void Waveform<T>::interpolator::setEnd(void)
+  void Waveform<T>::phasor::increment(void)
   {
-    if (_velocity > 0)
-      _end = 1 + (long)((double)(_wf->_size-1)/_speed);
-    else
-      _end = -1;
+    _phase+=_dir;
   }
-
-  template<typename T>
-  void Waveform<T>::interpolator::increment(void)
-  {
-    _pos+=_velocity;
-  }
-
-  /********************* iterator ********************/
-  
-  template<typename T>
-  typename Waveform<T>::iterator& Waveform<T>::iterator::operator++(void)
-  {
-    _data++;
-    return *this;
-  }
-
-  template<typename T>
-  typename Waveform<T>::iterator Waveform<T>::iterator::operator++(int)
-  {
-    iterator temp = *this;
-    _data++;
-    return temp;
-  }
-
-  template<typename T>
-  T& Waveform<T>::iterator::operator*(void)
-  {
-    return *_data;
-  }
-
-  template<typename T>
-  bool Waveform<T>::iterator::operator==(const Waveform<T>::iterator& other) const
-  {
-    return _data == other._data;
-  }
-  
-  template<typename T>
-  bool Waveform<T>::iterator::operator!=(const Waveform<T>::iterator& other) const
-  {
-    return _data != other._data;
-  }
-
-  // template<typename T>
-  // T interpLinear(const T* ary, double offset)
-  // {
-  //   T a = ary[(std::size_t)offset];
-  //   T b = ary[(std::size_t)offset+1];
-  //   double diff = fmod(offset,1.0);
-  //   return (b-a)*diff + a;
-  // }
-
-  // template<typename T>
-  // T doInterpolate(const T* ary, double offset, InterpType it)
-  // {
-  //   switch (it) {
-  //   case InterpType::LINEAR:
-  //     return interpLinear(ary, offset);
-  //   }
-  // }
 
   template class Waveform<double>;
   template class Waveform<float>;
-  // template double doInterpolate<double>(const double*,double,InterpType);
-  // template double interpLinear<double>(const double*,double);  
-  // template float doInterpolate<float>(const float*,double,InterpType);
-  // template float interpLinear<float>(const float*,double);  
+
 }
