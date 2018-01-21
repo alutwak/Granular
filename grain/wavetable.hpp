@@ -26,40 +26,30 @@ namespace audioelectric {
 
     /*!\brief An iterator that generalizes element access to allow for interpolation between elements
      */
-    class interpolator : public Waveform<T>::phasor {
+    class interpolator : public Waveform<T>::phasor_impl {
     public:
-      interpolator(void);
-      interpolator(const Wavetable<T>& wf, double start, double rate);
-      interpolator(const Wavetable<T>& wf, long start_pos, double rate);
+      interpolator(const Wavetable<T>& wt, double start, double rate);
+      interpolator(const Wavetable<T>& wt, long start_pos, double rate);
       
       /*!\brief Creates a vari-rate interpolator for which the rate is seet by another interpolator
        */ 
-      interpolator(const Wavetable<T>& wf, long start_pos, std::unique_ptr<typename Waveform<T>::phasor> vel_interp);
+      //interpolator(const Wavetable<T>* wf, long start_pos, std::unique_ptr<typename Waveform<T>::phasor> vel_interp);
       interpolator(const interpolator& other);
-      interpolator& operator=(const interpolator& other);
-      interpolator& operator++(void);                           //!<\brief Prefix increment
-      interpolator operator++(int);                             //!<\brief Postfix increment
+      //interpolator& operator=(const interpolator& other);
       interpolator operator+(long n) const;                     //!<\brief Random access +
       T operator*(void) const;                                  //!<\brief Data retrieval (not a reference)
       operator bool(void) const;
-      bool operator==(const interpolator& other) const;
-      bool operator!=(const interpolator& other) const;
 
-      /*\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
-       */
-      bool operator<(const interpolator& other) const;
-      bool operator>(const interpolator& other) const;
-      bool operator<=(const interpolator& other) const;
-      bool operator>=(const interpolator& other) const;
-
+    protected:
+      virtual void increment(void);
+      
     private:
       double _rate;
       long _dir;
       long _pos;
       long _end;
-      const Wavetable<T>* _wf;
+      const Wavetable<T>& _wt;
 
-      void increment(void);
       void setEnd(void);
     };
 
@@ -115,6 +105,7 @@ namespace audioelectric {
     virtual T waveform(double pos) const;
 
     Wavetable<T>& operator=(const Wavetable<T>& other);
+
     T& operator[](std::size_t pos) {return _data[pos];}
     const T& operator[](std::size_t pos) const {return _data[pos];}
 
@@ -127,13 +118,13 @@ namespace audioelectric {
      * \param start The starting position (in the original waveform, not the interpolated one)
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    std::unique_ptr<typename Waveform<T>::phasor> pbegin(double start, double rate) const;
+    typename Waveform<T>::phasor pbegin(double start, double rate) const;
 
     /*!\brief Returns a forward interpolator that points to the beginning of the waveform \see ibegin(long,double)
      *
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    std::unique_ptr<typename Waveform<T>::phasor>  pbegin(double rate) const;
+    typename Waveform<T>::phasor pbegin(double rate) const;
     
     // /*!\brief Returns a forward interpolator that points to the end of the waveform
     //  */
@@ -146,13 +137,13 @@ namespace audioelectric {
      * \param start The starting position (in the original waveform, not the interpolated one)
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    std::unique_ptr<typename Waveform<T>::phasor>  rpbegin(double start, double rate) const;
+    typename Waveform<T>::phasor rpbegin(double start, double rate) const;
 
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
      *
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */    
-    std::unique_ptr<typename Waveform<T>::phasor>  rpbegin(double rate) const;
+    typename Waveform<T>::phasor rpbegin(double rate) const;
 
     // /*!\brief Returns a reverse interpolator that points to the beginning of the waveform
     //  */

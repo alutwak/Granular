@@ -42,8 +42,6 @@ namespace audioelectric {
   Wavetable<T>::Wavetable(const Waveform<T>& other, double rate, std::size_t len, InterpType it) :
     _interptype(it), _data(nullptr), _size(0)
   {
-    if (len == 0)
-      return;
     alloc(len);
     auto itr = other.pbegin(rate);
     T* p = _data;
@@ -78,34 +76,32 @@ namespace audioelectric {
   }
     
   template<typename T>
-  std::unique_ptr<typename Waveform<T>::phasor> Wavetable<T>::pbegin(double start, double rate) const
+  typename Waveform<T>::phasor Wavetable<T>::pbegin(double start, double rate) const
   {
     // if (rate<=0.0)
     //   return iend(1);
-    std::unique_ptr<typename Waveform<T>::phasor> interp(nullptr);    
-    interp.reset(new interpolator(*this,start,rate));
-    return interp;
+    auto interp = new interpolator(*this, start, rate);
+    return interp;  //Casts to phasor_impl and constructs a phasor
   }
 
   template<typename T>
-  std::unique_ptr<typename Waveform<T>::phasor>  Wavetable<T>::pbegin(double rate) const
+  typename Waveform<T>::phasor Wavetable<T>::pbegin(double rate) const
   {
     return pbegin(0,rate);
   }
 
   template<typename T>
-  std::unique_ptr<typename Waveform<T>::phasor>  Wavetable<T>::rpbegin(double start, double rate) const
+  typename Waveform<T>::phasor Wavetable<T>::rpbegin(double start, double rate) const
   {
     // if (rate<=0.0)
     //   rate = 1;
-    std::unique_ptr<typename Waveform<T>::phasor> interp(nullptr);
     start = start/rate; //We need to adjust the interpolated start position
-    interp.reset(new interpolator(*this,start,-rate));
-    return interp;
+    auto interp = new interpolator(*this,start,-rate);
+    return interp; //Casts to phasor_impl and constructs a phasor
   }
 
   template<typename T>
-  std::unique_ptr<typename Waveform<T>::phasor>  Wavetable<T>::rpbegin(double rate) const
+  typename Waveform<T>::phasor Wavetable<T>::rpbegin(double rate) const
   {
     return rpbegin(_size-1,rate);
   }
@@ -150,73 +146,43 @@ namespace audioelectric {
   /*********************** interpolator *******************************/
 
   template<typename T>
-  Wavetable<T>::interpolator::interpolator(void) :
-    _wf(nullptr), _rate(1), _dir(1), _end(0), _pos(0)
-  {
-    
-  }
-  
-  template<typename T>
-  Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wf, double start, double rate) :
-    _wf(&wf), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1)
+  Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, double start, double rate) :
+    Waveform<T>::phasor_impl(wt, start, rate), _wt(wt), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1)
   {
     _pos = start/_rate;
     setEnd();
   }
 
   template<typename T>
-  Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wf, long start_pos, double rate) :
-    _wf(&wf), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1), _pos(start_pos)
+  Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, long start_pos, double rate) :
+    Waveform<T>::phasor_impl(wt, start_pos, rate), _wt(wt), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1), _pos(start_pos)
   {
     setEnd();
   }
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>::interpolator& other) :
-    _wf(other._wf), _pos(other._pos), _rate(other._rate), _dir(other._dir)
+    Waveform<T>::phasor_impl(other), _wt(other._wt), _pos(other._pos), _rate(other._rate), _dir(other._dir)
   {
     setEnd();
   }
 
-  template<typename T>
-  typename Wavetable<T>::interpolator& Wavetable<T>::interpolator::operator=(const Wavetable<T>::interpolator& other)
-  {
-    if (&other == this)
-      return *this;
-    _wf = other._wf;
-    _pos = other._pos;
-    _rate = other._rate;
-    _dir = other._dir;
-    return *this;
-  }
-
-  template<typename T>
-  typename Wavetable<T>::interpolator& Wavetable<T>::interpolator::operator++(void)
-  {
-    increment();
-    return *this;
-  }
-  
-  template<typename T>
-  typename Wavetable<T>::interpolator Wavetable<T>::interpolator::operator++(int)
-  {
-    auto old = *this;
-    increment();
-    return old;
-  }
-
-  template<typename T>
-  typename Wavetable<T>::interpolator Wavetable<T>::interpolator::operator+(long n) const
-  {
-    long newpos = _pos+n;
-    newpos = newpos > 0 ? 0 : newpos>_wf->size() ? _wf->size() : newpos;
-    return interpolator(*_wf, newpos, _dir*_rate);
-  }
+  // template<typename T>
+  // typename Wavetable<T>::interpolator& Wavetable<T>::interpolator::operator=(const Wavetable<T>::interpolator& other)
+  // {
+  //   if (&other == this)
+  //     return *this;
+  //   _wf = other._wf;
+  //   _pos = other._pos;
+  //   _rate = other._rate;
+  //   _dir = other._dir;
+  //   return *this;
+  // }
 
   template<typename T>
   T Wavetable<T>::interpolator::operator*(void) const
   {
-    return _wf->waveform(_pos*_rate);
+    return _wt.waveform(_pos*_rate);
   }
 
   template<typename T>
@@ -224,54 +190,12 @@ namespace audioelectric {
   {
     return _dir > 0 ? _pos<_end : _pos>_end;
   }
-  
-  // template<typename T>
-  // typename Wavetable<T>::interpolator Wavetable<T>::interpolator::operator-(std::size_t n) const
-  // {
-  //   return interpolator(_wf, _loc-(_rate*n), _rate);
-  // }
 
-  template<typename T>
-  bool Wavetable<T>::interpolator::operator==(const Wavetable<T>::interpolator& other) const
-  {
-    return _wf->_data == other._wf->_data && _pos==other._pos;
-  }
-
-  template<typename T>
-  bool Wavetable<T>::interpolator::operator!=(const Wavetable<T>::interpolator& other) const
-  {
-    return !(*this == other);
-  }
-
-  template<typename T>
-  bool Wavetable<T>::interpolator::operator<(const Wavetable<T>::interpolator& other) const
-  {
-    return (_dir*_pos*_rate) < (other._dir*other._pos*other._rate);
-  }
-  
-  template<typename T>
-  bool Wavetable<T>::interpolator::operator>(const Wavetable<T>::interpolator& other) const
-  {
-    return (_dir*_pos*_rate) > (other._dir*other._pos*other._rate);
-  }
-
-    template<typename T>
-  bool Wavetable<T>::interpolator::operator<=(const Wavetable<T>::interpolator& other) const
-  {
-    return (_dir*_pos*_rate) <= (other._dir*other._pos*other._rate);
-  }
-
-  template<typename T>
-  bool Wavetable<T>::interpolator::operator>=(const Wavetable<T>::interpolator& other) const
-  {
-    return (_dir*_pos*_rate) >= (other._dir*other._pos*other._rate);
-  }
-  
   template<typename T>
   void Wavetable<T>::interpolator::setEnd(void)
   {
     if (_dir > 0)
-      _end = 1 + (long)((double)(_wf->_size-1)/_rate);
+      _end = 1 + (long)((double)(_wt._size-1)/_rate);
     else
       _end = -1;
   }

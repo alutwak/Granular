@@ -3,27 +3,27 @@
 #include <sndfile.h>
 #include <portaudio.h>
 
-#include "waveform.hpp"
+#include "wavetable.hpp"
 
 using namespace audioelectric;
 
-class SimpleWaveformTest : public ::testing::Test {
+class SimpleWavetableTest : public ::testing::Test {
 protected:
 
-  Waveform<double> wf = {0.0, 1.0, 2.0, 3.0};
+  Wavetable<double> wt = {0.0, 1.0, 2.0, 3.0};
 
   void testBasic(void) {
-    EXPECT_EQ(wf.size(),4);
+    EXPECT_EQ(wt.size(),4);
     //Check element access with integers
     for (int i=0;i<4;i++) {
-      double d = wf[i];
+      double d = wt[i];
       EXPECT_EQ(d,i);
-      const double& dconst = wf[i];
+      const double& dconst = wt[i];
       EXPECT_FLOAT_EQ(d,dconst);
     }
     //Check element access with doubles
     for (double j=0.0; j<3.1; j+=0.1) {
-      double d = wf.interpolate(j);
+      double d = wt.waveform(j);
       if (j > 3)
         EXPECT_FLOAT_EQ(d,0);
       else
@@ -31,47 +31,47 @@ protected:
     }
   }
   
-  /* Since the values in wf have a constant slope of 1, iterations should increment at the same rate as speed
+  /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as speed
    */
   void testIterSpeed(double speed) {
-    auto wfiter = wf.ibegin(speed);
-    auto begin = wfiter;
-    double val = *wfiter;
-    ASSERT_EQ(val, wf[0]);
-    while (wfiter != wf.iend(speed)) {
-      EXPECT_TRUE(wfiter<wf.iend(speed));
-      EXPECT_TRUE(wfiter>=begin);
-      EXPECT_FLOAT_EQ(val,*(wfiter++)) << "when speed = " << speed;
+    auto interp = wt.pbegin(speed);
+    auto begin = interp;
+    double val = *interp;
+    ASSERT_EQ(val, wt[0]);
+    while (interp) {
+      EXPECT_TRUE(interp);
+      EXPECT_TRUE(interp>=begin);
+      EXPECT_FLOAT_EQ(val,*(interp++)) << "when speed = " << speed;
       val += speed;
     }
     testReverseIter(speed);
   }
 
   void testReverseIter(double speed) {
-    auto riter = wf.ribegin(speed);
-    double val = *riter;
-    //ASSERT_EQ(val,wf[wf.size()-1]);
-    while (riter != wf.riend(speed)) {
-      EXPECT_FLOAT_EQ(val,*(riter++)) << "when speed = " << speed;
+    auto rinterp = wt.rpbegin(speed);
+    double val = *rinterp;
+    //ASSERT_EQ(val,wt[wt.size()-1]);
+    while (rinterp) {
+      EXPECT_FLOAT_EQ(val,*(rinterp++)) << "when speed = " << speed;
       val -= speed;
     }
   }
 
   void testCopy(int len) {
-    Waveform<double> wf_new(wf,len);
-    EXPECT_EQ(wf_new.size(), len);  //Length should be correct
+    Wavetable<double> wt_new(dynamic_cast<Waveform<double>&>(wt), 1.0, len);
+    EXPECT_EQ(wt_new.size(), len);  //Length should be correct
     double speed = (double)4/(double)len;
     int n = len/4;
     for (int i=0;i<4;i++) {
       if (i >= n)
         break;
-      EXPECT_FLOAT_EQ(wf.interpolate(i*speed),wf_new[i]);
+      EXPECT_FLOAT_EQ(wt.waveform(i*speed),wt_new[i]);
     }
   }
 
 };
 
-TEST_F(SimpleWaveformTest, basic) {
+TEST_F(SimpleWavetableTest, basic) {
 
   testBasic();
   testIterSpeed(0.5);
@@ -87,12 +87,12 @@ TEST_F(SimpleWaveformTest, basic) {
 
 
 static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
-                      PaStreamCallbackFlags statusFlags, void *wf );
+                      PaStreamCallbackFlags statusFlags, void *wt );
 
 class AudioPlaybackTest : public ::testing::Test {
 protected:
 
-  Waveform<float> *wf;
+  Wavetable<float> *wt;
   SF_INFO info;
   PaStream *stream;
   
@@ -100,35 +100,33 @@ protected:
     info.format = 0;
     SNDFILE* testfile = sf_open("testfile.wav", SFM_READ, &info);
     ASSERT_TRUE(testfile) << "unable to open testfile.wav";
-    wf = new Waveform<float>(info.frames); //We know this is just one channel
-    sf_count_t nread = sf_readf_float(testfile, wf->data(), info.frames);
+    wt = new Wavetable<float>(info.frames); //We know this is just one channel
+    sf_count_t nread = sf_readf_float(testfile, wt->data(), info.frames);
     ASSERT_EQ(nread,info.frames) << "Failed to read entire testfile.wav";
     sf_close(testfile);
   }
 
   virtual void TearDown(void) {
-    delete wf;
+    delete wt;
   }
 
   void playBack(double speed) {
-    Waveform<float>::interpolator interp, interp_end;
+    Waveform<float>::phasor interp;
     ASSERT_FALSE(speed<0.1&&speed>-0.1) << "Speed too close to zero";
     if (speed>0) {
-      interp = wf->ibegin(speed);
-      interp_end = wf->iend(speed);
+      interp = wt->pbegin(speed);
     }
     else {
-      interp = wf->ribegin(-speed);
-      interp_end = wf->riend(-speed);
+      interp = wt->rpbegin(-speed);
     }
     initPA(interp);
-    while (interp<interp_end) {}
+    while (interp) {}
     closePA();
   }
 
 private:
 
-  void initPA(Waveform<float>::interpolator& wfiter) {
+  void initPA(Waveform<float>::phasor& wtiter) {
     PaError err = Pa_Initialize();
     ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
     err = Pa_OpenDefaultStream( &stream,
@@ -138,7 +136,7 @@ private:
                                 info.samplerate,
                                 256,        /* frames per buffer*/
                                 paCallback, /* this is your callback function */
-                                &wfiter);
+                                &wtiter);
     ASSERT_EQ(err, paNoError) << "PA error when opening stream: " << Pa_GetErrorText(err);
     err = Pa_StartStream(stream);
     ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);    
@@ -153,9 +151,9 @@ private:
 };
 
 static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
-               PaStreamCallbackFlags statusFlags, void *wfinterp_data)
+               PaStreamCallbackFlags statusFlags, void *wtinterp_data)
 {
-  Waveform<float>::interpolator *interp = static_cast<Waveform<float>::interpolator*>(wfinterp_data);
+  Waveform<float>::phasor *interp = static_cast<Waveform<float>::phasor*>(wtinterp_data);
   float *out = (float*)output;
   while (frames--) {
     *out++ = *(*interp)++;
