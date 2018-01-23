@@ -67,7 +67,7 @@ namespace audioelectric {
   // }
 
   template<typename T>
-  T Waveform<T>::phasor_impl::operator*(void) const
+  T Waveform<T>::phasor_impl::value(void) const
   {
     return _wf.waveform(_phase*_rate);
   }
@@ -113,6 +113,11 @@ namespace audioelectric {
   {
     return (_dir*_phase*_rate) >= (other._dir*other._phase*other._rate);
   }
+
+  template<typename T>
+  typename Waveform<T>::phasor_impl* Waveform<T>::phasor_impl::copy(void) {
+    return new phasor_impl(*this);
+  }
   
   template<typename T>
   void Waveform<T>::phasor_impl::increment(void)
@@ -137,7 +142,7 @@ namespace audioelectric {
   template<typename T>
   Waveform<T>::phasor::phasor(const Waveform<T>::phasor& other) : _impl(nullptr)
   {
-    _impl.reset(new phasor_impl(*other._impl));
+    _impl.reset(other._impl->copy());
   }
 
   template<typename T>
@@ -145,7 +150,7 @@ namespace audioelectric {
   {
     if (this == &other)
       return *this;
-    _impl.reset(new phasor_impl(*other._impl));
+    _impl.reset(other._impl->copy());
     return *this;
   }
 
@@ -167,7 +172,7 @@ namespace audioelectric {
   template<typename T>
   T Waveform<T>::phasor::operator*(void) const
   {
-    return **_impl;
+    return _impl->value();
   }
 
   template<typename T>

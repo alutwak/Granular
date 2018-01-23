@@ -27,7 +27,8 @@ namespace audioelectric {
     /*!\brief An iterator that generalizes element access to allow for interpolation between elements
      */
     class interpolator : public Waveform<T>::phasor_impl {
-    public:
+    protected:
+      friend class Wavetable;
       interpolator(const Wavetable<T>& wt, double start, double rate);
       interpolator(const Wavetable<T>& wt, long start_pos, double rate);
       
@@ -37,11 +38,12 @@ namespace audioelectric {
       interpolator(const interpolator& other);
       //interpolator& operator=(const interpolator& other);
       interpolator operator+(long n) const;                     //!<\brief Random access +
-      T operator*(void) const;                                  //!<\brief Data retrieval (not a reference)
+      T value(void) const;                                  //!<\brief Data retrieval (not a reference)
       operator bool(void) const;
 
-    protected:
       virtual void increment(void);
+
+      virtual typename Waveform<T>::phasor_impl* copy(void);
       
     private:
       double _rate;

@@ -20,12 +20,19 @@ namespace audioelectric {
     /*!\brief An iterator-like class that increments the phase of the waveform at a certain rate
      */
     class phasor_impl {
-    public:
+    protected:
       friend class phasor;
+      friend class Waveform;
+      
+      double _rate;             //!< The rate that the phase changes per iteration
+      long _dir;                //!< The direction that the phase moves
+      long _phase;              //!< The current phase
+      const Waveform<T>& _wf;   //!< The waveform that we're phasing
+
       phasor_impl(const Waveform<T>& wf, double start, double rate);
       phasor_impl(const phasor_impl& other);
       //phasor_impl& operator=(const phasor_impl& other);
-      virtual T operator*(void) const;          //!<\brief Data retrieval (not a reference)
+      virtual T value(void) const;          //!<\brief Data retrieval (not a reference)
       virtual operator bool(void) const;
       bool operator==(const phasor_impl& other) const;
       bool operator!=(const phasor_impl& other) const;
@@ -40,13 +47,14 @@ namespace audioelectric {
       /*!\brief Sets the rate (useful for vari-rate iterations)
        */
       void setRate(double rate);
-      
-    protected:
-      double _rate;             //!< The rate that the phase changes per iteration
-      long _dir;                //!< The direction that the phase moves
-      long _phase;              //!< The current phase
-      const Waveform<T>& _wf;   //!< The waveform that we're phasing
 
+      /*!\brief Copies this phasor implementation
+       *
+       * This must be overridden by subclasses in order for phasor::operator++ and the phasor copy constructor
+       * to work correctly.
+       */
+      virtual phasor_impl* copy(void);
+      
       /*!\brief Increments the phase
        */
       virtual void increment(void);

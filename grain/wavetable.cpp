@@ -95,7 +95,6 @@ namespace audioelectric {
   {
     // if (rate<=0.0)
     //   rate = 1;
-    start = start/rate; //We need to adjust the interpolated start position
     auto interp = new interpolator(*this,start,-rate);
     return interp; //Casts to phasor_impl and constructs a phasor
   }
@@ -180,7 +179,7 @@ namespace audioelectric {
   // }
 
   template<typename T>
-  T Wavetable<T>::interpolator::operator*(void) const
+  T Wavetable<T>::interpolator::value(void) const
   {
     return _wt.waveform(_pos*_rate);
   }
@@ -204,6 +203,11 @@ namespace audioelectric {
   void Wavetable<T>::interpolator::increment(void)
   {
     _pos+=_dir;
+  }
+
+  template<typename T>
+  typename Waveform<T>::phasor_impl* Wavetable<T>::interpolator::copy(void) {
+    return new interpolator(*this);
   }
 
   /********************* iterator ********************/

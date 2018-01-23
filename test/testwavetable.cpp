@@ -41,7 +41,7 @@ protected:
     while (interp) {
       EXPECT_TRUE(interp);
       EXPECT_TRUE(interp>=begin);
-      EXPECT_FLOAT_EQ(val,*(interp++)) << "when speed = " << speed;
+      EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed;
       val += speed;
     }
     testReverseIter(speed);
@@ -52,13 +52,13 @@ protected:
     double val = *rinterp;
     //ASSERT_EQ(val,wt[wt.size()-1]);
     while (rinterp) {
-      EXPECT_FLOAT_EQ(val,*(rinterp++)) << "when speed = " << speed;
+      EXPECT_FLOAT_EQ(*(rinterp++),val) << "when speed = " << speed;
       val -= speed;
     }
   }
 
   void testCopy(int len) {
-    Wavetable<double> wt_new(dynamic_cast<Waveform<double>&>(wt), 1.0, len);
+    Wavetable<double> wt_new(dynamic_cast<Wavetable<double>&>(wt), 1.0, len);
     EXPECT_EQ(wt_new.size(), len);  //Length should be correct
     double speed = (double)4/(double)len;
     int n = len/4;
