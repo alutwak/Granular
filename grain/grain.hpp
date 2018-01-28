@@ -13,8 +13,8 @@ namespace audioelectric {
 
     class granulator {
     public:
-      granulator(const typename Waveform<T>::interpolator& interp_this,
-                 const typename Waveform<T>::interpolator& interp_other);
+      granulator(const typename Waveform<T>::phasor& interp_this,
+                 const typename Waveform<T>::phasor& phasor_other);
       granulator(const granulator& other);
       granulator& operator=(const granulator& other);
       granulator& operator++(void);
@@ -22,8 +22,8 @@ namespace audioelectric {
       T operator*(void) const;
       operator bool(void) const;
     private:
-      typename Waveform<T>::interpolator _interp_this;
-      typename Waveform<T>::interpolator _interp_other;
+      typename Wavetable<T>::phasor _phasor_this;
+      typename Waveform<T>::phasor _phasor_other;
     };
 
     /*!\brief Creates a waveform of size 0
@@ -42,13 +42,13 @@ namespace audioelectric {
     
     /*!\brief Copies a sample to a new length using interpolation
      */
-    Grain(const Waveform<T>& other, std::size_t len, InterpType it=InterpType::LINEAR);
+    Grain(const Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
 
     //~Grain(void);
 
-    granulator gmake(long start, double speed, const typename Waveform<T>::interpolator& interp_other) const;
+    granulator gmake(long start, double speed, const typename Waveform<T>::phasor& phasor_other) const;
 
-    granulator rgmake(long start, double speed, const typename Waveform<T>::interpolator& interp_other) const;
+    granulator rgmake(long start, double speed, const typename Waveform<T>::phasor& phasor_other) const;
     
   };
   

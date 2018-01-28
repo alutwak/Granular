@@ -17,8 +17,8 @@ double interp(std::vector<double>& v, double speed, int idx) {
 
 void TestGrain(std::vector<double>& grn, double gspeed, std::vector<double>& wave, double wspeed) {
   Grain<double> grain(grn.data(), grn.size());
-  Waveform<double> wf(wave.data(), wave.size());
-  auto granulator = grain.gmake(0, gspeed, wf.ibegin(wspeed));
+  Wavetable<double> wt(wave.data(), wave.size());
+  auto granulator = grain.gmake(0, gspeed, wt.pbegin(wspeed));
   int i=0;
   while (granulator) {
     double gval = interp(grn,gspeed,i);
