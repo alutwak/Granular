@@ -46,7 +46,7 @@ namespace audioelectric {
     auto itr = other.pbegin(rate);
     T* p = _data;
     while(itr && (len-- > 0))
-      *p = *itr;
+      *p++ = *itr++;
   }
 
   template<typename T>

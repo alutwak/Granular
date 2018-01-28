@@ -58,14 +58,14 @@ protected:
   }
 
   void testCopy(int len) {
-    Wavetable<double> wt_new(dynamic_cast<Wavetable<double>&>(wt), 1.0, len);
+    double speed = (double)wt.size()/(double)len;
+    Wavetable<double> wt_new(dynamic_cast<Wavetable<double>&>(wt), speed, len);
     EXPECT_EQ(wt_new.size(), len);  //Length should be correct
-    double speed = (double)4/(double)len;
-    int n = len/4;
-    for (int i=0;i<4;i++) {
+    int n = len/wt.size();
+    for (int i=0;i<len;i++) {
       if (i >= n)
-        break;
-      EXPECT_FLOAT_EQ(wt.waveform(i*speed),wt_new[i]);
+      break;
+      EXPECT_FLOAT_EQ(wt.waveform(i*speed),wt_new[i]) << "len: " << len << " i: " << i;
     }
   }
 
