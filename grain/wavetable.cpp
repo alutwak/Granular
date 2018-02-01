@@ -62,19 +62,6 @@ namespace audioelectric {
       return 0;
     return interpLinear(pos);
   }
-
-  template<typename T>
-  typename Wavetable<T>::iterator Wavetable<T>::begin(void)
-  {
-    return iterator(_data);
-  }
-
-  template<typename T>
-  typename Wavetable<T>::iterator Wavetable<T>::end(void)
-  {
-    return iterator(_data+_size);
-  }
-    
   template<typename T>
   typename Waveform<T>::phasor Wavetable<T>::pbegin(double start, double rate) const
   {
@@ -114,6 +101,26 @@ namespace audioelectric {
     return *this;
   }
 
+
+  template<typename T>
+  typename Wavetable<T>::iterator Wavetable<T>::begin(void)
+  {
+    return iterator(_data);
+  }
+
+  template<typename T>
+  typename Wavetable<T>::iterator Wavetable<T>::end(void)
+  {
+    return iterator(_data+_size);
+  }
+
+  template<typename T>
+  void Wavetable<T>::resize(std::size_t len) {
+    if (len == _size)
+      return;
+    alloc(len);
+  }
+  
   /*********************** Private Wavetable *******************************/
 
   template<typename T>
@@ -247,4 +254,19 @@ namespace audioelectric {
 
   template class Wavetable<double>;
   template class Wavetable<float>;
+
+  template<typename T>
+  void GenerateGaussian(Wavetable<T> *wt, std::size_t len, T sigma) {
+    wt->resize(len);
+    T flen = len;
+    T mid = flen/2;
+    T sigma_norm = -2*(sigma*flen)*(sigma*flen);
+    T offset = exp(mid*mid/sigma_norm);
+    T norm = 1.0/(1.0-offset);
+    T* data = wt->data();
+    for (std::size_t i=0; i<len; i++) {
+      T arg = i-mid;
+      data[i] = norm*(exp(arg*arg/sigma_norm)-offset);
+    }
+  }
 }

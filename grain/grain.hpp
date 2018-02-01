@@ -2,6 +2,7 @@
 #pragma once
 
 #include <utility>
+#include <list>
 
 #include "wavetable.hpp"
 
@@ -51,5 +52,5 @@ namespace audioelectric {
     granulator rgmake(long start, double speed, const typename Waveform<T>::phasor& phasor_other) const;
     
   };
-  
+
 }

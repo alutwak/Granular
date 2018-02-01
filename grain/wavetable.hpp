@@ -151,6 +151,8 @@ namespace audioelectric {
      */
     std::size_t size(void) const {return _size;}
 
+    void resize(std::size_t len);
+
     /*!\brief Returns a pointer to the raw data
      */
     T* data(void) {return _data;}
@@ -176,6 +178,19 @@ namespace audioelectric {
     virtual T interpLinear(double pos) const;
     
   };
- 
+
+  /*!\brief Generates a gaussian function and puts it in a wavetable
+   * 
+   * The generated function is: r*(e^(-(x-len/2)^2/sigma)-y), where y is the value of the normal Gaussian at the 
+   * beginning and end of the signal and r renormalizes the signal after that subtraction. This ensures that the signal
+   * begins and ends with a value of zero.
+   *
+   * \param[in,out] wt The Wavetable to fill (this will overwrite any function already in it)
+   * \param len The length of the gaussian function
+   * \param sigma The variance of the gaussian
+   */
+  template<typename T>
+  void GenerateGaussian(Wavetable<T> *wt, std::size_t len, T sigma);
+
 }
 
