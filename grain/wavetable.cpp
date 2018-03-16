@@ -259,14 +259,14 @@ namespace audioelectric {
   void GenerateGaussian(Wavetable<T> *wt, std::size_t len, T sigma) {
     wt->resize(len);
     T flen = len;
-    T mid = flen/2;
+    T mid = -flen/2;
     T sigma_norm = -2*(sigma*flen)*(sigma*flen);
     T offset = exp(mid*mid/sigma_norm);
     T norm = 1.0/(1.0-offset);
     T* data = wt->data();
     for (std::size_t i=0; i<len; i++) {
-      T arg = i-mid;
-      data[i] = norm*(exp(arg*arg/sigma_norm)-offset);
+      mid += 1.0;
+      data[i] = norm*(exp(mid*mid/sigma_norm)-offset);
     }
   }
 }
