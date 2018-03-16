@@ -3,6 +3,7 @@
 #include <sndfile.h>
 #include <portaudio.h>
 
+#include "audioplaybacktest.hpp"
 #include "wavetable.hpp"
 
 using namespace audioelectric;
@@ -89,79 +90,26 @@ TEST_F(SimpleWavetableTest, basic) {
 static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
                       PaStreamCallbackFlags statusFlags, void *wt );
 
-class AudioPlaybackTest : public ::testing::Test {
+class WaveformPlaybackTest : public AudioPlaybackTest {
 protected:
 
-  Wavetable<float> *wt;
-  SF_INFO info;
-  PaStream *stream;
   
   virtual void SetUp(void) {
+    SF_INFO info;
     info.format = 0;
     SNDFILE* testfile = sf_open("testfile.wav", SFM_READ, &info);
     ASSERT_TRUE(testfile) << "unable to open testfile.wav";
-    wt = new Wavetable<float>(info.frames); //We know this is just one channel
+    Wavetable<float> *wt = new Wavetable<float>(info.frames); //We know this is just one channel
     sf_count_t nread = sf_readf_float(testfile, wt->data(), info.frames);
+    wf = dynamic_cast<Waveform<float>*>(wt);
+    samplerate = info.samplerate;
     ASSERT_EQ(nread,info.frames) << "Failed to read entire testfile.wav";
     sf_close(testfile);
   }
 
-  virtual void TearDown(void) {
-    delete wt;
-  }
-
-  void playBack(double speed) {
-    Waveform<float>::phasor interp;
-    ASSERT_FALSE(speed<0.1&&speed>-0.1) << "Speed too close to zero";
-    if (speed>0) {
-      interp = wt->pbegin(speed);
-    }
-    else {
-      interp = wt->rpbegin(-speed);
-    }
-    initPA(interp);
-    while (interp) {}
-    closePA();
-  }
-
-private:
-
-  void initPA(Waveform<float>::phasor& wtiter) {
-    PaError err = Pa_Initialize();
-    ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
-    err = Pa_OpenDefaultStream( &stream,
-                                0,          /* no input channels */
-                                1,          /* mono output */
-                                paFloat32,  /* 32 bit floating point output */
-                                info.samplerate,
-                                256,        /* frames per buffer*/
-                                paCallback, /* this is your callback function */
-                                &wtiter);
-    ASSERT_EQ(err, paNoError) << "PA error when opening stream: " << Pa_GetErrorText(err);
-    err = Pa_StartStream(stream);
-    ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);    
-  }
-
-  void closePA(void) {
-    Pa_StopStream(stream);
-    Pa_CloseStream(stream);
-    Pa_Terminate();
-  }
-  
 };
 
-static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
-               PaStreamCallbackFlags statusFlags, void *wtinterp_data)
-{
-  Waveform<float>::phasor *interp = static_cast<Waveform<float>::phasor*>(wtinterp_data);
-  float *out = (float*)output;
-  while (frames--) {
-    *out++ = *(*interp)++;
-  }
-  return 0;
-}
-
-TEST_F(AudioPlaybackTest, speed) {
+TEST_F(WaveformPlaybackTest, speed) {
   playBack(1);
   playBack(0.5);
   playBack(2);
