@@ -75,15 +75,15 @@ protected:
   }
 
   virtual void playBack(double len, double speed) {
-    std::queue<Grain<float>::granulator> grains;
-    double grain_len = 1/speed;
-    //Create the grains
-    for (int g=0; g<ngrains; g++) {
-      Waveform<float>::phasor phs = source->pbegin(g*grain_len,speed);
-      grains.push(
-        grain->gmake(0, ngrains*speed, phs)
-        );
-    }
+    // std::queue<Grain<float>::granulator> grains;
+    // double grain_len = 1/speed;
+    // //Create the grains
+    // for (int g=0; g<ngrains; g++) {
+    //   Waveform<float>::phasor phs = source->pbegin(g*grain_len,speed);
+    //   grains.push(
+    //     grain->gmake(0, ngrains*speed, phs)
+    //     );
+    // }
     
   }
   

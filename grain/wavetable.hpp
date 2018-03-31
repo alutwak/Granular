@@ -18,30 +18,41 @@ namespace audioelectric {
   public:
 
     /*!\brief An iterator that generalizes element access to allow for interpolation between elements
+     * 
      */
     class interpolator : public Waveform<T>::phasor_impl {
     protected:
+
       friend class Wavetable;
-      interpolator(const Wavetable<T>& wt, double start, double rate);
-      interpolator(const Wavetable<T>& wt, long start_pos, double rate);
+      using ph_im = typename Waveform<T>::phasor_impl;
+
+      // /*!\brief Constructs an interpolator that starts at a particular sample in the wavetable.
+      //  */
+      // interpolator(const Wavetable<T>& wt, long start_pos, double rate);
       
+      /*!\brief Constructs an interpolator that starts at an interpolated position in the wavetable. 
+       * 
+       * See the discussion of how position relates to phase and rate in the Waveform::phasor_impl class documentation.
+       * 
+       * \param wt The Wavetable to iterate over.
+       * \param start The starting position in the Wavetable
+       * \param rate The rate at which to iterate over the Wavetable. Positive rate -> forward iteration, negative rate -> 
+       *             reverse iteration.
+       */
+      interpolator(const Wavetable<T>& wt, double start, double rate);
+
       /*!\brief Creates a vari-rate interpolator for which the rate is seet by another interpolator
        */ 
       //interpolator(const Wavetable<T>* wf, long start_pos, std::unique_ptr<typename Waveform<T>::phasor> vel_interp);
       interpolator(const interpolator& other);
       //interpolator& operator=(const interpolator& other);
-      interpolator operator+(long n) const;                     //!<\brief Random access +
+      interpolator operator+(long n) const;                 //!<\brief Random access +
       T value(void) const;                                  //!<\brief Data retrieval (not a reference)
       operator bool(void) const;
-
-      virtual void increment(void);
 
       virtual typename Waveform<T>::phasor_impl* copy(void);
       
     private:
-      double _rate;
-      long _dir;
-      long _pos;
       long _end;
       const Wavetable<T>& _wt;
 
@@ -91,8 +102,13 @@ namespace audioelectric {
 
     /*!\brief Returns the interpolated value at a position in the waveform.
      * 
-     * This is a generalized form of the integer-related operator[], in which points between the integer positions are 
-     * interpolated.
+     * The position is a generalized index of the samples in the waveform, such that an integer position will return 
+     * the same value as that returned by Wavetable[], and a non-integer position will return an interpolated value as though
+     * the waveform were continuous. 
+     * 
+     * Positions outside of the waveform -- those less than 0 and greater than the size of the waveform (in samples) -- will 
+     * return a value of 0. This is done so that a Wavetable can be easily mixed with other Waveforms without having to worry
+     * about bounds. 
      * 
      * \param pos The position on the waveform
      * \return The interpolated value at pos

@@ -25,6 +25,35 @@ namespace audioelectric {
     class phasor;
     
     /*!\brief An iterator-like class that increments the phase of the waveform at a certain rate
+     * 
+     * The phase is tracked as an integer value and is simply incremented or decremented, depending on the direction,
+     * on each call to increment. The normalized time (with a sample rate of 1Hz) at any position in the waveform is 
+     * rate*phase. 
+     * 
+     * In the following discussion, we need to differentiate between the phase of the phasor, which we'll just call "phase",
+     * and the phase of the Waveform which we'll call the "position". 
+     * 
+     * Positions in functions of this class are given in normalized time (a unit of samples, or in seconds if the sampling
+     * frequency is 1Hz). "Rates" are given in positions/iteration, or, to put it slightly differently, in
+     * normalized-seconds/iteration. This means that when you give a starting position to the constructor, or query the
+     * current position, the unit you use is **seconds*samples/second**, or just **samples**. The unit of a rate is
+     * **(seconds*samples/second)/iteration**, or just **samples/iteration**. The unit of phase is also in samples, but 
+     * these are samples of the phasor, which are not the same units as the samples of the waveform. Therefore, we'll use
+     * call these **iterations** to differentiate them.
+     * 
+     * In most cases when you give a starting position, or you query the current position, you're mostly concerned with
+     * where the phasor is in the Waveform, and not where it is in its own time frame.
+     *
+     * Some examples:
+     * 
+     * 1) In general, the relationship between postion, phase and rate is: position = rate*phase.
+     * 
+     * 2) If the rate is 3.2, and the phase is 15, then the position in the Waveform will be 3.2*15=48 (samples).  If the
+     * sampling rate is then 48k samples/second, the true time will be 48/48000 = 1ms, also in the Waveform. The time in 
+     * the phasor will simply be 15 iterations, or 15/48000 = 0.3125ms. Note that 1/3.2 = 0.3125.
+     * 
+     * 3) If you give a start position of 4 and the rate is 0.3, then phase = floor(4/0.3) = 13. 
+     * 
      */
     class phasor_impl {
     protected:
@@ -36,7 +65,18 @@ namespace audioelectric {
       long _phase;              //!< The current phase
       const Waveform<T>& _wf;   //!< The waveform that we're phasing
 
+      /*!\brief Constructs a phasor that starts at a particular position in the waveform. 
+       * 
+       * See the discussion in the phasor_impl class documentation on how the start position relates to the phase
+       * and rate of the phasor.
+       * 
+       * \param wf The Waveform to iterate over.
+       * \param start The starting position in the Waveform
+       * \param rate The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
+       *             reverse iteration.
+       */
       phasor_impl(const Waveform<T>& wf, double start, double rate);
+
       phasor_impl(const phasor_impl& other);
       //phasor_impl& operator=(const phasor_impl& other);
       virtual T value(void) const;          //!<\brief Data retrieval (not a reference)
@@ -52,8 +92,19 @@ namespace audioelectric {
       bool operator>=(const phasor_impl& other) const;
 
       /*!\brief Sets the rate (useful for vari-rate iterations)
+       * 
+       * \todo Write code here to make sure that we adjust the phase when we change the rate or else the position in the
+       * waveform will change when the rate changes.
        */
       void setRate(double rate);
+
+      /*!\brief Returns the current position in the waveform
+       */
+      double getPosition(void) {return _rate*_phase;}
+
+      /*!\brief Returns the current phase of the phasor
+       */
+      long getPhase(void) {return _phase;}
 
       /*!\brief Copies this phasor implementation
        *
@@ -70,12 +121,12 @@ namespace audioelectric {
     class phasor {
     public:
       phasor(void);
-      phasor(phasor_impl* impl);
       // phasor(const Waveform<T>* wf, double start, double rate);
       
       // /*!\brief Creates a vari-rate phasor for which the rate is seet by another phasor
       //  */ 
       // phasor(const Waveform<T>* wf, double start, const Waveform<T>::phasor vel_interp);
+      phasor(phasor_impl* impl);
       phasor(const phasor& other);
       phasor& operator=(const phasor& other);
       phasor& operator++(void);                 //!<\brief Prefix increment
@@ -92,6 +143,7 @@ namespace audioelectric {
       bool operator>(const phasor& other) const;
       bool operator<=(const phasor& other) const;
       bool operator>=(const phasor& other) const;
+      
     private:
       std::unique_ptr<phasor_impl> _impl;
     };
@@ -103,10 +155,10 @@ namespace audioelectric {
     
     /*!\brief Returns the waveform at a certain phase
      * 
-     * \param phase The phase of the waveform
+     * \param pos The position of the waveform
      * \return The waveform at the given phase
      */
-    virtual T waveform(double phase) const = 0;
+    virtual T waveform(double pos) const = 0;
 
     virtual phasor pbegin(double start, double rate) const;
     virtual phasor pbegin(double rate) const;
