@@ -46,10 +46,14 @@ namespace audioelectric {
     Grain(const Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
 
     //~Grain(void);
+    /*!\brief Generates a forward grain
+     * 
+     * \param start Starting point of the grain (in the original waveform, not the interpolated one)
+     * \param speed The rate at which to advance through the grain (>0, <1 is slower, >1 is faster)
+     */
+    granulator gmake(long start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
 
-    granulator gmake(long start, double speed, const typename Waveform<T>::phasor& phasor_other) const;
-
-    granulator rgmake(long start, double speed, const typename Waveform<T>::phasor& phasor_other) const;
+    granulator rgmake(long start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
     
   };
 

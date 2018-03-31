@@ -40,22 +40,22 @@ namespace audioelectric {
   // }
 
   template<typename T>
-  typename Grain<T>::granulator Grain<T>::gmake(long start, double speed,
+  typename Grain<T>::granulator Grain<T>::gmake(long start, double rate,
                                                 const typename Waveform<T>::phasor& phasor_other) const
 
   {
     return granulator(
-      Wavetable<T>::pbegin(start, speed),
+      Wavetable<T>::pbegin(start, rate),
       phasor_other
       );
   }
 
   template<typename T>
-  typename Grain<T>::granulator Grain<T>::rgmake(long start, double speed,
+  typename Grain<T>::granulator Grain<T>::rgmake(long start, double rate,
                                                  const typename Waveform<T>::phasor& phasor_other) const
   {
     return granulator(
-      Wavetable<T>::rpbegin(start, speed),
+      Wavetable<T>::rpbegin(start, rate),
       phasor_other
       );
   }
