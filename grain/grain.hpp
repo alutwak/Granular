@@ -12,18 +12,18 @@ namespace audioelectric {
   class Grain : public Wavetable<T> {
   public:
 
-    class granulator {
+    class granulator : public Wavetable<T>::interpolator {
     public:
-      granulator(const typename Waveform<T>::phasor& interp_this,
+      granulator(const Grain<T>& grn, double start, double rate,
                  const typename Waveform<T>::phasor& phasor_other);
       granulator(const granulator& other);
-      granulator& operator=(const granulator& other);
-      granulator& operator++(void);
-      granulator operator++(int);
-      T operator*(void) const;
+      //granulator& operator=(const granulator& other);
+      T value(void) const;
       operator bool(void) const;
+      typename Waveform<T>::phasor_impl* copy(void);
+      void increment(void);
+      
     private:
-      typename Wavetable<T>::phasor _phasor_this;
       typename Waveform<T>::phasor _phasor_other;
     };
 
@@ -49,11 +49,12 @@ namespace audioelectric {
     /*!\brief Generates a forward grain
      * 
      * \param start Starting point of the grain (in the original waveform, not the interpolated one)
-     * \param speed The rate at which to advance through the grain (>0, <1 is slower, >1 is faster)
+     * \param rate The rate at which to advance through the grain (>0, <1 is slower, >1 is faster)
+     * \param phasor_other A phasor to modulate with the grainulator
      */
-    granulator gmake(long start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
+    typename Waveform<T>::phasor gmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
 
-    granulator rgmake(long start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
+    typename Waveform<T>::phasor rgmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
     
   };
 

@@ -270,4 +270,7 @@ namespace audioelectric {
       data[i] = norm*(exp(mid*mid/sigma_norm)-offset);
     }
   }
+
+  template void GenerateGaussian<float>(Wavetable<float>*, std::size_t, float);
+  template void GenerateGaussian<double>(Wavetable<double>*, std::size_t, double);  
 }

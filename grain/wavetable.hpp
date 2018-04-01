@@ -26,6 +26,9 @@ namespace audioelectric {
       friend class Wavetable;
       using ph_im = typename Waveform<T>::phasor_impl;
 
+      long _end;
+      const Wavetable<T>& _wt;
+
       // /*!\brief Constructs an interpolator that starts at a particular sample in the wavetable.
       //  */
       // interpolator(const Wavetable<T>& wt, long start_pos, double rate);
@@ -46,16 +49,12 @@ namespace audioelectric {
       //interpolator(const Wavetable<T>* wf, long start_pos, std::unique_ptr<typename Waveform<T>::phasor> vel_interp);
       interpolator(const interpolator& other);
       //interpolator& operator=(const interpolator& other);
-      interpolator operator+(long n) const;                 //!<\brief Random access +
-      T value(void) const;                                  //!<\brief Data retrieval (not a reference)
-      operator bool(void) const;
+      interpolator operator+(long n) const;     //!<\brief Random access +
+      virtual T value(void) const;              //!<\brief Data retrieval (not a reference)
+      virtual operator bool(void) const;
 
       virtual typename Waveform<T>::phasor_impl* copy(void);
       
-    private:
-      long _end;
-      const Wavetable<T>& _wt;
-
       void setEnd(void);
     };
 

@@ -136,13 +136,13 @@ namespace audioelectric {
       operator bool(void) const;
       bool operator==(const phasor& other) const;
       bool operator!=(const phasor& other) const;
-
+      
       /*\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
        */
-      bool operator<(const phasor& other) const;
-      bool operator>(const phasor& other) const;
-      bool operator<=(const phasor& other) const;
-      bool operator>=(const phasor& other) const;
+      virtual bool operator<(const phasor& other) const;
+      virtual bool operator>(const phasor& other) const;
+      virtual bool operator<=(const phasor& other) const;
+      virtual bool operator>=(const phasor& other) const;
       
     private:
       std::unique_ptr<phasor_impl> _impl;

@@ -43,7 +43,7 @@ protected:
     closePA();
   }
 
-private:
+protected:
 
   void initPA(Waveform<float>::phasor& wtiter) {
     PaError err = Pa_Initialize();

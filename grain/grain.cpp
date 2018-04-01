@@ -40,80 +40,81 @@ namespace audioelectric {
   // }
 
   template<typename T>
-  typename Grain<T>::granulator Grain<T>::gmake(long start, double rate,
-                                                const typename Waveform<T>::phasor& phasor_other) const
+  typename Waveform<T>::phasor Grain<T>::gmake(double start, double rate,
+                                               const typename Waveform<T>::phasor& phasor_other) const
 
   {
-    return granulator(
-      Wavetable<T>::pbegin(start, rate),
-      phasor_other
-      );
+    auto granu = new granulator(*this,start,rate,phasor_other);
+    return granu;
   }
 
   template<typename T>
-  typename Grain<T>::granulator Grain<T>::rgmake(long start, double rate,
-                                                 const typename Waveform<T>::phasor& phasor_other) const
+  typename Waveform<T>::phasor Grain<T>::rgmake(double start, double rate,
+                                                const typename Waveform<T>::phasor& phasor_other) const
   {
-    return granulator(
-      Wavetable<T>::rpbegin(start, rate),
-      phasor_other
-      );
+    auto granu = new granulator(*this,start,-rate,phasor_other);
+    return granu;
   }
 
   /******************** granulator ********************/
 
   template<typename T>
-  Grain<T>::granulator::granulator(const typename Waveform<T>::phasor& interp_this,
+  Grain<T>::granulator::granulator(const Grain<T>& grn, double start, double rate,
                                    const typename Waveform<T>::phasor& interp_other) :
-    _phasor_this(interp_this), _phasor_other(interp_other)
+    Wavetable<T>::interpolator(grn,start,rate), _phasor_other(interp_other)
   {
     
   }
 
   template<typename T>
   Grain<T>::granulator::granulator(const granulator& other) :
-    _phasor_this(other._phasor_this), _phasor_other(other._phasor_other)
+    Wavetable<T>::interpolator(other), _phasor_other(other._phasor_other)
   {
     
   }
 
-  template<typename T>
-  typename Grain<T>::granulator& Grain<T>::granulator::operator=(const granulator& other)
-  {
-    if (&other == this)
-      return *this;
-    _phasor_this = other._phasor_this;
-    _phasor_other = other._phasor_other;
-    return *this;
-  }
+  // template<typename T>
+  // typename Grain<T>::granulator& Grain<T>::granulator::operator=(const granulator& other)
+  // {
+  //   if (&other == this)
+  //     return *this;
+  //   _phasor_this = other._phasor_this;
+  //   _phasor_other = other._phasor_other;
+  //   return *this;
+  // }
 
-  template<typename T>
-  typename Grain<T>::granulator& Grain<T>::granulator::operator++(void)
-  {
-    _phasor_this++;
-    _phasor_other++;
-    return *this;
-  }
-
-  template<typename T>
-  typename Grain<T>::granulator Grain<T>::granulator::operator++(int)
-  {
-    auto temp = *this;
-    _phasor_this++;
-    _phasor_other++;
-    return temp;
-  }
+  // template<typename T>
+  // typename Grain<T>::granulator Grain<T>::granulator::operator++(int)
+  // {
+  //   auto temp = *this;
+  //   _phasor_this++;
+  //   _phasor_other++;
+  //   return temp;
+  // }
   
   template<typename T>
-  T Grain<T>::granulator::operator*(void) const
+  T Grain<T>::granulator::value(void) const
   {
-    return *_phasor_this*(*_phasor_other);
+    return Wavetable<T>::interpolator::value()*(*_phasor_other);
   }
 
   template<typename T>
   Grain<T>::granulator::operator bool(void) const
   {
-    return _phasor_this && _phasor_other;
+    return Wavetable<T>::interpolator::operator bool() && _phasor_other;
+  }
+
+  template<typename T>
+  typename Waveform<T>::phasor_impl* Grain<T>::granulator::copy(void)
+  {
+    return new granulator(*this);
+  }
+  
+  template<typename T>
+  void Grain<T>::granulator::increment(void)
+  {
+    Waveform<T>::phasor_impl::increment();
+    _phasor_other++;
   }
 
   template class Grain<double>;

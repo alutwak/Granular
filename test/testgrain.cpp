@@ -55,6 +55,8 @@ protected:
   Wavetable<float> *source;
   Grain<float> *grain;
   SF_INFO info;
+#define VOC_START 1580
+#define VOC_END 55000
 
   virtual void SetUp(void) {
 
@@ -70,21 +72,45 @@ protected:
 
     //Create the grain
     Wavetable<float> gaussian;
-    GenerateGaussian<float>(&gaussian, info.frames, 1);
+    GenerateGaussian<float>(&gaussian, info.frames-VOC_START, 1);
     grain = new Grain<float>(dynamic_cast<Waveform<float>&>(gaussian), 1, gaussian.size());
   }
 
-  virtual void playBack(double len, double speed) {
-    // std::queue<Grain<float>::granulator> grains;
-    // double grain_len = 1/speed;
-    // //Create the grains
-    // for (int g=0; g<ngrains; g++) {
-    //   Waveform<float>::phasor phs = source->pbegin(g*grain_len,speed);
-    //   grains.push(
-    //     grain->gmake(0, ngrains*speed, phs)
-    //     );
-    // }
-    
+  /*!\param g_len the grain length, in milliseconds
+   * \param wf_speed The waveform speed
+   */
+  virtual void playBack(double g_len, double wf_speed) {
+    //Create the grains
+    Waveform<float>::phasor phs;
+    double g_speed = 1000*(double)grain->size()/info.samplerate/g_len;
+    printf("grain speed: %f\n", g_speed);
+    if (wf_speed > 0)
+      phs = source->pbegin(wf_speed, VOC_START);
+    else
+      phs = source->rpbegin(-wf_speed, VOC_END);
+    auto granu = grain->gmake(0, g_speed, phs);
+    initPA(granu);
+    while (granu) {}
+    closePA();
   }
   
 };
+
+TEST_F(GrainPlaybackTest, play_grains) {
+
+  playBack(1000, 1);
+  playBack(500, 1);
+  playBack(250, 1);
+  playBack(100, 1);
+  playBack(50, 1);
+  playBack(25,1);
+  playBack(10,1);
+  playBack(5,1);
+  playBack(1,1);
+  playBack(0,1);
+  playBack(1000,2.3);
+  playBack(1000,-2.3);
+  playBack(5000,1);
+  playBack(100,-2);
+  
+}
