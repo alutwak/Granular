@@ -160,9 +160,24 @@ namespace audioelectric {
      */
     virtual T waveform(double pos) const = 0;
 
-    virtual phasor pbegin(double start, double rate) const;
+    /*!\brief Returns the size of the waveform
+     */
+    virtual std::size_t size(void) const = 0;
+
+    /*!\brief Returns the end of the waveform
+     */
+    virtual double end(void) const = 0;
+
+    virtual phasor pbegin(double rate, double start) const;
+    
+    /*!\brief Returns a phasor that starts at the beginning of the waveform
+     */
     virtual phasor pbegin(double rate) const;
-    virtual phasor rpbegin(double start, double rate) const;
+    
+    virtual phasor rpbegin(double rate, double start) const;
+
+    /*!\brief Returns a reverse phasor that starts at the end of the waveform
+     */
     virtual phasor rpbegin(double rate) const;
 
   };

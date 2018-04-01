@@ -34,22 +34,23 @@ protected:
   
   /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as speed
    */
-  void testIterSpeed(double speed) {
-    auto interp = wt.pbegin(speed);
+  void testIter(double speed, double start=0) {
+    auto interp = wt.pbegin(speed,start);
     auto begin = interp;
     double val = *interp;
-    ASSERT_EQ(val, wt[0]);
+    ASSERT_EQ(val, wt[start]);
     while (interp) {
       EXPECT_TRUE(interp);
       EXPECT_TRUE(interp>=begin);
       EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed;
       val += speed;
     }
-    testReverseIter(speed);
+    testReverseIter(speed,start);
   }
 
-  void testReverseIter(double speed) {
-    auto rinterp = wt.rpbegin(speed);
+  void testReverseIter(double speed, double start) {
+    if (start == 0) start = wt.size()-1;
+    auto rinterp = wt.rpbegin(speed, start);
     double val = *rinterp;
     //ASSERT_EQ(val,wt[wt.size()-1]);
     while (rinterp) {
@@ -66,7 +67,7 @@ protected:
     for (int i=0;i<len;i++) {
       if (i >= n)
       break;
-      EXPECT_FLOAT_EQ(wt.waveform(i*speed),wt_new[i]) << "len: " << len << " i: " << i;
+      EXPECT_FLOAT_EQ(wt.waveform(i*speed),wt_new[i]) << "len: " << len << ", i: " << i << ", speed: " << speed;;
     }
   }
 
@@ -75,12 +76,15 @@ protected:
 TEST_F(SimpleWavetableTest, basic) {
 
   testBasic();
-  testIterSpeed(0.5);
-  testIterSpeed(1.0);
-  testIterSpeed(2.0);
-  testIterSpeed(4.0);
-  testIterSpeed(0.3428);
-  testIterSpeed(1.2864);
+  testIter(0.5);
+  testIter(0.5,1.2);
+  testIter(1.0);
+  testIter(1.0, 2.1);
+  testIter(2.0);
+  testIter(4.0);
+  testIter(0.3428);
+  testIter(1.2864);
+  testIter(1.2864, 0.1);
 
   for (int i=0;i<10;i++)
     testCopy(i);
@@ -110,12 +114,17 @@ protected:
 };
 
 TEST_F(WaveformPlaybackTest, speed) {
-  playBack(1);
-  playBack(0.5);
-  playBack(2);
-  playBack(1.232);
-  playBack(-1);
-  playBack(-0.5);
-  playBack(-2);
-  playBack(-1.232);
+  double end = wf->end();
+  playBack(1, 0);
+  playBack(0.5, 0);
+  playBack(2, 0);
+  playBack(1.232, 0);
+  playBack(1,17850);
+  playBack(4.2,17850);
+  playBack(-1, end);
+  playBack(-0.5, end);
+  playBack(-2, end);
+  playBack(-1.232, end);
+  playBack(-1,35229);
+  playBack(-4.2,35229);
 }

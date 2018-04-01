@@ -10,7 +10,7 @@ namespace audioelectric {
   Waveform<T>::~Waveform(void) {}
   
   template<typename T>
-  typename Waveform<T>::phasor Waveform<T>::pbegin(double start, double rate) const
+  typename Waveform<T>::phasor Waveform<T>::pbegin(double rate, double start) const
   {
     // if (rate<=0.0)
     //   return iend(1);
@@ -20,11 +20,11 @@ namespace audioelectric {
   template<typename T>
   typename Waveform<T>::phasor Waveform<T>::pbegin(double rate) const
   {
-    return pbegin(0,rate);
+    return pbegin(rate,0);
   }
 
   template<typename T>
-  typename Waveform<T>::phasor Waveform<T>::rpbegin(double start, double rate) const
+  typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
   {
     // if (rate<=0.0)
     //   rate = 1;
@@ -35,7 +35,7 @@ namespace audioelectric {
   template<typename T>
   typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate) const
   {
-    return rpbegin(0,rate);
+    return rpbegin(rate,end());
   }
   
   /*********************** phasor_impl *******************************/

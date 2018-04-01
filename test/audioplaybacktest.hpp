@@ -29,14 +29,14 @@ protected:
       delete wf;
   }
 
-  virtual void playBack(double speed) {
+  virtual void playBack(double speed, double start) {
     Waveform<float>::phasor interp;
     ASSERT_FALSE(speed<0.1&&speed>-0.1) << "Speed too close to zero";
     if (speed>0) {
-      interp = wf->pbegin(speed);
+      interp = wf->pbegin(speed, start);
     }
     else {
-      interp = wf->rpbegin(-speed);
+      interp = wf->rpbegin(-speed, start);
     }
     initPA(interp);
     while (interp) {}

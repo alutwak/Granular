@@ -129,7 +129,7 @@ namespace audioelectric {
      * \param start The starting position (in the original waveform, not the interpolated one)
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    typename Waveform<T>::phasor pbegin(double start, double rate) const;
+    typename Waveform<T>::phasor pbegin(double rate, double start) const;
 
     /*!\brief Returns a forward interpolator that points to the beginning of the waveform \see ibegin(long,double)
      *
@@ -145,10 +145,10 @@ namespace audioelectric {
      *
      * Like the forward interpolator, there is no bounds or rate checking. The caller must take care.
      * 
-     * \param start The starting position (in the original waveform, not the interpolated one)
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
+     * \param start The starting position (in the original waveform, not the interpolated one)
      */
-    typename Waveform<T>::phasor rpbegin(double start, double rate) const;
+    typename Waveform<T>::phasor rpbegin(double rate, double start) const;
 
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
      *
@@ -165,7 +165,9 @@ namespace audioelectric {
     
     /*!\brief Returns the number of samples in the waveform
      */
-    std::size_t size(void) const {return _size;}
+    virtual std::size_t size(void) const {return _size;}
+
+    virtual double end(void) const {return _size-1;}
 
     void resize(std::size_t len);
 
