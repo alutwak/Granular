@@ -69,7 +69,7 @@ namespace audioelectric {
     // if (rate<=0.0)
     //   return iend(1);
     auto interp = new interpolator(*this, start, rate);
-    return interp;  //Casts to phasor_impl and constructs a phasor
+    return Waveform<T>::make_phasor(interp);  //Casts to phasor_impl and constructs a phasor
   }
 
   template<typename T>
@@ -84,7 +84,7 @@ namespace audioelectric {
     // if (rate<=0.0)
     //   rate = 1;
     auto interp = new interpolator(*this,start,-rate);
-    return interp; //Casts to phasor_impl and constructs a phasor
+    return Waveform<T>::make_phasor(interp); //Casts to phasor_impl and constructs a phasor
   }
 
   template<typename T>

@@ -8,16 +8,37 @@
 
 namespace audioelectric {
 
+  /*!\brief A grain is basically a wavetable that can generate a grains of sound
+   * 
+   * The only thing special about this class is the granulator class that it contains and the gmake and rgmake
+   * functions. A Grain works by using its waveform as an envelope to modulate the amplitude of another Waveform.
+   * Typically, Grains last a short period of time (on the order of about 10 to 100ms), though there's no reason that
+   * they couldn't be longer or shorter. 
+   * 
+   * By itself, a single grain is generatlly not that interesting, but when many grains are played together, in either a 
+   * random or or structured arrangement, some very interesting things can happen. The best way to do that is with a Cloud
+   * class.
+   */
   template<typename T>
   class Grain : public Wavetable<T> {
   public:
 
+    /*!\brief An interpolator that also holds a phasor and 
+     */
     class granulator : public Wavetable<T>::interpolator {
+      
     public:
+      virtual ~granulator(void) {}
+      
+    protected:
+      friend class Grain;
       granulator(const Grain<T>& grn, double start, double rate,
                  const typename Waveform<T>::phasor& phasor_other);
       granulator(const granulator& other);
       //granulator& operator=(const granulator& other);
+
+      /*!\brief The product of the current interpolated values of the Grain and the phasor
+       */
       T value(void) const;
       operator bool(void) const;
       typename Waveform<T>::phasor_impl* copy(void);

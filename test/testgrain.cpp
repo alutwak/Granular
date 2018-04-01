@@ -83,7 +83,7 @@ protected:
     //Create the grains
     Waveform<float>::phasor phs;
     double g_speed = 1000*(double)grain->size()/info.samplerate/g_len;
-    printf("grain speed: %f\n", g_speed);
+    //printf("grain speed: %f\n", g_speed);
     if (wf_speed > 0)
       phs = source->pbegin(wf_speed, VOC_START);
     else

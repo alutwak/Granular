@@ -56,6 +56,9 @@ namespace audioelectric {
      * 
      */
     class phasor_impl {
+    public:
+      virtual ~phasor_impl(void) {}
+
     protected:
       friend class phasor;
       friend class Waveform;
@@ -78,14 +81,14 @@ namespace audioelectric {
       phasor_impl(const Waveform<T>& wf, double start, double rate);
 
       phasor_impl(const phasor_impl& other);
-      //phasor_impl& operator=(const phasor_impl& other);
-      virtual T value(void) const;          //!<\brief Data retrieval (not a reference)
-      virtual operator bool(void) const;
+
+      virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
+      virtual operator bool(void) const;                //!<\brief Always returns true
+
+      /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
+       */
       bool operator==(const phasor_impl& other) const;
       bool operator!=(const phasor_impl& other) const;
-
-      /*\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
-       */
       bool operator<(const phasor_impl& other) const;
       bool operator>(const phasor_impl& other) const;
       bool operator<=(const phasor_impl& other) const;
@@ -117,8 +120,21 @@ namespace audioelectric {
        */
       virtual void increment(void);
     };
- 
-    class phasor {
+
+    /*!\brief The public interfaces for the phasor, which is an iterator-like class used for generalized iteration over
+     *        Waveforms.
+     * 
+     * This wraps a subclass of the phasor_impl and for the most part it acts just like a common iterator, except that
+     * the phasor_impls that it wraps usually have a more complicated behavior than common iterators. 
+     * 
+     * The phasor provides access to interpolated, modulated, or otherwise mathematically complex Waveforms with a simple,
+     * familiar interface. It is not meant to be inherited because all subclasses of Waveform deal directly in straight
+     * phasors. Instead, the phasor_impl class should be inherited and passed in in the constructor.
+     * 
+     * phasors are initially created only through the Waveform::make_phasor() function. 
+     * 
+     */
+    class phasor final {
     public:
       phasor(void);
       // phasor(const Waveform<T>* wf, double start, double rate);
@@ -126,23 +142,37 @@ namespace audioelectric {
       // /*!\brief Creates a vari-rate phasor for which the rate is seet by another phasor
       //  */ 
       // phasor(const Waveform<T>* wf, double start, const Waveform<T>::phasor vel_interp);
-      phasor(phasor_impl* impl);
+
       phasor(const phasor& other);
       phasor& operator=(const phasor& other);
       phasor& operator++(void);                 //!<\brief Prefix increment
       phasor operator++(int);                   //!<\brief Postfix increment
-      //phasor operator+(long n) const;           //!<\brief Random access +
-      T operator*(void) const;          //!<\brief Data retrieval (not a reference)
+
+      /*!\brief Retrieves the current value. Note that this is not a reference, as it would be with a common iterator
+       * 
+       */
+      T operator*(void) const;                  
       operator bool(void) const;
+      
+      /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
+       */
       bool operator==(const phasor& other) const;
       bool operator!=(const phasor& other) const;
+      bool operator<(const phasor& other) const;
+      bool operator>(const phasor& other) const;
+      bool operator<=(const phasor& other) const;
+      bool operator>=(const phasor& other) const;
+
+    protected:
+      friend Waveform<T>;
       
-      /*\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
+      /*!\brief Constructs a phasor with a phasor_impl pointer
+       * 
+       * Note: this will take posession of the phasor_impl pointer so this should not be deleted anywhere else. 
+       * 
+       * \param impl The phasor_impl to wrap
        */
-      virtual bool operator<(const phasor& other) const;
-      virtual bool operator>(const phasor& other) const;
-      virtual bool operator<=(const phasor& other) const;
-      virtual bool operator>=(const phasor& other) const;
+      phasor(phasor_impl* impl);
       
     private:
       std::unique_ptr<phasor_impl> _impl;
@@ -167,6 +197,10 @@ namespace audioelectric {
     /*!\brief Returns the end of the waveform
      */
     virtual double end(void) const = 0;
+
+    /*!\brief Provides access to phasor's protected constructor
+     */
+    phasor make_phasor(phasor_impl* impl) const {return phasor(impl);}
 
     virtual phasor pbegin(double rate, double start) const;
     

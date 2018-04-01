@@ -5,8 +5,10 @@
 
 namespace audioelectric {
 
+  /*!\brief Different types of interpolation
+   */
   enum class InterpType {
-    LINEAR,
+    LINEAR,     //!< Linear interpolation
   };
 
   
@@ -21,18 +23,18 @@ namespace audioelectric {
      * 
      */
     class interpolator : public Waveform<T>::phasor_impl {
+    public:
+      
+      virtual ~interpolator(void) {}
+
     protected:
 
       friend class Wavetable;
       using ph_im = typename Waveform<T>::phasor_impl;
 
-      long _end;
-      const Wavetable<T>& _wt;
+      long _end;                //!< The end of the wavetable in iterations (the units of the phase)
+      const Wavetable<T>& _wt;  //!< The wavetable to interpolate over
 
-      // /*!\brief Constructs an interpolator that starts at a particular sample in the wavetable.
-      //  */
-      // interpolator(const Wavetable<T>& wt, long start_pos, double rate);
-      
       /*!\brief Constructs an interpolator that starts at an interpolated position in the wavetable. 
        * 
        * See the discussion of how position relates to phase and rate in the Waveform::phasor_impl class documentation.
@@ -48,16 +50,28 @@ namespace audioelectric {
        */ 
       //interpolator(const Wavetable<T>* wf, long start_pos, std::unique_ptr<typename Waveform<T>::phasor> vel_interp);
       interpolator(const interpolator& other);
-      //interpolator& operator=(const interpolator& other);
-      interpolator operator+(long n) const;     //!<\brief Random access +
-      virtual T value(void) const;              //!<\brief Data retrieval (not a reference)
-      virtual operator bool(void) const;
 
+      interpolator operator+(long n) const;     //!<\brief Random access +
+
+      virtual T value(void) const;              //!<\brief Returns the value of the Wavetable at the current phase
+
+      /*!\brief Returns false if the current phase is outside the bounds of the wavetable. Otherwise returns true.
+       */
+      virtual operator bool(void) const;        
+
+      /*!\brief Copies this interpolator and returns a pointer to the newly constructed object
+       */
       virtual typename Waveform<T>::phasor_impl* copy(void);
+
+    private:
       
+      /*!\brief Sets the value of the _end member.
+       */
       void setEnd(void);
     };
 
+    /*!\brief A common iterator for the Wavetable. This works just like that of a vector's iterator
+     */
     class iterator {
     public:
       iterator(T* data) : _data(data) {};
@@ -162,12 +176,17 @@ namespace audioelectric {
     iterator begin(void);
     iterator end(void);
     
-    /*!\brief Returns the number of samples in the waveform
+    /*!\brief Returns the number of samples in the Wavetable
      */
     virtual std::size_t size(void) const {return _size;}
 
+    /*!\brief Returns the end sample of the Wavetable
+     *
+     */
     virtual double end(void) const {return _size-1;}
 
+    /*!\brief Resizes the Wavetable. All data is cleared
+     */
     void resize(std::size_t len);
 
     /*!\brief Returns a pointer to the raw data

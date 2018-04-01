@@ -84,7 +84,7 @@ namespace audioelectric {
   template<typename T>
   bool Waveform<T>::phasor_impl::operator==(const Waveform<T>::phasor_impl& other) const
   {
-    return _phase==other._phase; //_wf == other._wf (let's not worry about this right now)
+    return (_dir*_phase*_rate)==(other._dir*other._phase*other._rate);
   }
 
   template<typename T>
@@ -181,7 +181,7 @@ namespace audioelectric {
   template<typename T>
   Waveform<T>::phasor::operator bool(void) const
   {
-    return *_impl;
+    return _impl && *_impl;  //First make sure we have an _impl, then get its boo value
   }
   
   template<typename T>

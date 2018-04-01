@@ -45,7 +45,7 @@ namespace audioelectric {
 
   {
     auto granu = new granulator(*this,start,rate,phasor_other);
-    return granu;
+    return Waveform<T>::make_phasor(granu);
   }
 
   template<typename T>
@@ -53,7 +53,7 @@ namespace audioelectric {
                                                 const typename Waveform<T>::phasor& phasor_other) const
   {
     auto granu = new granulator(*this,start,-rate,phasor_other);
-    return granu;
+    return Waveform<T>::make_phasor(granu);
   }
 
   /******************** granulator ********************/
