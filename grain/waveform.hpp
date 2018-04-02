@@ -7,7 +7,6 @@
 
 namespace audioelectric {
 
-
   /*!\brief Provides an iterface for a variety of waveforms. These could be waveforms that get generated on the fly
    * or wavetables, samples, envelopes, etc...
    *
@@ -151,7 +150,7 @@ namespace audioelectric {
       /*!\brief Retrieves the current value. Note that this is not a reference, as it would be with a common iterator
        * 
        */
-      T operator*(void) const;                  
+      T operator*(void) const;
       operator bool(void) const;
       
       /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
@@ -168,7 +167,7 @@ namespace audioelectric {
       
       /*!\brief Constructs a phasor with a phasor_impl pointer
        * 
-       * Note: this will take posession of the phasor_impl pointer so this should not be deleted anywhere else. 
+       * \note This will take posession of the phasor_impl pointer so this should not be deleted anywhere else. 
        * 
        * \param impl The phasor_impl to wrap
        */

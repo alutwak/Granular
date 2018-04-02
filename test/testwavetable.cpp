@@ -94,7 +94,7 @@ TEST_F(SimpleWavetableTest, basic) {
 static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
                       PaStreamCallbackFlags statusFlags, void *wt );
 
-class WaveformPlaybackTest : public AudioPlaybackTest {
+class WavetablePlaybackTest : public AudioPlaybackTest {
 protected:
 
   
@@ -103,9 +103,9 @@ protected:
     info.format = 0;
     SNDFILE* testfile = sf_open("testfile.wav", SFM_READ, &info);
     ASSERT_TRUE(testfile) << "unable to open testfile.wav";
-    Wavetable<float> *wt = new Wavetable<float>(info.frames); //We know this is just one channel
+    wt = new Wavetable<float>(info.frames); //We know this is just one channel
     sf_count_t nread = sf_readf_float(testfile, wt->data(), info.frames);
-    wf = dynamic_cast<Waveform<float>*>(wt);
+    //wt = dynamic_cast<Waveform<float>*>(wt);
     samplerate = info.samplerate;
     ASSERT_EQ(nread,info.frames) << "Failed to read entire testfile.wav";
     sf_close(testfile);
@@ -113,18 +113,34 @@ protected:
 
 };
 
-TEST_F(WaveformPlaybackTest, speed) {
-  double end = wf->end();
+TEST_F(WavetablePlaybackTest, speed) {
+  double end = wt->end();
+  printf("Cycling over a short section at normal rate...\n");
+  playBack(1, 17850, 27850, true);
+  printf("Cycling backward over a short section at normal rate...\n");  
+  playBack(-1, 27850, 17850, true);
+  printf("Cycling over a short section at double rate...\n");  
+  playBack(2, 17850, 27850, true);
+  printf("Cycling backward over a short section at double rate...\n");    
+  playBack(-2, 27850, 17850, true);
+
+  printf("Cycling over an empty section. Should be silent...\n");  
+  playBack(-1, 17850, 27850, true);
+  printf("Playing back the whole wavetable at various speeds...\n");
   playBack(1, 0);
   playBack(0.5, 0);
   playBack(2, 0);
   playBack(1.232, 0);
+  printf("Playing back the whole wavetable backward at various speeds...\n");  
   playBack(1,17850);
   playBack(4.2,17850);
+  printf("Playing back the whole wavetable backward at various speeds...\n");  
   playBack(-1, end);
   playBack(-0.5, end);
   playBack(-2, end);
   playBack(-1.232, end);
+  printf("Playing back part of wavetable backward at various speeds...\n");
   playBack(-1,35229);
   playBack(-4.2,35229);
+  
 }

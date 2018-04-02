@@ -1,8 +1,10 @@
+#include <chrono>
+
 #include <gtest/gtest.h>
 #include <sndfile.h>
 #include <portaudio.h>
 
-#include "waveform.hpp"
+#include "wavetable.hpp"
 
 using namespace audioelectric;
 
@@ -20,27 +22,44 @@ static int paCallback(const void *input, void *output, unsigned long frames, con
 class AudioPlaybackTest : public ::testing::Test {
 protected:
 
-  Waveform<float> *wf = nullptr;
+  Wavetable<float> *wt = nullptr;
   double samplerate;
   PaStream *stream;
   
   virtual void TearDown(void) {
-    if (wf != nullptr)
-      delete wf;
+    if (wt != nullptr)
+      delete wt;
   }
 
-  virtual void playBack(double speed, double start) {
+  virtual void playBack(double speed, double start, double end=-1, bool cycle=false) {
     Waveform<float>::phasor interp;
+    printf("\nPlayback speed: %f\n",speed);
+    printf("Start position: %f\n",start);
+    printf("End position: %f\n",end);
+    if (cycle) printf("Cycling...");
     ASSERT_FALSE(speed<0.1&&speed>-0.1) << "Speed too close to zero";
     if (speed>0) {
-      interp = wf->pbegin(speed, start);
+      interp = wt->pbegin(speed, start, end, cycle);
     }
     else {
-      interp = wf->rpbegin(-speed, start);
+      interp = wt->rpbegin(-speed, start, end, cycle);
     }
     initPA(interp);
-    while (interp) {}
+    std::chrono::system_clock::time_point tstart = std::chrono::system_clock::now();
+    long playtime = 0;
+    while (interp && (playtime < 5000)) {
+      playtime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tstart).count();
+    }
     closePA();
+    printf("playtime: %ld, %d\n", playtime, (bool)interp);
+    if (cycle && speed*start < speed*end) {
+      EXPECT_TRUE((bool)interp);
+      EXPECT_GE(playtime, 5000);
+    }
+    else {
+      EXPECT_FALSE((bool)interp);
+      EXPECT_LT(playtime, 5000);
+    }
   }
 
 protected:
@@ -58,7 +77,8 @@ protected:
                                 &wtiter);
     ASSERT_EQ(err, paNoError) << "PA error when opening stream: " << Pa_GetErrorText(err);
     err = Pa_StartStream(stream);
-    ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);    
+    ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);
+    //printf("Playback sample rate: %.0fHz\n", samplerate);
   }
 
   void closePA(void) {

@@ -55,8 +55,8 @@ protected:
   Wavetable<float> *source;
   Grain<float> *grain;
   SF_INFO info;
-#define VOC_START 1580
-#define VOC_END 55000
+#define VOC_START 6900
+#define VOC_END 240000
 
   virtual void SetUp(void) {
 
@@ -83,7 +83,7 @@ protected:
     //Create the grains
     Waveform<float>::phasor phs;
     double g_speed = 1000*(double)grain->size()/info.samplerate/g_len;
-    //printf("grain speed: %f\n", g_speed);
+    printf("Grain length: %fms\n", g_len);
     if (wf_speed > 0)
       phs = source->pbegin(wf_speed, VOC_START);
     else

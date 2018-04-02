@@ -64,11 +64,9 @@ namespace audioelectric {
   }
   
   template<typename T>
-  typename Waveform<T>::phasor Wavetable<T>::pbegin(double rate, double start) const
+  typename Waveform<T>::phasor Wavetable<T>::pbegin(double rate, double start, double end, bool cycle) const
   {
-    // if (rate<=0.0)
-    //   return iend(1);
-    auto interp = new interpolator(*this, start, rate);
+    auto interp = new interpolator(*this, rate, start, end, cycle);
     return Waveform<T>::make_phasor(interp);  //Casts to phasor_impl and constructs a phasor
   }
 
@@ -79,11 +77,9 @@ namespace audioelectric {
   }
 
   template<typename T>
-  typename Waveform<T>::phasor Wavetable<T>::rpbegin(double rate, double start) const
+  typename Waveform<T>::phasor Wavetable<T>::rpbegin(double rate, double start, double end, bool cycle) const
   {
-    // if (rate<=0.0)
-    //   rate = 1;
-    auto interp = new interpolator(*this,start,-rate);
+    auto interp = new interpolator(*this, -rate, start, end, cycle);
     return Waveform<T>::make_phasor(interp); //Casts to phasor_impl and constructs a phasor
   }
 
@@ -104,13 +100,13 @@ namespace audioelectric {
 
 
   template<typename T>
-  typename Wavetable<T>::iterator Wavetable<T>::begin(void)
+  typename Wavetable<T>::iterator Wavetable<T>::ibegin(void)
   {
     return iterator(_data);
   }
 
   template<typename T>
-  typename Wavetable<T>::iterator Wavetable<T>::end(void)
+  typename Wavetable<T>::iterator Wavetable<T>::iend(void)
   {
     return iterator(_data+_size);
   }
@@ -153,11 +149,15 @@ namespace audioelectric {
   /*********************** interpolator *******************************/
 
   template<typename T>
-  Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, double start, double rate) :
-    ph_im(wt, start, rate), _wt(wt)
+  Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, double rate, double start, double end, bool cycle) :
+    ph_im(wt, start, rate), _wt(wt), _cycle(cycle)
   {
     //ph_im::_phase = start/ph_im::_rate;
-    setEnd();
+    _start = ph_im::_phase;
+    if (end < 0)
+      setEnd(-1);
+    else
+      setEnd(end/ph_im::_rate);
   }
 
   // template<typename T>
@@ -169,9 +169,9 @@ namespace audioelectric {
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>::interpolator& other) :
-    ph_im(other), _wt(other._wt)
+    ph_im(other), _wt(other._wt), _cycle(other._cycle), _start(other._start)
   {
-    setEnd();
+    setEnd(other._end);
   }
 
   // template<typename T>
@@ -195,23 +195,40 @@ namespace audioelectric {
   template<typename T>
   Wavetable<T>::interpolator::operator bool(void) const
   {
-    return ph_im::_dir > 0 ? ph_im::_phase<_end : ph_im::_phase>_end;
+    return checkPhase(ph_im::_phase);
   }
 
   template<typename T>
-  void Wavetable<T>::interpolator::setEnd(void)
+  bool Wavetable<T>::interpolator::checkPhase(long phase) const
   {
-    if (ph_im::_dir > 0)
-      _end = 1 + (long)((double)(_wt._size-1)/ph_im::_rate);
-    else
-      _end = -1;
+    return ph_im::_dir > 0 ? phase<_end : phase>_end;
   }
 
-  // template<typename T>
-  // void Wavetable<T>::interpolator::increment(void)
-  // {
-  //   ph_im::_phase+=_dir;
-  // }
+  template<typename T>
+  void Wavetable<T>::interpolator::setEnd(long end)
+  {
+    if (end>=0) {
+      _end = end;
+    }
+    else {
+      if (ph_im::_dir > 0)
+        _end = 1 + (long)((double)(_wt._size-1)/ph_im::_rate);
+      else
+        _end = -1;
+    }
+  }
+
+  template<typename T>
+  void Wavetable<T>::interpolator::increment(void)
+  {
+    long nextphase = ph_im::_phase+ph_im::_dir;
+    if (_cycle && !checkPhase(nextphase)) {
+      //We've reached the end of the waveform, cycle around
+      ph_im::_phase = _start + nextphase-_end;
+    }
+    else
+      ph_im::_phase = nextphase;
+  }
 
   template<typename T>
   typename Waveform<T>::phasor_impl* Wavetable<T>::interpolator::copy(void) {
