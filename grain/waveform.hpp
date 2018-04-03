@@ -7,6 +7,9 @@
 
 namespace audioelectric {
 
+  template<typename T>
+  class Constant;
+
   /*!\brief Provides an iterface for a variety of waveforms. These could be waveforms that get generated on the fly
    * or wavetables, samples, envelopes, etc...
    *
@@ -81,6 +84,8 @@ namespace audioelectric {
 
       phasor_impl(const phasor_impl& other);
 
+      phasor_impl(double constant);
+
       virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
       virtual operator bool(void) const;                //!<\brief Always returns true
 
@@ -94,19 +99,20 @@ namespace audioelectric {
       bool operator>=(const phasor_impl& other) const;
 
       /*!\brief Sets the rate (useful for vari-rate iterations)
-       * 
-       * \todo Write code here to make sure that we adjust the phase when we change the rate or else the position in the
-       * waveform will change when the rate changes.
        */
       void setRate(double rate);
 
       /*!\brief Returns the current position in the waveform
        */
-      double getPosition(void) {return _rate*_phase;}
+      double getPosition(void) const {return _rate*_phase;}
+
+      /*!\brief Sets the current position in the waveform
+       */
+      void setPosition(double pos) {_phase = pos/_rate;}
 
       /*!\brief Returns the current phase of the phasor
        */
-      long getPhase(void) {return _phase;}
+      long getPhase(void) const {return _phase;}
 
       /*!\brief Copies this phasor implementation
        *
@@ -162,6 +168,22 @@ namespace audioelectric {
       bool operator<=(const phasor& other) const;
       bool operator>=(const phasor& other) const;
 
+      /*!\brief Sets the rate (useful for vari-rate iterations)
+       */
+      void setRate(double rate) {_impl->setRate(rate);}
+
+      /*!\brief Returns the current position in the waveform
+       */
+      double getPosition(void) const {return _impl->getPosition();}
+
+      /*!\brief Sets the current position in the waveform
+       */
+      void setPosition(double pos) {_impl->setPosition(pos);}
+
+      /*!\brief Returns the current phase of the phasor
+       */
+      long getPhase(void) const {return _impl->getPhase();}
+
     protected:
       friend Waveform<T>;
       
@@ -213,6 +235,34 @@ namespace audioelectric {
      */
     virtual phasor rpbegin(double rate) const;
 
+  };
+
+  template<typename T>
+  class Constant : public Waveform<T> {
+
+  public:
+
+    Constant(T value) : _value(value) {}
+
+    virtual ~Constant(void) {}
+
+    virtual T waveform(double pos) const { return _value;}
+
+    virtual std::size_t size(void) const { return 1;}
+
+    virtual double end(void) const { return 1;}
+
+    virtual typename Waveform<T>::phasor pbegin(double rate, double start) const;
+
+    virtual typename Waveform<T>::phasor pbegin(double rate) const;
+    
+    virtual typename Waveform<T>::phasor rpbegin(double rate, double start) const;
+
+    virtual typename Waveform<T>::phasor rpbegin(double rate) const;
+    
+
+  private:
+    T _value;
   };
 
 }

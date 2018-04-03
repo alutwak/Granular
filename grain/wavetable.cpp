@@ -150,7 +150,7 @@ namespace audioelectric {
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, double rate, double start, double end, bool cycle) :
-    ph_im(wt, start, rate), _wt(wt), _cycle(cycle)
+    ph_im(wt, start, rate), _cycle(cycle) //_wt(wt), 
   {
     //ph_im::_phase = start/ph_im::_rate;
     _start = ph_im::_phase;
@@ -169,7 +169,7 @@ namespace audioelectric {
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>::interpolator& other) :
-    ph_im(other), _wt(other._wt), _cycle(other._cycle), _start(other._start)
+    ph_im(other), _cycle(other._cycle), _start(other._start) //, _wt(other._wt),
   {
     setEnd(other._end);
   }
@@ -189,7 +189,7 @@ namespace audioelectric {
   template<typename T>
   T Wavetable<T>::interpolator::value(void) const
   {
-    return _wt.waveform(ph_im::_phase*ph_im::_rate);
+    return ph_im::_wf.waveform(ph_im::_phase*ph_im::_rate);
   }
 
   template<typename T>
@@ -212,7 +212,7 @@ namespace audioelectric {
     }
     else {
       if (ph_im::_dir > 0)
-        _end = 1 + (long)((double)(_wt._size-1)/ph_im::_rate);
+        _end = 1 + (long)((double)(ph_im::_wf.size()-1)/ph_im::_rate);
       else
         _end = -1;
     }

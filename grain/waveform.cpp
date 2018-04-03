@@ -12,8 +12,6 @@ namespace audioelectric {
   template<typename T>
   typename Waveform<T>::phasor Waveform<T>::pbegin(double rate, double start) const
   {
-    // if (rate<=0.0)
-    //   return iend(1);
     return phasor(new phasor_impl(*this,start,rate));
   }
 
@@ -26,8 +24,6 @@ namespace audioelectric {
   template<typename T>
   typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
   {
-    // if (rate<=0.0)
-    //   rate = 1;
     start = (long)(start/rate); //We need to adjust the interpolated start position
     return phasor(new phasor_impl(*this,start,-rate));
   }
@@ -42,12 +38,13 @@ namespace audioelectric {
 
   template<typename T>
   Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>& wf, double start, double rate) :
-    _wf(wf), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1)
+    _wf(wf), _phase(0)
   {
     /*
       phase (iteration) = position(samples)/rate(samples/iteration)
      */
-    _phase = start/_rate;
+    setRate(rate);
+    setPosition(start);
   }
 
   template<typename T>
@@ -56,18 +53,6 @@ namespace audioelectric {
   {
 
   }
-
-  // template<typename T>
-  // typename Waveform<T>::phasor_impl& Waveform<T>::phasor_impl::operator=(const Waveform<T>::phasor_impl& other)
-  // {
-  //   if (&other == this)
-  //     return *this;
-  //   _wf = other._wf;
-  //   _phase = other._phase;
-  //   _rate = other._rate;
-  //   _dir = other._dir;
-  //   return *this;
-  // }
 
   template<typename T>
   T Waveform<T>::phasor_impl::value(void) const
@@ -117,6 +102,15 @@ namespace audioelectric {
     return (_dir*_phase*_rate) >= (other._dir*other._phase*other._rate);
   }
 
+  template<typename T>
+  void Waveform<T>::phasor_impl::setRate(double rate)
+  {
+    double pos = getPosition();
+    _rate = fabs(rate);
+    _dir =rate < 0 ? -1 : 1;
+    setPosition(pos);
+  }
+  
   template<typename T>
   typename Waveform<T>::phasor_impl* Waveform<T>::phasor_impl::copy(void) {
     return new phasor_impl(*this);
@@ -219,7 +213,7 @@ namespace audioelectric {
   {
     return *_impl >= *other._impl;
   }
-  
+
   template class Waveform<double>;
   template class Waveform<float>;
 

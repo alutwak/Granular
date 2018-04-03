@@ -44,21 +44,26 @@ protected:
     else {
       interp = wt->rpbegin(-speed, start, end, cycle);
     }
+    long maxplay;
+    if (cycle)
+      maxplay = 1000; //just play for 1 second
+    else
+      maxplay = 5000; //Give 5 seconds for a slow test file
     initPA(interp);
     std::chrono::system_clock::time_point tstart = std::chrono::system_clock::now();
     long playtime = 0;
-    while (interp && (playtime < 5000)) {
+    while (interp && (playtime < maxplay)) {
       playtime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tstart).count();
     }
     closePA();
     printf("playtime: %ld, %d\n", playtime, (bool)interp);
     if (cycle && speed*start < speed*end) {
       EXPECT_TRUE((bool)interp);
-      EXPECT_GE(playtime, 5000);
+      EXPECT_GE(playtime, maxplay);
     }
     else {
       EXPECT_FALSE((bool)interp);
-      EXPECT_LT(playtime, 5000);
+      EXPECT_LT(playtime, maxplay);
     }
   }
 

@@ -11,21 +11,21 @@ using namespace audioelectric;
 class SimpleWavetableTest : public ::testing::Test {
 protected:
 
-  Wavetable<double> wt = {0.0, 1.0, 2.0, 3.0};
+  Wavetable<double> wt = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
 
   void testBasic(void) {
-    EXPECT_EQ(wt.size(),4);
+    EXPECT_EQ(wt.size(),10);
     //Check element access with integers
-    for (int i=0;i<4;i++) {
+    for (int i=0;i<10;i++) {
       double d = wt[i];
       EXPECT_EQ(d,i);
       const double& dconst = wt[i];
       EXPECT_FLOAT_EQ(d,dconst);
     }
     //Check element access with doubles
-    for (double j=0.0; j<3.1; j+=0.1) {
+    for (double j=0.0; j<9.1; j+=0.1) {
       double d = wt.waveform(j);
-      if (j > 3)
+      if (j > 9)
         EXPECT_FLOAT_EQ(d,0);
       else
         EXPECT_FLOAT_EQ(d,j);
@@ -40,7 +40,6 @@ protected:
     double val = *interp;
     ASSERT_EQ(val, wt[start]);
     while (interp) {
-      EXPECT_TRUE(interp);
       EXPECT_TRUE(interp>=begin);
       EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed;
       val += speed;
@@ -54,8 +53,33 @@ protected:
     double val = *rinterp;
     //ASSERT_EQ(val,wt[wt.size()-1]);
     while (rinterp) {
-      EXPECT_FLOAT_EQ(*(rinterp++),val) << "when speed = " << speed;
+      EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed;
       val -= speed;
+    }
+  }
+
+  void testVariableRateIter(void) {
+    double rate = 1;
+    auto interp = wt.pbegin(rate,0);
+    auto begin = interp;
+    double val = *interp;
+    ASSERT_EQ(val,wt[0]);
+    while(interp) {
+      rate++;
+      interp.setRate(rate);
+      EXPECT_TRUE(interp>=begin);
+      ASSERT_FLOAT_EQ(*(interp++),val) << "when rate = " << rate;
+      val += rate;
+    }
+    rate = -rate;
+    interp.setRate(rate);
+    interp++;
+    while(interp) {
+      rate++;
+      interp.setRate(rate);
+      EXPECT_TRUE(interp>=begin);
+      EXPECT_FLOAT_EQ(*(interp++),val) << "when rate = " << rate;
+      val += rate;
     }
   }
 
@@ -85,6 +109,7 @@ TEST_F(SimpleWavetableTest, basic) {
   testIter(0.3428);
   testIter(1.2864);
   testIter(1.2864, 0.1);
+  testVariableRateIter();
 
   for (int i=0;i<10;i++)
     testCopy(i);
