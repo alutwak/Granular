@@ -38,10 +38,10 @@ protected:
     auto interp = wt.pbegin(speed,start);
     auto begin = interp;
     double val = *interp;
-    ASSERT_EQ(val, wt[start]);
+    ASSERT_EQ(val, start);
     while (interp) {
       EXPECT_TRUE(interp>=begin);
-      EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed;
+      EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
       val += speed;
     }
     testReverseIter(speed,start);
@@ -50,10 +50,12 @@ protected:
   void testReverseIter(double speed, double start) {
     if (start == 0) start = wt.size()-1;
     auto rinterp = wt.rpbegin(speed, start);
+    auto begin = rinterp;
     double val = *rinterp;
-    //ASSERT_EQ(val,wt[wt.size()-1]);
+    ASSERT_EQ(val,start);
     while (rinterp) {
-      EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed;
+      EXPECT_TRUE(rinterp>=begin);
+      EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
       val -= speed;
     }
   }

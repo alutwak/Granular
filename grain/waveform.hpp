@@ -67,7 +67,7 @@ namespace audioelectric {
       
       double _rate;             //!< The rate that the phase changes per iteration
       long _dir;                //!< The direction that the phase moves
-      long _phase;              //!< The current phase
+      double _phase;              //!< The current phase
       const Waveform<T>& _wf;   //!< The waveform that we're phasing
 
       /*!\brief Constructs a phasor that starts at a particular position in the waveform. 
@@ -100,19 +100,19 @@ namespace audioelectric {
 
       /*!\brief Sets the rate (useful for vari-rate iterations)
        */
-      void setRate(double rate);
+      virtual void setRate(double rate);
 
       /*!\brief Returns the current position in the waveform
        */
-      double getPosition(void) const {return _rate*_phase;}
+      double getPosition(void) const {return phaseToPosition(_phase);}
 
       /*!\brief Sets the current position in the waveform
        */
-      void setPosition(double pos) {_phase = pos/_rate;}
+      void setPosition(double pos) {_phase = positionToPhase(pos);}
 
       /*!\brief Returns the current phase of the phasor
        */
-      long getPhase(void) const {return _phase;}
+      double getPhase(void) const {return _phase;}
 
       /*!\brief Copies this phasor implementation
        *
@@ -124,6 +124,10 @@ namespace audioelectric {
       /*!\brief Increments the phase
        */
       virtual void increment(void);
+
+      double phaseToPosition(double phase) const {return _rate*phase;}
+
+      double positionToPhase(double pos) const {return pos/_rate;}
     };
 
     /*!\brief The public interfaces for the phasor, which is an iterator-like class used for generalized iteration over

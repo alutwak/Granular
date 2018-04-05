@@ -199,9 +199,19 @@ namespace audioelectric {
   }
 
   template<typename T>
-  bool Wavetable<T>::interpolator::checkPhase(long phase) const
+  void Wavetable<T>::interpolator::setRate(double rate)
   {
-    return ph_im::_dir > 0 ? phase<_end : phase>_end;
+    double start_pos = ph_im::phaseToPosition(_start);
+    double end_pos = ph_im::phaseToPosition(_end);
+    ph_im::setRate(rate);
+    _start = ph_im::positionToPhase(start_pos);
+    _end = ph_im::positionToPhase(end_pos);
+  }
+
+  template<typename T>
+  bool Wavetable<T>::interpolator::checkPhase(double phase) const
+  {
+    return ph_im::_dir > 0 ? phase<=_end : phase>=_end;
   }
 
   template<typename T>
@@ -212,16 +222,16 @@ namespace audioelectric {
     }
     else {
       if (ph_im::_dir > 0)
-        _end = 1 + (long)((double)(ph_im::_wf.size()-1)/ph_im::_rate);
+        _end = (long)((double)(ph_im::_wf.size()-1)/ph_im::_rate); //+1
       else
-        _end = -1;
+        _end = 0;
     }
   }
 
   template<typename T>
   void Wavetable<T>::interpolator::increment(void)
   {
-    long nextphase = ph_im::_phase+ph_im::_dir;
+    double nextphase = ph_im::_phase+ph_im::_dir;
     if (_cycle && !checkPhase(nextphase)) {
       //We've reached the end of the waveform, cycle around
       ph_im::_phase = _start + nextphase-_end;

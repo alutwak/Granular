@@ -34,8 +34,8 @@ namespace audioelectric {
       friend class Wavetable;
       using ph_im = typename Waveform<T>::phasor_impl;
 
-      long _start;              //!< The start of the wavetable in iterations (the units of the phase)
-      long _end;                //!< The end of the wavetable in iterations (the units of the phase)
+      double _start;              //!< The start of the wavetable in iterations (the units of the phase)
+      double _end;                //!< The end of the wavetable in iterations (the units of the phase)
       bool _cycle;              //!< Whether to cycle the Waveform
       //const Wavetable<T>& _wt;  //!< The wavetable to interpolate over
 
@@ -67,6 +67,10 @@ namespace audioelectric {
        */
       virtual operator bool(void) const;        
 
+      /*!\brief Sets the rate (useful for vari-rate iterations)
+       */
+      virtual void setRate(double rate);
+      
       /*!\brief Copies this interpolator and returns a pointer to the newly constructed object
        */
       virtual typename Waveform<T>::phasor_impl* copy(void);
@@ -83,7 +87,7 @@ namespace audioelectric {
 
       /*!\brief Checks whether the given phase is within the start and stop bounds
        */
-      bool checkPhase(long phase) const;
+      bool checkPhase(double phase) const;
     };
 
     /*!\brief A common iterator for the Wavetable. This works just like that of a vector's iterator
