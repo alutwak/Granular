@@ -7,9 +7,6 @@
 
 namespace audioelectric {
 
-  template<typename T>
-  class Constant;
-
   /*!\brief Provides an iterface for a variety of waveforms. These could be waveforms that get generated on the fly
    * or wavetables, samples, envelopes, etc...
    *
@@ -26,36 +23,9 @@ namespace audioelectric {
 
     class phasor;
     
-    /*!\brief An iterator-like class that increments the phase of the waveform at a certain rate
+    /*!\brief The class that actually implements the behavior of the phasor. 
      * 
-     * The phase is tracked as an integer value and is simply incremented or decremented, depending on the direction,
-     * on each call to increment. The normalized time (with a sample rate of 1Hz) at any position in the waveform is 
-     * rate*phase. 
-     * 
-     * In the following discussion, we need to differentiate between the phase of the phasor, which we'll just call "phase",
-     * and the phase of the Waveform which we'll call the "position". 
-     * 
-     * Positions in functions of this class are given in normalized time (a unit of samples, or in seconds if the sampling
-     * frequency is 1Hz). "Rates" are given in positions/iteration, or, to put it slightly differently, in
-     * normalized-seconds/iteration. This means that when you give a starting position to the constructor, or query the
-     * current position, the unit you use is **seconds*samples/second**, or just **samples**. The unit of a rate is
-     * **(seconds*samples/second)/iteration**, or just **samples/iteration**. The unit of phase is also in samples, but 
-     * these are samples of the phasor, which are not the same units as the samples of the waveform. Therefore, we'll use
-     * call these **iterations** to differentiate them.
-     * 
-     * In most cases when you give a starting position, or you query the current position, you're mostly concerned with
-     * where the phasor is in the Waveform, and not where it is in its own time frame.
-     *
-     * Some examples:
-     * 
-     * 1) In general, the relationship between postion, phase and rate is: position = rate*phase.
-     * 
-     * 2) If the rate is 3.2, and the phase is 15, then the position in the Waveform will be 3.2*15=48 (samples).  If the
-     * sampling rate is then 48k samples/second, the true time will be 48/48000 = 1ms, also in the Waveform. The time in 
-     * the phasor will simply be 15 iterations, or 15/48000 = 0.3125ms. Note that 1/3.2 = 0.3125.
-     * 
-     * 3) If you give a start position of 4 and the rate is 0.3, then phase = floor(4/0.3) = 13. 
-     * 
+     * This is the class that must be inherited in order to implement new types of phasors. 
      */
     class phasor_impl {
     public:
@@ -67,7 +37,7 @@ namespace audioelectric {
       
       double _rate;             //!< The rate that the phase changes per iteration
       long _dir;                //!< The direction that the phase moves
-      double _phase;              //!< The current phase
+      double _phase;            //!< The current phase
       const Waveform<T>& _wf;   //!< The waveform that we're phasing
 
       /*!\brief Constructs a phasor that starts at a particular position in the waveform. 
@@ -83,8 +53,6 @@ namespace audioelectric {
       phasor_impl(const Waveform<T>& wf, double start, double rate);
 
       phasor_impl(const phasor_impl& other);
-
-      phasor_impl(double constant);
 
       virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
       virtual operator bool(void) const;                //!<\brief Always returns true
@@ -125,16 +93,36 @@ namespace audioelectric {
        */
       virtual void increment(void);
 
+      /*!\brief Transform from the phase domain to the position domain
+       */
       double phaseToPosition(double phase) const {return _rate*phase;}
 
+      /*!\brief Transform from the position domain to the phase domain
+       */
       double positionToPhase(double pos) const {return pos/_rate;}
     };
 
-    /*!\brief The public interfaces for the phasor, which is an iterator-like class used for generalized iteration over
-     *        Waveforms.
-     * 
-     * This wraps a subclass of the phasor_impl and for the most part it acts just like a common iterator, except that
-     * the phasor_impls that it wraps usually have a more complicated behavior than common iterators. 
+    // class varispeed_phasor : public phasor_impl {
+    // public:
+    //   virtual ~varispeed_phasor(void) {}
+
+    // protected:
+    //   friend class Waveform;
+
+    //   phasor _rates;
+
+    //   varispeed_phasor(const Waveform<T>& wf, double start, const phasor& rates);
+
+    //   varispeed_phasor(const varispeed_phasor& other);
+
+    //   virtual void setRate(const phasor& rates);
+
+    //   virtual varispeed_phasor* copy(void);
+
+    //   virtual void increment(void);
+    // };
+
+    /*!\brief An iterator-like class that increments the phase of the waveform at a certain rate
      * 
      * The phasor provides access to interpolated, modulated, or otherwise mathematically complex Waveforms with a simple,
      * familiar interface. It is not meant to be inherited because all subclasses of Waveform deal directly in straight
@@ -142,6 +130,42 @@ namespace audioelectric {
      * 
      * phasors are initially created only through the Waveform::make_phasor() function. 
      * 
+     * The phase is simply incremented or decremented, depending on the direction, on each call to increment. The normalized
+     * time (with a sample rate of 1Hz) at any position in the waveform is rate*phase.
+     * 
+     * In the following discussion, we need to differentiate between the phase of the phasor, which we'll just call "phase",
+     * and the phase of the Waveform which we'll call the "position". These will be treated as separate mathematical domains
+     * and the phasor_impl includes helper functions to transform between them. \see positionToPhase() 
+     * \see phaseToPosition().
+     * 
+     * Positions in functions of this class are given in normalized time (a unit of samples, or in seconds if the sampling
+     * frequency is 1Hz). "Rates" are given in positions/iteration, or, to put it slightly differently, in
+     * normalized-seconds/iteration. This means that when you give a starting position to the constructor, or query the
+     * current position, the unit you use is **seconds*samples/second**, or just **samples**. The unit of a rate is
+     * **(seconds*samples/second)/iteration**, or just **samples/iteration**. The unit of phase is also in samples, but 
+     * these are samples of the phasor, which are not the same units as the samples of the waveform. Therefore, we'll use
+     * call these **iterations** to differentiate them.
+     * 
+     * In most cases when you give a starting position, or you query the current position, you're mostly concerned with
+     * where the phasor is in the Waveform, and not where it is in its own time frame.
+     *
+     * Some examples:
+     * 
+     * 1) In general, the relationship between postion, phase and rate is: position = rate*phase.
+     * 
+     * 2) If the rate is 3.2, and the phase is 15, then the position in the Waveform will be 3.2*15=48 (samples).  If the
+     * sampling rate is then 48k samples/second, the true time will be 48/48000 = 1ms, also in the Waveform. The time in 
+     * the phasor will simply be 15 iterations, or 15/48000 = 0.3125ms. Note that 1/3.2 = 0.3125.
+     * 
+     * 3) If you give a start position of 4 and the rate is 0.3, then phase = 4/0.3 = 13.33. 
+     * 
+     * 
+     * \note It may seem strange when I claim that phase and position are in units of samples and then give examples in which
+     * they both take on floating point values (indeed, phase and position are both represented as doubles in the phasor and
+     * phasor_impl classes). But because the phasor is meant to be used for synthesis, rather than simple audio playback and
+     * processing, samples become somewhat fuzzy untis. Even when we're using wavetables and sound samples, we're going to
+     * want to interpolate between the original samples for variable pitch sampling. In the end, it's just easier to express
+     * our waveforms as continuous functions and let the back end deal with the digital realities. 
      */
     class phasor final {
     public:
@@ -263,7 +287,6 @@ namespace audioelectric {
     virtual typename Waveform<T>::phasor rpbegin(double rate, double start) const;
 
     virtual typename Waveform<T>::phasor rpbegin(double rate) const;
-    
 
   private:
     T _value;
