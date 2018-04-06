@@ -46,11 +46,11 @@ namespace audioelectric {
        * and rate of the phasor.
        * 
        * \param wf The Waveform to iterate over.
-       * \param start The starting position in the Waveform
        * \param rate The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
        *             reverse iteration.
+       * \param start The starting position in the Waveform
        */
-      phasor_impl(const Waveform<T>& wf, double start, double rate);
+      phasor_impl(const Waveform<T>& wf, double rate, double start);
 
       phasor_impl(const phasor_impl& other);
 
@@ -102,25 +102,28 @@ namespace audioelectric {
       double positionToPhase(double pos) const {return pos/_rate;}
     };
 
-    // class varispeed_phasor : public phasor_impl {
-    // public:
-    //   virtual ~varispeed_phasor(void) {}
+    class varispeed_phasor : public phasor_impl {
+    public:
+      virtual ~varispeed_phasor(void) {}
 
-    // protected:
-    //   friend class Waveform;
+    protected:
+      friend class Waveform;
 
-    //   phasor _rates;
+      varispeed_phasor(const Waveform<T>& wf, const phasor& rates, double start);
 
-    //   varispeed_phasor(const Waveform<T>& wf, double start, const phasor& rates);
+      varispeed_phasor(const varispeed_phasor& other);
 
-    //   varispeed_phasor(const varispeed_phasor& other);
+      virtual void setRatePhasor(const phasor& rates);
 
-    //   virtual void setRate(const phasor& rates);
+      virtual varispeed_phasor* copy(void);
 
-    //   virtual varispeed_phasor* copy(void);
+      virtual void increment(void);
 
-    //   virtual void increment(void);
-    // };
+    private:
+
+      phasor _rate_phasor;
+      
+    };
 
     /*!\brief An iterator-like class that increments the phase of the waveform at a certain rate
      * 

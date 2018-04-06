@@ -71,11 +71,26 @@ namespace audioelectric {
   }
 
   template<typename T>
+  typename Waveform<T>::phasor Wavetable<T>::pbegin(const typename Waveform<T>::phasor& rates,
+                                                    double start, double end, bool cycle) const
+  {
+    auto interp = new varispeed_interpolator(*this, rates, start, end, cycle);
+    return Waveform<T>::make_phasor(interp);  //Casts to phasor_impl and constructs a phasor
+  }
+
+  
+  template<typename T>
   typename Waveform<T>::phasor Wavetable<T>::pbegin(double rate) const
   {
     return pbegin(rate,0);
   }
 
+  template<typename T>
+  typename Waveform<T>::phasor Wavetable<T>::pbegin(const typename Waveform<T>::phasor& rates) const
+  {
+    return pbegin(rates,0);
+  }
+  
   template<typename T>
   typename Waveform<T>::phasor Wavetable<T>::rpbegin(double rate, double start, double end, bool cycle) const
   {
@@ -245,6 +260,42 @@ namespace audioelectric {
     return new interpolator(*this);
   }
 
+  /********************* varispeed_interpolator ********************/
+
+  template<typename T>
+  Wavetable<T>::varispeed_interpolator::varispeed_interpolator(const Wavetable<T>& wt,
+                                                               const typename Waveform<T>::phasor& rates,
+                                                               double start, double end, bool cycle) :
+    Wavetable<T>::interpolator(wt, *rates, start, end, cycle), _rate_phasor(rates)
+  {
+  }
+
+  template<typename T>
+  Wavetable<T>::varispeed_interpolator::varispeed_interpolator(const Wavetable<T>::varispeed_interpolator& other) :
+    Wavetable<T>::interpolator(other), _rate_phasor(other._rate_phasor)
+  {
+  }
+
+  template<typename T>
+  void Wavetable<T>::varispeed_interpolator::setRatePhasor(const typename Waveform<T>::phasor &rates)
+  {
+    _rate_phasor = rates;
+  }
+
+  template<typename T>
+  typename Wavetable<T>::varispeed_interpolator* Wavetable<T>::varispeed_interpolator::copy(void)
+  {
+    return new varispeed_interpolator(*this);
+  }
+  
+  template<typename T>
+  void Wavetable<T>::varispeed_interpolator::increment(void)
+  {
+    Wavetable<T>::interpolator::increment();
+    ph_im::setRate(*(++_rate_phasor));
+  }
+
+  
   /********************* iterator ********************/
   
   template<typename T>

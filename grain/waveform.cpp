@@ -37,7 +37,7 @@ namespace audioelectric {
   /*********************** phasor_impl *******************************/
 
   template<typename T>
-  Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>& wf, double start, double rate) :
+  Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>& wf, double rate, double start) :
     _wf(wf), _phase(0)
   {
     /*
@@ -122,6 +122,41 @@ namespace audioelectric {
     _phase+=_dir;
   }
 
+  /*********************** varispeed_phasor *******************************/
+
+  template<typename T>
+  Waveform<T>::varispeed_phasor::varispeed_phasor(const Waveform<T>& wf, const phasor& rates, double start) :
+    Waveform<T>::phasor_impl(wf, start, *rates), _rate_phasor(rates)
+  {
+    
+  }
+
+  template<typename T>
+  Waveform<T>::varispeed_phasor::varispeed_phasor(const Waveform<T>::varispeed_phasor& other) :
+    Waveform<T>::phasor_impl(other._wf, other._phase, other._rate), _rate_phasor(other._rate_phasor)
+  {
+    
+  }
+
+  template<typename T>
+  void Waveform<T>::varispeed_phasor::setRatePhasor(const Waveform<T>::phasor &rates)
+  {
+    _rate_phasor = rates;
+  }
+
+  template<typename T>
+  typename Waveform<T>::varispeed_phasor* Waveform<T>::varispeed_phasor::copy(void)
+  {
+    return new varispeed_phasor(*this);
+  }
+
+  template<typename T>
+  void Waveform<T>::varispeed_phasor::increment(void)
+  {
+    Waveform<T>::phasor_impl::increment();
+    Waveform<T>::phasor_impl::setRate(*(++_rate_phasor));
+  }
+  
   /*********************** phasor *******************************/
 
   template<typename T>
