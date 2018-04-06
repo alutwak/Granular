@@ -38,18 +38,18 @@ namespace audioelectric {
 
   template<typename T>
   Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>& wf, double rate, double start) :
-    _wf(wf), _phase(0)
+    _wf(wf), _phase(start)
   {
     /*
       phase (iteration) = position(samples)/rate(samples/iteration)
      */
     setRate(rate);
-    setPosition(start);
+    //setPosition(start);
   }
 
   template<typename T>
   Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>::phasor_impl& other) :
-    _wf(other._wf), _phase(other._phase), _rate(other._rate), _dir(other._dir)
+    _wf(other._wf), _phase(other._phase), _rate(other._rate)
   {
 
   }
@@ -69,7 +69,7 @@ namespace audioelectric {
   template<typename T>
   bool Waveform<T>::phasor_impl::operator==(const Waveform<T>::phasor_impl& other) const
   {
-    return (_dir*_phase*_rate)==(other._dir*other._phase*other._rate);
+    return (_phase*_rate)==(other._phase*other._rate);
   }
 
   template<typename T>
@@ -81,34 +81,33 @@ namespace audioelectric {
   template<typename T>
   bool Waveform<T>::phasor_impl::operator<(const Waveform<T>::phasor_impl& other) const
   {
-    return (_dir*_phase*_rate) < (other._dir*other._phase*other._rate);
+    return _phase < other._phase;
   }
   
   template<typename T>
   bool Waveform<T>::phasor_impl::operator>(const Waveform<T>::phasor_impl& other) const
   {
-    return (_dir*_phase*_rate) > (other._dir*other._phase*other._rate);
+    return _phase > other._phase;
   }
 
     template<typename T>
   bool Waveform<T>::phasor_impl::operator<=(const Waveform<T>::phasor_impl& other) const
   {
-    return (_dir*_phase*_rate) <= (other._dir*other._phase*other._rate);
+    return _phase <= other._phase;
   }
 
   template<typename T>
   bool Waveform<T>::phasor_impl::operator>=(const Waveform<T>::phasor_impl& other) const
   {
-    return (_dir*_phase*_rate) >= (other._dir*other._phase*other._rate);
+    return _phase >= other._phase;
   }
 
   template<typename T>
   void Waveform<T>::phasor_impl::setRate(double rate)
   {
-    double pos = getPosition();
-    _rate = fabs(rate);
-    _dir =rate < 0 ? -1 : 1;
-    setPosition(pos);
+    //double pos = getPosition();
+    _rate = rate;
+    //setPosition(pos);
   }
   
   template<typename T>
@@ -119,7 +118,7 @@ namespace audioelectric {
   template<typename T>
   void Waveform<T>::phasor_impl::increment(void)
   {
-    _phase+=_dir;
+    _phase+=_rate;
   }
 
   /*********************** varispeed_phasor *******************************/

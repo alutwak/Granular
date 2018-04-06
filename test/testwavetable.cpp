@@ -39,10 +39,19 @@ protected:
     auto begin = interp;
     double val = *interp;
     ASSERT_EQ(val, start);
-    while (interp) {
-      EXPECT_TRUE(interp>=begin);
-      EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
-      val += speed;
+    if (speed == 0) {
+      for (int i=0;i<3;i++) {
+        EXPECT_TRUE(interp==begin);
+        EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
+        val += speed;
+      }
+    }
+    else {
+      while (interp) {
+        EXPECT_TRUE(interp>=begin);
+        EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
+        val += speed;
+      }
     }
     testReverseInterpolator(speed,start);
   }
@@ -53,10 +62,19 @@ protected:
     auto begin = rinterp;
     double val = *rinterp;
     ASSERT_EQ(val,start);
-    while (rinterp) {
-      EXPECT_TRUE(rinterp>=begin);
-      EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
-      val -= speed;
+    if (speed == 0) {
+      for (int i=0;i<3;i++) {
+        EXPECT_TRUE(rinterp==begin);
+        EXPECT_FLOAT_EQ(*(rinterp++),val) << "when speed = " << speed << " and start = " << start;
+        val += speed;
+      }
+    }
+    else {
+      while (rinterp) {
+        EXPECT_TRUE(rinterp<=begin);
+        EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
+        val -= speed;
+      }
     }
   }
 
@@ -76,6 +94,7 @@ protected:
     rate = -rate;
     interp.setRate(rate);
     interp++;
+    val += rate;
     while(interp) {
       rate++;
       interp.setRate(rate);
