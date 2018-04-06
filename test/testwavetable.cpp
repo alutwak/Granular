@@ -34,7 +34,7 @@ protected:
   
   /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as speed
    */
-  void testIter(double speed, double start=0) {
+  void testInterpolator(double speed, double start=0) {
     auto interp = wt.pbegin(speed,start);
     auto begin = interp;
     double val = *interp;
@@ -44,10 +44,10 @@ protected:
       EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
       val += speed;
     }
-    testReverseIter(speed,start);
+    testReverseInterpolator(speed,start);
   }
 
-  void testReverseIter(double speed, double start) {
+  void testReverseInterpolator(double speed, double start) {
     if (start == 0) start = wt.size()-1;
     auto rinterp = wt.rpbegin(speed, start);
     auto begin = rinterp;
@@ -60,7 +60,7 @@ protected:
     }
   }
 
-  void testVariableRateIter(void) {
+  void testVariableRateInterpolator(void) {
     double rate = 1;
     auto interp = wt.pbegin(rate,0);
     auto begin = interp;
@@ -102,16 +102,17 @@ protected:
 TEST_F(SimpleWavetableTest, basic) {
 
   testBasic();
-  testIter(0.5);
-  testIter(0.5,1.2);
-  testIter(1.0);
-  testIter(1.0, 2.1);
-  testIter(2.0);
-  testIter(4.0);
-  testIter(0.3428);
-  testIter(1.2864);
-  testIter(1.2864, 0.1);
-  testVariableRateIter();
+  testInterpolator(0, 1);
+  testInterpolator(0.5);
+  testInterpolator(0.5,1.2);
+  testInterpolator(1.0);
+  testInterpolator(1.0, 2.1);
+  testInterpolator(2.0);
+  testInterpolator(4.0);
+  testInterpolator(0.3428);
+  testInterpolator(1.2864);
+  testInterpolator(1.2864, 0.1);
+  testVariableRateInterpolator();
 
   for (int i=0;i<10;i++)
     testCopy(i);

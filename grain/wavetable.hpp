@@ -31,14 +31,6 @@ namespace audioelectric {
       
       virtual ~interpolator(void) {}
 
-    protected:
-
-      friend class Wavetable;
-
-      double _start;              //!< The start of the wavetable in iterations (the units of the phase)
-      double _end;                //!< The end of the wavetable in iterations (the units of the phase)
-      bool _cycle;              //!< Whether to cycle the Waveform
-      //const Wavetable<T>& _wt;  //!< The wavetable to interpolate over
 
       /*!\brief Constructs an interpolator that starts at an interpolated position in the wavetable. 
        * 
@@ -59,6 +51,15 @@ namespace audioelectric {
       // interpolator(const Wavetable<T>* wt, typename Waveform<T>::phasor& rate, double start, double end=-1, bool cycle=false);
       
       interpolator(const interpolator& other);
+      
+    protected:
+
+      friend class Wavetable;
+
+      double _start;              //!< The start of the wavetable in iterations (the units of the phase)
+      double _end;                //!< The end of the wavetable in iterations (the units of the phase)
+      bool _cycle;              //!< Whether to cycle the Waveform
+      //const Wavetable<T>& _wt;  //!< The wavetable to interpolate over
 
       interpolator operator+(long n) const;     //!<\brief Random access +
 

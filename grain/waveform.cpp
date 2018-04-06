@@ -12,7 +12,7 @@ namespace audioelectric {
   template<typename T>
   typename Waveform<T>::phasor Waveform<T>::pbegin(double rate, double start) const
   {
-    return phasor(new phasor_impl(*this,start,rate));
+    return phasor(new phasor_impl(*this,rate,start));
   }
 
   template<typename T>
@@ -25,7 +25,7 @@ namespace audioelectric {
   typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
   {
     start = (long)(start/rate); //We need to adjust the interpolated start position
-    return phasor(new phasor_impl(*this,start,-rate));
+    return phasor(new phasor_impl(*this,-rate,start));
   }
 
   template<typename T>
@@ -126,14 +126,14 @@ namespace audioelectric {
 
   template<typename T>
   Waveform<T>::varispeed_phasor::varispeed_phasor(const Waveform<T>& wf, const phasor& rates, double start) :
-    Waveform<T>::phasor_impl(wf, start, *rates), _rate_phasor(rates)
+    Waveform<T>::phasor_impl(wf, *rates, start), _rate_phasor(rates)
   {
     
   }
 
   template<typename T>
   Waveform<T>::varispeed_phasor::varispeed_phasor(const Waveform<T>::varispeed_phasor& other) :
-    Waveform<T>::phasor_impl(other._wf, other._phase, other._rate), _rate_phasor(other._rate_phasor)
+    Waveform<T>::phasor_impl(other._wf, other._rate, other._phase), _rate_phasor(other._rate_phasor)
   {
     
   }
@@ -249,7 +249,24 @@ namespace audioelectric {
     return *_impl >= *other._impl;
   }
 
+  /******************** Constant ****************************/
+
+  template<typename T>
+  typename Waveform<T>::phasor Constant<T>::pbegin(double rate, double start) const
+  {
+    return Waveform<T>::make_phasor(new typename Waveform<T>::phasor_impl(*this, rate, start));
+  }
+
+  template<typename T>
+  typename Waveform<T>::phasor Constant<T>::rpbegin(double rate, double start) const
+  {
+    start = (long)(start/rate); //We need to adjust the interpolated start position
+    return Waveform<T>::make_phasor(new typename Waveform<T>::phasor_impl(*this,-rate,start));
+  }
+  
   template class Waveform<double>;
   template class Waveform<float>;
+  template class Constant<double>;
+  template class Constant<float>;
 
 }

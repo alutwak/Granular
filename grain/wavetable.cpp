@@ -165,7 +165,7 @@ namespace audioelectric {
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, double rate, double start, double end, bool cycle) :
-    ph_im(wt, start, rate), _cycle(cycle) //_wt(wt), 
+    ph_im(wt, rate, start), _cycle(cycle) //_wt(wt), 
   {
     //ph_im::_phase = start/ph_im::_rate;
     _start = ph_im::_phase;

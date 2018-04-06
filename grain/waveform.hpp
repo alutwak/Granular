@@ -31,15 +31,6 @@ namespace audioelectric {
     public:
       virtual ~phasor_impl(void) {}
 
-    protected:
-      friend class phasor;
-      friend class Waveform;
-      
-      double _rate;             //!< The rate that the phase changes per iteration
-      long _dir;                //!< The direction that the phase moves
-      double _phase;            //!< The current phase
-      const Waveform<T>& _wf;   //!< The waveform that we're phasing
-
       /*!\brief Constructs a phasor that starts at a particular position in the waveform. 
        * 
        * See the discussion in the phasor_impl class documentation on how the start position relates to the phase
@@ -53,6 +44,15 @@ namespace audioelectric {
       phasor_impl(const Waveform<T>& wf, double rate, double start);
 
       phasor_impl(const phasor_impl& other);
+
+    protected:
+      friend class phasor;
+      friend class Waveform;
+
+      double _rate;             //!< The rate that the phase changes per iteration
+      long _dir;                //!< The direction that the phase moves
+      double _phase;            //!< The current phase
+      const Waveform<T>& _wf;   //!< The waveform that we're phasing
 
       virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
       virtual operator bool(void) const;                //!<\brief Always returns true
@@ -106,12 +106,12 @@ namespace audioelectric {
     public:
       virtual ~varispeed_phasor(void) {}
 
-    protected:
-      friend class Waveform;
-
       varispeed_phasor(const Waveform<T>& wf, const phasor& rates, double start);
 
       varispeed_phasor(const varispeed_phasor& other);
+
+    protected:
+      friend class Waveform;
 
       virtual void setRatePhasor(const phasor& rates);
 
@@ -283,13 +283,9 @@ namespace audioelectric {
 
     virtual double end(void) const { return 1;}
 
-    virtual typename Waveform<T>::phasor pbegin(double rate, double start) const;
+    virtual typename Waveform<T>::phasor pbegin(double rate=0, double start=0) const;
 
-    virtual typename Waveform<T>::phasor pbegin(double rate) const;
-    
-    virtual typename Waveform<T>::phasor rpbegin(double rate, double start) const;
-
-    virtual typename Waveform<T>::phasor rpbegin(double rate) const;
+    virtual typename Waveform<T>::phasor rpbegin(double rate=0, double start=0) const;
 
   private:
     T _value;
