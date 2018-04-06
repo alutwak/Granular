@@ -46,10 +46,6 @@ namespace audioelectric {
        */
       interpolator(const Wavetable<T>& wt, double rate, double start, double end=-1, bool cycle=false);
 
-      // /*!\brief Creates a vari-rate interpolator for which the rate is seet by another interpolator
-      //  */ 
-      // interpolator(const Wavetable<T>* wt, typename Waveform<T>::phasor& rate, double start, double end=-1, bool cycle=false);
-      
       interpolator(const interpolator& other);
       
     protected:
@@ -59,7 +55,6 @@ namespace audioelectric {
       double _start;              //!< The start of the wavetable in iterations (the units of the phase)
       double _end;                //!< The end of the wavetable in iterations (the units of the phase)
       bool _cycle;              //!< Whether to cycle the Waveform
-      //const Wavetable<T>& _wt;  //!< The wavetable to interpolate over
 
       interpolator operator+(long n) const;     //!<\brief Random access +
 
@@ -102,8 +97,6 @@ namespace audioelectric {
 
       friend class Wavetable;
 
-      /*!\todo Step thorugh this in lldb to see whether all the phasor_impl bits get initialized twice
-       */
       varispeed_interpolator(const Wavetable<T>& wt, const typename Waveform<T>::phasor& rates,
                              double start, double end=-1, bool cycle=false);
 
@@ -210,10 +203,6 @@ namespace audioelectric {
 
     typename Waveform<T>::phasor pbegin(const typename Waveform<T>::phasor& rate) const;    
     
-    // /*!\brief Returns a forward interpolator that points to the end of the waveform
-    //  */
-    // interpolator iend(double rate) const;
-
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
      *
      * Like the forward interpolator, there is no bounds or rate checking. The caller must take care.
@@ -225,9 +214,6 @@ namespace audioelectric {
      */
     typename Waveform<T>::phasor rpbegin(double rate, double start, double end=-1, bool cycle=false) const;
 
-    // typename Waveform<T>::phasor rpbegin(const typename Waveform<T>::phasor& rates,
-    //                                     double start, double end=-1, bool cycle=false) const;    
-
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
      *
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
@@ -236,12 +222,6 @@ namespace audioelectric {
      * \param cycle Whether or not to cycle.
      */    
     typename Waveform<T>::phasor rpbegin(double rate) const;
-
-//    typename Waveform<T>::phasor rpbegin(const typename Waveform<T>::phasor& rate) const;    
-
-    // /*!\brief Returns a reverse interpolator that points to the beginning of the waveform
-    //  */
-    // interpolator riend(double rate) const;
 
     iterator ibegin(void);
     iterator iend(void);

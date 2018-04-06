@@ -165,41 +165,18 @@ namespace audioelectric {
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, double rate, double start, double end, bool cycle) :
-    ph_im(wt, rate, start), _cycle(cycle) //_wt(wt), 
+    ph_im(wt, rate, start), _cycle(cycle), _start(start)
   {
-    //ph_im::_phase = start/ph_im::_rate;
-    _start = ph_im::_phase;
-    if (end < 0)
-      setEnd(-1);
-    else
-      setEnd(end/ph_im::_rate);
+    //_start = ph_im::_phase;
+    setEnd(end);
   }
-
-  // template<typename T>
-  // Wavetable<T>::interpolator::interpolator(const Wavetable<T>& wt, long start_phase, double rate) :
-  //   ph_im(wt, start_pos, rate), _wt(wt), _rate(fabs(rate)), _dir(rate < 0 ? -1 : 1)
-  // {
-  //   setEnd();
-  // }
 
   template<typename T>
   Wavetable<T>::interpolator::interpolator(const Wavetable<T>::interpolator& other) :
-    ph_im(other), _cycle(other._cycle), _start(other._start) //, _wt(other._wt),
+    ph_im(other), _cycle(other._cycle), _start(other._start)
   {
     setEnd(other._end);
   }
-
-  // template<typename T>
-  // typename Wavetable<T>::interpolator& Wavetable<T>::interpolator::operator=(const Wavetable<T>::interpolator& other)
-  // {
-  //   if (&other == this)
-  //     return *this;
-  //   _wf = other._wf;
-  //   _pos = other._pos;
-  //   _rate = other._rate;
-  //   _dir = other._dir;
-  //   return *this;
-  // }
 
   template<typename T>
   T Wavetable<T>::interpolator::value(void) const
@@ -216,11 +193,7 @@ namespace audioelectric {
   template<typename T>
   void Wavetable<T>::interpolator::setRate(double rate)
   {
-    //double start_pos = ph_im::phaseToPosition(_start);
-    //double end_pos = ph_im::phaseToPosition(_end);
     ph_im::setRate(rate);
-    //_start = ph_im::positionToPhase(start_pos);
-    //_end = ph_im::positionToPhase(end_pos);
   }
 
   template<typename T>
@@ -237,7 +210,7 @@ namespace audioelectric {
     }
     else {
       if (ph_im::_rate > 0)
-        _end = (double)(ph_im::_wf.size()-1); //+1
+        _end = (double)(ph_im::_wf.size()-1);
       else
         _end = 0;
     }

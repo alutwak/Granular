@@ -50,7 +50,6 @@ namespace audioelectric {
       friend class Waveform;
 
       double _rate;             //!< The rate that the phase changes per iteration
-      //long _dir;                //!< The direction that the phase moves
       double _phase;            //!< The current phase
       const Waveform<T>& _wf;   //!< The waveform that we're phasing
 
@@ -70,14 +69,6 @@ namespace audioelectric {
        */
       virtual void setRate(double rate);
 
-      /*!\brief Returns the current position in the waveform
-       */
-      //double getPosition(void) const {return phaseToPosition(_phase);}
-
-      /*!\brief Sets the current position in the waveform
-       */
-      //void setPosition(double pos) {_phase = positionToPhase(pos);}
-
       /*!\brief Returns the current phase of the phasor
        */
       double getPhase(void) const {return _phase;}
@@ -92,14 +83,6 @@ namespace audioelectric {
       /*!\brief Increments the phase
        */
       virtual void increment(void);
-
-      /*!\brief Transform from the phase domain to the position domain
-       */
-      //double phaseToPosition(double phase) const {return _rate*phase;}
-
-      /*!\brief Transform from the position domain to the phase domain
-       */
-      //double positionToPhase(double pos) const {return pos/_rate;}
     };
 
     class varispeed_phasor : public phasor_impl {
@@ -143,12 +126,6 @@ namespace audioelectric {
     class phasor final {
     public:
       phasor(void);
-      // phasor(const Waveform<T>* wf, double start, double rate);
-      
-      // /*!\brief Creates a vari-rate phasor for which the rate is seet by another phasor
-      //  */ 
-      // phasor(const Waveform<T>* wf, double start, const Waveform<T>::phasor vel_interp);
-
       phasor(const phasor& other);
       phasor& operator=(const phasor& other);
       phasor& operator++(void);                 //!<\brief Prefix increment
@@ -173,17 +150,9 @@ namespace audioelectric {
        */
       void setRate(double rate) {_impl->setRate(rate);}
 
-      /*!\brief Returns the current position in the waveform
-       */
-      //double getPosition(void) const {return _impl->getPosition();}
-
-      /*!\brief Sets the current position in the waveform
-       */
-      //void setPosition(double pos) {_impl->setPosition(pos);}
-
       /*!\brief Returns the current phase of the phasor
        */
-      long getPhase(void) const {return _impl->getPhase();}
+      double getPhase(void) const {return _impl->getPhase();}
 
     protected:
       friend Waveform<T>;
@@ -201,9 +170,6 @@ namespace audioelectric {
     };
     
     virtual ~Waveform(void) = 0;
-
-    // virtual bool operator==(const Waveform<T>& other) const = 0;
-    // virtual bool operator!=(const Waveform<T>& other) const = 0;
     
     /*!\brief Returns the waveform at a certain phase
      * 

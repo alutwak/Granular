@@ -40,11 +40,7 @@ namespace audioelectric {
   Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>& wf, double rate, double start) :
     _wf(wf), _phase(start)
   {
-    /*
-      phase (iteration) = position(samples)/rate(samples/iteration)
-     */
     setRate(rate);
-    //setPosition(start);
   }
 
   template<typename T>
@@ -105,9 +101,7 @@ namespace audioelectric {
   template<typename T>
   void Waveform<T>::phasor_impl::setRate(double rate)
   {
-    //double pos = getPosition();
     _rate = rate;
-    //setPosition(pos);
   }
   
   template<typename T>
