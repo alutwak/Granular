@@ -52,7 +52,7 @@ namespace audioelectric {
   template<typename T>
   T Waveform<T>::phasor_impl::value(void) const
   {
-    return _wf.waveform(_phase*_rate);
+    return _wf.waveform(_phase);
   }
 
   template<typename T>
@@ -64,7 +64,7 @@ namespace audioelectric {
   template<typename T>
   bool Waveform<T>::phasor_impl::operator==(const Waveform<T>::phasor_impl& other) const
   {
-    return (_phase*_rate)==(other._phase*other._rate);
+    return _phase==other._phase;
   }
 
   template<typename T>

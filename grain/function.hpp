@@ -8,6 +8,8 @@ namespace audioelectric {
   using dbl_phs = typename Waveform<double>::phasor;
   
   dbl_phs make_constant(double value);
+
+  dbl_phs make_line(double slope, double start);
   
   dbl_phs make_sinusoid(double freq, double ampl=1, double offset=0, double start=0);
   

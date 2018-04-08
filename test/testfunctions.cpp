@@ -1,14 +1,14 @@
 #include <chrono>
+#include <stdio.h>
 
 #include <gtest/gtest.h>
+#include <portaudio.h>
 
 #include "function.hpp"
-#include "audioplaybacktest.hpp"
 
 using namespace audioelectric;
 
 void testConstant(double value) {
-
   auto constant = make_constant(value);
   printf("Constant = %f\n",value);
   EXPECT_EQ(*constant,value);
@@ -24,8 +24,28 @@ TEST(Constant, basic) {
   testConstant(-8e7);
 }
 
+TEST(Sinusoid, basic) {
+  auto sin = make_sinusoid(1.0/1000,1,0);
+  FILE* f = fopen("sinwave", "w");
+  for (int i=0;i<1000;i++) {
+    fprintf(f,"%f\n", *(sin++));
+  }
+  fclose(f);
+}
+
 #define PLAYTIME 5000
 #define SAMPLERATE 96000
+
+static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
+               PaStreamCallbackFlags statusFlags, void *wtinterp_data)
+{
+  Waveform<double>::phasor *interp = static_cast<Waveform<double>::phasor*>(wtinterp_data);
+  float *out = (float*)output;
+  while (frames--) {
+    *out++ = *(*interp)++;
+  }
+  return 0;
+}
 
 class SinPlaybackTest : public ::testing::Test {
 protected:
@@ -33,6 +53,7 @@ protected:
   PaStream *stream;
   
   virtual void playBack(double freq, double ampl, double offset) {
+    printf("Playing %0.1fHz tone\n",freq);
     freq = freq/SAMPLERATE;
     auto sin = make_sinusoid(freq, ampl, offset);
     initPA(sin);

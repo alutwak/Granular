@@ -31,6 +31,30 @@ namespace audioelectric {
     }
     return _const->pbegin(1,value);
   };
+
+  /********************** Line **********************/
+
+  class Line : public Function {
+
+  public:
+
+    virtual ~Line(void) {}
+
+    virtual double waveform(double pos) const {
+      return pos;
+    }
+    
+  };
+
+  static std::unique_ptr<Line> _line;
+
+  dbl_phs make_line(double slope, double start)
+  {
+    if(!_line) {
+      _line = std::make_unique<Line>();
+    }
+    return _line->pbegin(slope, 1, start); //rate=slope, ampl=1, offset=start, start=0
+  }
   
   /******************** Sinusoid ****************************/
 
