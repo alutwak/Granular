@@ -20,13 +20,14 @@ namespace audioelectric {
   public:
 
     using ph_im = typename Waveform<T>::phasor_impl;
+    using phasor = typename Waveform<T>::phasor;
     
     /*!\brief A phasor that runs over a Wavetable and can interpolate sub-sample intervals.
      * 
      * The interpolator can run forward and backward and can either be a one-shot or it can cycle. 
      * 
      */
-    class interpolator : public Waveform<T>::phasor_impl {
+    class interpolator : public ph_im {
     public:
       
       virtual ~interpolator(void) {}
@@ -70,7 +71,7 @@ namespace audioelectric {
       
       /*!\brief Copies this interpolator and returns a pointer to the newly constructed object
        */
-      virtual typename Waveform<T>::phasor_impl* copy(void);
+      virtual ph_im* copy(void) const;
 
       /*!\brief Increments the phase
        */
@@ -87,30 +88,30 @@ namespace audioelectric {
       bool checkPhase(double phase) const;
     };
 
-    class varispeed_interpolator : public interpolator {
+    class mod_interpolator : public interpolator {
 
     public:
 
-      virtual ~varispeed_interpolator(void) {}
+      virtual ~mod_interpolator(void) {}
 
     protected:
 
       friend class Wavetable;
 
-      varispeed_interpolator(const Wavetable<T>& wt, const typename Waveform<T>::phasor& rates,
+      mod_interpolator(const Wavetable<T>& wt, const phasor& rates,
                              double start, double end=-1, bool cycle=false);
 
-      varispeed_interpolator(const varispeed_interpolator& other);
+      mod_interpolator(const mod_interpolator& other);
 
-      virtual void setRatePhasor(const typename Waveform<T>::phasor& rates);
+      virtual void setModulator(const phasor& rates);
 
-      virtual varispeed_interpolator* copy(void);
+      virtual mod_interpolator* copy(void) const;
 
       void increment(void);
 
     private:
 
-      typename Waveform<T>::phasor _rate_phasor;
+      phasor _modulator;
       
     };
     
@@ -188,20 +189,19 @@ namespace audioelectric {
      * \param end The ending position
      * \param cycle Whether or not to cycle over the wavetable
      */
-    typename Waveform<T>::phasor pbegin(double rate, double start, double end=-1, bool cycle=false) const;
+    phasor pbegin(double rate, double start, double end=-1, bool cycle=false) const;
 
-    /*!\brief Returns a forward varispeed interpolator
+    /*!\brief Returns a forward modulating interpolator
      */
-    typename Waveform<T>::phasor pbegin(const typename Waveform<T>::phasor& rates,
-                                        double start, double end=-1, bool cycle=false) const;    
+    phasor pbegin(const phasor& rates, double start, double end=-1, bool cycle=false) const;    
 
     /*!\brief Returns a forward interpolator that points to the beginning of the waveform \see ibegin(long,double)
      *
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    typename Waveform<T>::phasor pbegin(double rate) const;
+    phasor pbegin(double rate) const;
 
-    typename Waveform<T>::phasor pbegin(const typename Waveform<T>::phasor& rate) const;    
+    phasor pbegin(const phasor& rate) const;    
     
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
      *
@@ -212,7 +212,7 @@ namespace audioelectric {
      * \param end   The ending position of the interpolator \see interpolator.
      * \param cycle Whether or not to cycle.
      */
-    typename Waveform<T>::phasor rpbegin(double rate, double start, double end=-1, bool cycle=false) const;
+    phasor rpbegin(double rate, double start, double end=-1, bool cycle=false) const;
 
     /*!\brief Returns a reverse interpolator that points to the end of the waveform
      *
@@ -221,7 +221,7 @@ namespace audioelectric {
      * \param end   The ending position of the interpolator \see interpolator.
      * \param cycle Whether or not to cycle.
      */    
-    typename Waveform<T>::phasor rpbegin(double rate) const;
+    phasor rpbegin(double rate) const;
 
     iterator ibegin(void);
     iterator iend(void);

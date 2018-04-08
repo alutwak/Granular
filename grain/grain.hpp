@@ -41,7 +41,7 @@ namespace audioelectric {
        */
       T value(void) const;
       operator bool(void) const;
-      typename Waveform<T>::phasor_impl* copy(void);
+      typename Waveform<T>::phasor_impl* copy(void) const;
       void increment(void);
       
     private:

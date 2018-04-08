@@ -80,7 +80,7 @@ namespace audioelectric {
   }
 
   template<typename T>
-  typename Waveform<T>::phasor_impl* Grain<T>::granulator::copy(void)
+  typename Waveform<T>::phasor_impl* Grain<T>::granulator::copy(void) const
   {
     return new granulator(*this);
   }

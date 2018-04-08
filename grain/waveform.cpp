@@ -24,7 +24,6 @@ namespace audioelectric {
   template<typename T>
   typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
   {
-    start = (long)(start/rate); //We need to adjust the interpolated start position
     return phasor(new phasor_impl(*this,-rate,start));
   }
 
@@ -105,7 +104,7 @@ namespace audioelectric {
   }
   
   template<typename T>
-  typename Waveform<T>::phasor_impl* Waveform<T>::phasor_impl::copy(void) {
+  typename Waveform<T>::phasor_impl* Waveform<T>::phasor_impl::copy(void) const {
     return new phasor_impl(*this);
   }
   
@@ -115,39 +114,39 @@ namespace audioelectric {
     _phase+=_rate;
   }
 
-  /*********************** varispeed_phasor *******************************/
+  /*********************** mod_phasor *******************************/
 
   template<typename T>
-  Waveform<T>::varispeed_phasor::varispeed_phasor(const Waveform<T>& wf, const phasor& rates, double start) :
-    Waveform<T>::phasor_impl(wf, *rates, start), _rate_phasor(rates)
+  Waveform<T>::mod_phasor::mod_phasor(const Waveform<T>& wf, const phasor& rates, double start) :
+    Waveform<T>::phasor_impl(wf, *rates, start), _modulator(rates)
   {
     
   }
 
   template<typename T>
-  Waveform<T>::varispeed_phasor::varispeed_phasor(const Waveform<T>::varispeed_phasor& other) :
-    Waveform<T>::phasor_impl(other._wf, other._rate, other._phase), _rate_phasor(other._rate_phasor)
+  Waveform<T>::mod_phasor::mod_phasor(const Waveform<T>::mod_phasor& other) :
+    Waveform<T>::phasor_impl(other._wf, other._rate, other._phase), _modulator(other._modulator)
   {
     
   }
 
   template<typename T>
-  void Waveform<T>::varispeed_phasor::setRatePhasor(const Waveform<T>::phasor &rates)
+  void Waveform<T>::mod_phasor::setModulator(const Waveform<T>::phasor &rates)
   {
-    _rate_phasor = rates;
+    _modulator = rates;
   }
 
   template<typename T>
-  typename Waveform<T>::varispeed_phasor* Waveform<T>::varispeed_phasor::copy(void)
+  typename Waveform<T>::mod_phasor* Waveform<T>::mod_phasor::copy(void) const
   {
-    return new varispeed_phasor(*this);
+    return new mod_phasor(*this);
   }
 
   template<typename T>
-  void Waveform<T>::varispeed_phasor::increment(void)
+  void Waveform<T>::mod_phasor::increment(void)
   {
     Waveform<T>::phasor_impl::increment();
-    Waveform<T>::phasor_impl::setRate(*(++_rate_phasor));
+    Waveform<T>::phasor_impl::setRate(*(++_modulator));
   }
   
   /*********************** phasor *******************************/
@@ -242,24 +241,7 @@ namespace audioelectric {
     return *_impl >= *other._impl;
   }
 
-  /******************** Constant ****************************/
-
-  template<typename T>
-  typename Waveform<T>::phasor Constant<T>::pbegin(double rate, double start) const
-  {
-    return Waveform<T>::make_phasor(new typename Waveform<T>::phasor_impl(*this, rate, start));
-  }
-
-  template<typename T>
-  typename Waveform<T>::phasor Constant<T>::rpbegin(double rate, double start) const
-  {
-    start = (long)(start/rate); //We need to adjust the interpolated start position
-    return Waveform<T>::make_phasor(new typename Waveform<T>::phasor_impl(*this,-rate,start));
-  }
-  
   template class Waveform<double>;
   template class Waveform<float>;
-  template class Constant<double>;
-  template class Constant<float>;
 
 }

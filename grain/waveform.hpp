@@ -78,33 +78,33 @@ namespace audioelectric {
        * This must be overridden by subclasses in order for phasor::operator++ and the phasor copy constructor
        * to work correctly.
        */
-      virtual phasor_impl* copy(void);
+      virtual phasor_impl* copy(void) const;
       
       /*!\brief Increments the phase
        */
       virtual void increment(void);
     };
 
-    class varispeed_phasor : public phasor_impl {
+    class mod_phasor : public phasor_impl {
     public:
-      virtual ~varispeed_phasor(void) {}
+      virtual ~mod_phasor(void) {}
 
-      varispeed_phasor(const Waveform<T>& wf, const phasor& rates, double start);
+      mod_phasor(const Waveform<T>& wf, const phasor& rates, double start);
 
-      varispeed_phasor(const varispeed_phasor& other);
+      mod_phasor(const mod_phasor& other);
 
     protected:
       friend class Waveform;
 
-      virtual void setRatePhasor(const phasor& rates);
+      virtual void setModulator(const phasor& rates);
 
-      virtual varispeed_phasor* copy(void);
+      virtual mod_phasor* copy(void) const;
 
       virtual void increment(void);
 
     private:
 
-      phasor _rate_phasor;
+      phasor _modulator;
       
     };
 
@@ -203,28 +203,5 @@ namespace audioelectric {
     virtual phasor rpbegin(double rate) const;
 
   };
-
-  template<typename T>
-  class Constant : public Waveform<T> {
-
-  public:
-
-    Constant(T value) : _value(value) {}
-
-    virtual ~Constant(void) {}
-
-    virtual T waveform(double pos) const { return _value;}
-
-    virtual std::size_t size(void) const { return 1;}
-
-    virtual double end(void) const { return 1;}
-
-    virtual typename Waveform<T>::phasor pbegin(double rate=0, double start=0) const;
-
-    virtual typename Waveform<T>::phasor rpbegin(double rate=0, double start=0) const;
-
-  private:
-    T _value;
-  };
-
+  
 }
