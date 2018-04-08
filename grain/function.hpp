@@ -5,20 +5,19 @@
 
 namespace audioelectric {
 
-  using dbl_phs = typename Waveform<double>::phasor;
-  
-  dbl_phs make_constant(double value);
+  dphasor make_constant(double value);
 
-  dbl_phs make_line(double slope, double start);
+  dphasor make_line(double slope, double start);
   
-  dbl_phs make_sinusoid(double freq, double ampl=1, double offset=0, double start=0);
+  dphasor make_sinusoid(double freq, double ampl=1, double offset=0, double start=0);
+
+  dphasor make_sinusoid(dphasor fmod, dphasor amod, double offset=0, double start=0);
   
   class Function : public Waveform<double> {
 
   public:
 
     using ph_im = typename Waveform<double>::phasor_impl;
-    using phasor = dbl_phs;
 
     class function_phs : public ph_im {
     public:
@@ -81,15 +80,15 @@ namespace audioelectric {
 
     virtual double end(void) const {return 0;}
 
-    virtual dbl_phs pbegin(double freq, double ampl=1, double offset=0, double start=0) const {
+    virtual dphasor pbegin(double freq, double ampl=1, double offset=0, double start=0) const {
       return Waveform<double>::make_phasor(new function_phs(*this, freq, ampl, offset, start));
     }
 
-    virtual dbl_phs rpbegin(double freq, double ampl=1, double offset=0, double start=0) const {
+    virtual dphasor rpbegin(double freq, double ampl=1, double offset=0, double start=0) const {
       return Waveform<double>::make_phasor(new function_phs(*this, -freq, ampl, offset, start));
     }
 
-    virtual dbl_phs pbegin(phasor fmod, phasor amod, double offset=0, double start=0) const {
+    virtual dphasor pbegin(phasor fmod, phasor amod, double offset=0, double start=0) const {
       return Waveform<double>::make_phasor(new function_mod(*this, fmod, amod, offset, start));
     }
 

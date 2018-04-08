@@ -24,7 +24,7 @@ namespace audioelectric {
 
   static std::unique_ptr<Constant> _const;
 
-  dbl_phs make_constant(double value)
+  dphasor make_constant(double value)
   {
     if (!_const) {
       _const = std::make_unique<Constant>();
@@ -48,7 +48,7 @@ namespace audioelectric {
 
   static std::unique_ptr<Line> _line;
 
-  dbl_phs make_line(double slope, double start)
+  dphasor make_line(double slope, double start)
   {
     if(!_line) {
       _line = std::make_unique<Line>();
@@ -71,12 +71,20 @@ namespace audioelectric {
 
   static std::unique_ptr<Sinusoid> _sin;
 
-  dbl_phs make_sinusoid(double freq, double ampl, double offset, double start)
+  dphasor make_sinusoid(double freq, double ampl, double offset, double start)
   {
     if (!_sin) {
       _sin = std::make_unique<Sinusoid>();
     }
     return _sin->pbegin(freq,ampl,offset,start);
+  }
+
+  dphasor make_sinusoid(dphasor fmod, dphasor amod, double offset, double start)
+  {
+    if (!_sin) {
+      _sin = std::make_unique<Sinusoid>();
+    }
+    return _sin->pbegin(fmod, amod, offset, start);
   }
   
 }

@@ -24,9 +24,35 @@ TEST(Constant, basic) {
   testConstant(-8e7);
 }
 
+void testLine(double slope, double start) {
+  auto line = make_line(slope, start);
+  double val = start;
+  for (int i=0;i<3;i++) {
+    EXPECT_EQ(*line,val);
+    ++line;
+    val+=slope;
+  }
+}
+
+TEST(Line, basic) {
+  testLine(1,0);
+  testLine(0,2.4);
+  testLine(-115.5,-15);
+  testLine(-0.01,-0.01);
+}
+
 TEST(Sinusoid, basic) {
   auto sin = make_sinusoid(1.0/1000,1,0);
   FILE* f = fopen("sinwave", "w");
+  for (int i=0;i<1000;i++) {
+    fprintf(f,"%f\n", *(sin++));
+  }
+  fclose(f);
+  sin = make_sinusoid(
+    make_sinusoid(2./1000, 10./1000, 20./1000),
+    make_constant(1)
+    );
+  f = fopen("modsine","w");
   for (int i=0;i<1000;i++) {
     fprintf(f,"%f\n", *(sin++));
   }
@@ -56,6 +82,17 @@ protected:
     printf("Playing %0.1fHz tone\n",freq);
     freq = freq/SAMPLERATE;
     auto sin = make_sinusoid(freq, ampl, offset);
+    runPlayback(sin);
+  }
+
+  virtual void playBack(dphasor fmod, dphasor amod, double offset) {
+    auto sin = make_sinusoid(fmod, amod, offset);
+    runPlayback(sin);    
+  }
+
+private:
+
+  void runPlayback(dphasor sin) {
     initPA(sin);
     std::chrono::system_clock::time_point tstart = std::chrono::system_clock::now();
     long playtime = 0;
@@ -94,5 +131,13 @@ protected:
 
 TEST_F(SinPlaybackTest, freq) {
   playBack(440,0.1,0);
+
+  auto amod_1Hz = make_sinusoid(1./SAMPLERATE, 0.5, 0.5); //1 Hz amplitude modulator
+  auto fmod_4Hz = make_sinusoid(4./SAMPLERATE, 10./SAMPLERATE, 440./SAMPLERATE); //4Hz freq modulator of 10Hz around 440 Hz
+
+  playBack(make_constant(440./SAMPLERATE),
+           amod_1Hz,0);
+  playBack(fmod_4Hz,make_constant(1),0);
+  playBack(fmod_4Hz, amod_1Hz, 0);
 }
 

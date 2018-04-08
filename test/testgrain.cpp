@@ -84,10 +84,7 @@ protected:
     Waveform<float>::phasor phs;
     double g_speed = 1000*(double)grain->size()/info.samplerate/g_len;
     printf("Grain length: %fms\n", g_len);
-    if (wf_speed > 0)
-      phs = source->pbegin(wf_speed, VOC_START);
-    else
-      phs = source->rpbegin(-wf_speed, VOC_END);
+    phs = source->pbegin(wf_speed, VOC_START);
     auto granu = grain->gmake(0, g_speed, phs);
     initPA(granu);
     while (granu) {}

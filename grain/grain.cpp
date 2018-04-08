@@ -55,7 +55,7 @@ namespace audioelectric {
   template<typename T>
   Grain<T>::granulator::granulator(const Grain<T>& grn, double start, double rate,
                                    const typename Waveform<T>::phasor& interp_other) :
-    Wavetable<T>::interpolator(grn,rate,start), _phasor_other(interp_other)
+    Wavetable<T>::interpolator(grn,rate,start,start), _phasor_other(interp_other)
   {
     
   }

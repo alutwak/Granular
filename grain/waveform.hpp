@@ -196,12 +196,15 @@ namespace audioelectric {
      */
     virtual phasor pbegin(double rate) const;
     
-    virtual phasor rpbegin(double rate, double start) const;
+    // virtual phasor rpbegin(double rate, double start) const;
 
-    /*!\brief Returns a reverse phasor that starts at the end of the waveform
-     */
-    virtual phasor rpbegin(double rate) const;
+    // /*!\brief Returns a reverse phasor that starts at the end of the waveform
+    //  */
+    // virtual phasor rpbegin(double rate) const;
 
   };
+
+  typedef typename Waveform<double>::phasor dphasor;
+  typedef typename Waveform<float>::phasor fphasor;  
   
 }

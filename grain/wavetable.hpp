@@ -40,12 +40,13 @@ namespace audioelectric {
        * \param wt    The Wavetable to iterate over.
        * \param rate   The rate at which to iterate over the Wavetable. Positive rate -> forward iteration, negative rate -> 
        *              reverse iteration.
-       * \param start The starting position in the Wavetable
+       * \param start The starting position in the Wavetable. This is where the interpolator starts from
+       * \param begin The beginning position in the Wavetable. Values before this in the wavetable will not be played
        * \param end   The ending position in the Wavetable. A negative value sets the ending at the last sample for forward 
        *              interpolators and at the first sample for reverse interpolators.
        * \param cycle Whether or not to cycle over the waveform.
        */
-      interpolator(const Wavetable<T>& wt, double rate, double start, double end=-1, bool cycle=false);
+      interpolator(const Wavetable<T>& wt, double rate, double start=0, double begin=0, double end=-1, bool cycle=false);
 
       interpolator(const interpolator& other);
       
@@ -53,7 +54,7 @@ namespace audioelectric {
 
       friend class Wavetable;
 
-      double _start;              //!< The start of the wavetable in iterations (the units of the phase)
+      double _begin;              //!< The start of the wavetable in iterations (the units of the phase)
       double _end;                //!< The end of the wavetable in iterations (the units of the phase)
       bool _cycle;              //!< Whether to cycle the Waveform
 
@@ -98,12 +99,12 @@ namespace audioelectric {
 
       friend class Wavetable;
 
-      mod_interpolator(const Wavetable<T>& wt, const phasor& rates,
-                             double start, double end=-1, bool cycle=false);
+      mod_interpolator(const Wavetable<T>& wt, const dphasor& modulator,
+                       double start, double begin, double end, bool cycle);
 
       mod_interpolator(const mod_interpolator& other);
 
-      virtual void setModulator(const phasor& rates);
+      virtual void setModulator(const dphasor& modulator);
 
       virtual mod_interpolator* copy(void) const;
 
@@ -111,7 +112,7 @@ namespace audioelectric {
 
     private:
 
-      phasor _modulator;
+      dphasor _modulator;
       
     };
     
@@ -186,14 +187,15 @@ namespace audioelectric {
      * 
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      * \param start The starting position (in the original waveform, not the interpolated one)
+     * \param begin The beginning position in the Wavetable. Values before this in the wavetable will not be played
      * \param end The ending position
      * \param cycle Whether or not to cycle over the wavetable
      */
-    phasor pbegin(double rate, double start, double end=-1, bool cycle=false) const;
+    phasor pbegin(double rate, double start, double begin=0, double end=-1, bool cycle=false) const;
 
     /*!\brief Returns a forward modulating interpolator
      */
-    phasor pbegin(const phasor& rates, double start, double end=-1, bool cycle=false) const;    
+    phasor pbegin(const dphasor& modulator, double start, double begin=0, double end=-1, bool cycle=false) const;    
 
     /*!\brief Returns a forward interpolator that points to the beginning of the waveform \see ibegin(long,double)
      *
@@ -201,27 +203,28 @@ namespace audioelectric {
      */
     phasor pbegin(double rate) const;
 
-    phasor pbegin(const phasor& rate) const;    
+    phasor pbegin(const dphasor& modulator) const;
     
-    /*!\brief Returns a reverse interpolator that points to the end of the waveform
-     *
-     * Like the forward interpolator, there is no bounds or rate checking. The caller must take care.
-     * 
-     * \param rate  The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster).
-     * \param start The starting position (in the original waveform, not the interpolated one)
-     * \param end   The ending position of the interpolator \see interpolator.
-     * \param cycle Whether or not to cycle.
-     */
-    phasor rpbegin(double rate, double start, double end=-1, bool cycle=false) const;
+    // /*!\brief Returns a reverse interpolator that points to the end of the waveform
+    //  *
+    //  * Like the forward interpolator, there is no bounds or rate checking. The caller must take care.
+    //  * 
+    //  * \param rate  The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster).
+    //  * \param start The starting position (in the original waveform, not the interpolated one)
+    //  * \param begin The beginning position in the Wavetable. Values before this in the wavetable will not be played
+    //  * \param end   The ending position of the interpolator \see interpolator.
+    //  * \param cycle Whether or not to cycle.
+    //  */
+    // phasor rpbegin(double rate, double start, double end=-1, bool cycle=false) const;
 
-    /*!\brief Returns a reverse interpolator that points to the end of the waveform
-     *
-     * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
-     * \param start The starting position (in the original waveform, not the interpolated one)
-     * \param end   The ending position of the interpolator \see interpolator.
-     * \param cycle Whether or not to cycle.
-     */    
-    phasor rpbegin(double rate) const;
+    // /*!\brief Returns a reverse interpolator that points to the end of the waveform
+    //  *
+    //  * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
+    //  * \param start The starting position (in the original waveform, not the interpolated one)
+    //  * \param end   The ending position of the interpolator \see interpolator.
+    //  * \param cycle Whether or not to cycle.
+    //  */    
+    // phasor rpbegin(double rate) const;
 
     iterator ibegin(void);
     iterator iend(void);

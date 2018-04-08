@@ -21,17 +21,17 @@ namespace audioelectric {
     return pbegin(rate,0);
   }
 
-  template<typename T>
-  typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
-  {
-    return phasor(new phasor_impl(*this,-rate,start));
-  }
+  // template<typename T>
+  // typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
+  // {
+  //   return phasor(new phasor_impl(*this,-rate,start));
+  // }
 
-  template<typename T>
-  typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate) const
-  {
-    return rpbegin(rate,end());
-  }
+  // template<typename T>
+  // typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate) const
+  // {
+  //   return rpbegin(rate,end());
+  // }
   
   /*********************** phasor_impl *******************************/
 

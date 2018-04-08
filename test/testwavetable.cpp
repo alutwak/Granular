@@ -5,6 +5,7 @@
 
 #include "audioplaybacktest.hpp"
 #include "wavetable.hpp"
+#include "function.hpp"
 
 using namespace audioelectric;
 
@@ -38,7 +39,7 @@ protected:
     auto interp = wt.pbegin(speed,start);
     auto begin = interp;
     double val = *interp;
-    ASSERT_EQ(val, start);
+    ASSERT_EQ(val, start) << "when speed = " << speed << " and start = " << start;
     if (speed == 0) {
       for (int i=0;i<3;i++) {
         EXPECT_TRUE(interp==begin);
@@ -53,30 +54,30 @@ protected:
         val += speed;
       }
     }
-    testReverseInterpolator(speed,start);
+    //testReverseInterpolator(speed,start);
   }
 
-  void testReverseInterpolator(double speed, double start) {
-    if (start == 0) start = wt.size()-1;
-    auto rinterp = wt.rpbegin(speed, start);
-    auto begin = rinterp;
-    double val = *rinterp;
-    ASSERT_EQ(val,start);
-    if (speed == 0) {
-      for (int i=0;i<3;i++) {
-        EXPECT_TRUE(rinterp==begin);
-        EXPECT_FLOAT_EQ(*(rinterp++),val) << "when speed = " << speed << " and start = " << start;
-        val += speed;
-      }
-    }
-    else {
-      while (rinterp) {
-        EXPECT_TRUE(rinterp<=begin);
-        EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
-        val -= speed;
-      }
-    }
-  }
+  // void testReverseInterpolator(double speed, double start) {
+  //   if (start == 0) start = wt.size()-1;
+  //   auto rinterp = wt.rpbegin(speed, start);
+  //   auto begin = rinterp;
+  //   double val = *rinterp;
+  //   ASSERT_EQ(val,start);
+  //   if (speed == 0) {
+  //     for (int i=0;i<3;i++) {
+  //       EXPECT_TRUE(rinterp==begin);
+  //       EXPECT_FLOAT_EQ(*(rinterp++),val) << "when speed = " << speed << " and start = " << start;
+  //       val += speed;
+  //     }
+  //   }
+  //   else {
+  //     while (rinterp) {
+  //       EXPECT_TRUE(rinterp<=begin);
+  //       EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
+  //       val -= speed;
+  //     }
+  //   }
+  // }
 
   void testVariableRateInterpolator(void) {
     double rate = 1;
@@ -131,6 +132,15 @@ TEST_F(SimpleWavetableTest, basic) {
   testInterpolator(0.3428);
   testInterpolator(1.2864);
   testInterpolator(1.2864, 0.1);
+  testInterpolator(-0.5);
+  testInterpolator(-0.5,1.2);
+  testInterpolator(-1.0);
+  testInterpolator(-1.0, 2.1);
+  testInterpolator(-2.0);
+  testInterpolator(-4.0);
+  testInterpolator(-0.3428);
+  testInterpolator(-1.2864);
+  testInterpolator(-1.2864, 0.1);
   testVariableRateInterpolator();
 
   for (int i=0;i<10;i++)
@@ -144,7 +154,6 @@ static int paCallback(const void *input, void *output, unsigned long frames, con
 class WavetablePlaybackTest : public AudioPlaybackTest {
 protected:
 
-  
   virtual void SetUp(void) {
     SF_INFO info;
     info.format = 0;
@@ -160,19 +169,19 @@ protected:
 
 };
 
-TEST_F(WavetablePlaybackTest, speed) {
-  double end = wt->end();
+TEST_F(WavetablePlaybackTest, simple) {
+  double end = wt->end();  
   printf("Cycling over a short section at normal rate...\n");
-  playBack(1, 17850, 27850, true);
+  playBack(1, 17850, 17850, 27850, true);
   printf("Cycling backward over a short section at normal rate...\n");  
-  playBack(-1, 27850, 17850, true);
+  playBack(-1, 27850, 17850, 27850, true);
   printf("Cycling over a short section at double rate...\n");  
-  playBack(2, 17850, 27850, true);
+  playBack(2, 17850, 17850, 27850, true);
   printf("Cycling backward over a short section at double rate...\n");    
-  playBack(-2, 27850, 17850, true);
+  playBack(-2, 27850, 17850, 27850, true);
 
   printf("Cycling over an empty section. Should be silent...\n");  
-  playBack(-1, 17850, 27850, true);
+  playBack(-1, 17850, 27850, 17850, true);
   printf("Playing back the whole wavetable at various speeds...\n");
   playBack(1, 0);
   playBack(0.5, 0);
@@ -189,5 +198,36 @@ TEST_F(WavetablePlaybackTest, speed) {
   printf("Playing back part of wavetable backward at various speeds...\n");
   playBack(-1,35229);
   playBack(-4.2,35229);
-  
+}
+
+TEST_F(WavetablePlaybackTest, modulated) {
+  playBack(
+    make_line(-2./wt->size(), 1),
+    0
+    );
+  playBack(
+    make_line(-2./wt->size(), 1),
+    0,
+    0,
+    -1,
+    true
+    );
+  playBack(
+    make_line(10./wt->size(), 1),
+    0
+    );
+  playBack(
+    make_line(10./wt->size(), 1),
+    0,
+    0,
+    -1,
+    true
+    );
+  playBack(
+    make_sinusoid(4./samplerate,2),
+    wt->size()/2,
+    0,
+    -1,
+    true
+    ); //this won't actually cycle, we just want to test it as if it did
 }
