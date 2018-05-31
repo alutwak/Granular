@@ -41,7 +41,7 @@ namespace audioelectric {
        *             reverse iteration.
        * \param start The starting position in the Waveform
        */
-      phasor_impl(const Waveform<T>& wf, double rate, double start);
+      phasor_impl(Waveform<T>& wf, double rate, double start);
 
       phasor_impl(const phasor_impl& other);
 
@@ -51,7 +51,7 @@ namespace audioelectric {
 
       double _rate;             //!< The rate that the phase changes per iteration
       double _phase;            //!< The current phase
-      const Waveform<T>& _wf;   //!< The waveform that we're phasing
+      Waveform<T>& _wf;   //!< The waveform that we're phasing
 
       virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
       virtual operator bool(void) const;                //!<\brief Always returns true
@@ -73,6 +73,8 @@ namespace audioelectric {
        */
       double getPhase(void) const {return _phase;}
 
+      virtual void reset(void) {_phase = 0;}
+
       /*!\brief Copies this phasor implementation
        *
        * This must be overridden by subclasses in order for phasor::operator++ and the phasor copy constructor
@@ -89,7 +91,7 @@ namespace audioelectric {
     public:
       virtual ~mod_phasor(void) {}
 
-      mod_phasor(const Waveform<T>& wf, const phasor& rates, double start);
+      mod_phasor(Waveform<T>& wf, const phasor& rates, double start);
 
       mod_phasor(const mod_phasor& other);
 
@@ -154,6 +156,8 @@ namespace audioelectric {
        */
       double getPhase(void) const {return _impl->getPhase();}
 
+      void reset(void) {_impl->reset();}
+
     protected:
       friend Waveform<T>;
       
@@ -176,9 +180,9 @@ namespace audioelectric {
      * \param pos The position of the waveform
      * \return The waveform at the given phase
      */
-    virtual T waveform(double pos) const = 0;
+    virtual T waveform(double pos) = 0;
 
-    /*!\brief Returns the size of the waveform
+    /*!\brief Returns the number of samples of the waveform
      */
     virtual std::size_t size(void) const = 0;
 
@@ -190,11 +194,11 @@ namespace audioelectric {
      */
     phasor make_phasor(phasor_impl* impl) const {return phasor(impl);}
 
-    virtual phasor pbegin(double rate, double start) const;
+    virtual phasor pbegin(double rate, double start);
     
     /*!\brief Returns a phasor that starts at the beginning of the waveform
      */
-    virtual phasor pbegin(double rate) const;
+    virtual phasor pbegin(double rate);
     
     // virtual phasor rpbegin(double rate, double start) const;
 

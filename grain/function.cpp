@@ -16,7 +16,7 @@ namespace audioelectric {
 
     virtual ~Constant(void) {}
 
-    virtual double waveform(double pos) const {
+    virtual double waveform(double pos) {
       return 1;
     }
 
@@ -40,7 +40,7 @@ namespace audioelectric {
 
     virtual ~Line(void) {}
 
-    virtual double waveform(double pos) const {
+    virtual double waveform(double pos) {
       return pos;
     }
     
@@ -64,7 +64,7 @@ namespace audioelectric {
 
     virtual ~Sinusoid(void) {}
 
-    virtual double waveform(double pos) const {
+    virtual double waveform(double pos) {
       return sin(2*PI*pos);
     }
   };

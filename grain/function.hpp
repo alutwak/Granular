@@ -24,7 +24,7 @@ namespace audioelectric {
 
       virtual ~function_phs(void) {}
 
-      function_phs(const Function& fun, double freq, double ampl, double offset, double start) :
+      function_phs(Function& fun, double freq, double ampl, double offset, double start) :
         ph_im(fun, freq, start), _ampl(ampl), _offset(offset)
         {
           
@@ -50,7 +50,7 @@ namespace audioelectric {
 
       virtual ~function_mod(void) {}
 
-      function_mod(const Function& fun, phasor fmod, phasor amod, double offset, double start) :
+      function_mod(Function& fun, phasor fmod, phasor amod, double offset, double start) :
         function_phs(fun, *fmod, *amod, offset, start), _fmod(fmod), _amod(amod) {}
       
       function_mod(const function_mod& other) : function_phs(other), _fmod(other._fmod), _amod(other._amod) {}
@@ -74,21 +74,21 @@ namespace audioelectric {
 
     virtual ~Function(void) {}
 
-    virtual double waveform(double pos) const = 0;
+    virtual double waveform(double pos) = 0;
 
     virtual std::size_t size(void) const {return 0;}
 
     virtual double end(void) const {return 0;}
 
-    virtual dphasor pbegin(double freq, double ampl=1, double offset=0, double start=0) const {
+    virtual dphasor pbegin(double freq, double ampl=1, double offset=0, double start=0) {
       return Waveform<double>::make_phasor(new function_phs(*this, freq, ampl, offset, start));
     }
 
-    virtual dphasor rpbegin(double freq, double ampl=1, double offset=0, double start=0) const {
+    virtual dphasor rpbegin(double freq, double ampl=1, double offset=0, double start=0) {
       return Waveform<double>::make_phasor(new function_phs(*this, -freq, ampl, offset, start));
     }
 
-    virtual dphasor pbegin(phasor fmod, phasor amod, double offset=0, double start=0) const {
+    virtual dphasor pbegin(phasor fmod, phasor amod, double offset=0, double start=0) {
       return Waveform<double>::make_phasor(new function_mod(*this, fmod, amod, offset, start));
     }
 

@@ -32,7 +32,7 @@ namespace audioelectric {
       
     protected:
       friend class Grain;
-      granulator(const Grain<T>& grn, double start, double rate,
+      granulator(Grain<T>& grn, double start, double rate,
                  const typename Waveform<T>::phasor& phasor_other);
       granulator(const granulator& other);
       //granulator& operator=(const granulator& other);
@@ -64,7 +64,7 @@ namespace audioelectric {
     
     /*!\brief Copies a sample to a new length using interpolation
      */
-    Grain(const Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
+    Grain(Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
 
     //~Grain(void);
     /*!\brief Generates a forward grain
@@ -73,9 +73,9 @@ namespace audioelectric {
      * \param rate The rate at which to advance through the grain (>0, <1 is slower, >1 is faster)
      * \param phasor_other A phasor to modulate with the grainulator
      */
-    typename Waveform<T>::phasor gmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
+    typename Waveform<T>::phasor gmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other);
 
-    typename Waveform<T>::phasor rgmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other) const;
+    typename Waveform<T>::phasor rgmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other);
     
   };
 

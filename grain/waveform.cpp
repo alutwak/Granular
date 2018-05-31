@@ -10,33 +10,21 @@ namespace audioelectric {
   Waveform<T>::~Waveform(void) {}
   
   template<typename T>
-  typename Waveform<T>::phasor Waveform<T>::pbegin(double rate, double start) const
+  typename Waveform<T>::phasor Waveform<T>::pbegin(double rate, double start)
   {
     return phasor(new phasor_impl(*this,rate,start));
   }
 
   template<typename T>
-  typename Waveform<T>::phasor Waveform<T>::pbegin(double rate) const
+  typename Waveform<T>::phasor Waveform<T>::pbegin(double rate)
   {
     return pbegin(rate,0);
   }
 
-  // template<typename T>
-  // typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate, double start) const
-  // {
-  //   return phasor(new phasor_impl(*this,-rate,start));
-  // }
-
-  // template<typename T>
-  // typename Waveform<T>::phasor Waveform<T>::rpbegin(double rate) const
-  // {
-  //   return rpbegin(rate,end());
-  // }
-  
   /*********************** phasor_impl *******************************/
 
   template<typename T>
-  Waveform<T>::phasor_impl::phasor_impl(const Waveform<T>& wf, double rate, double start) :
+  Waveform<T>::phasor_impl::phasor_impl(Waveform<T>& wf, double rate, double start) :
     _wf(wf), _phase(start)
   {
     setRate(rate);
@@ -117,7 +105,7 @@ namespace audioelectric {
   /*********************** mod_phasor *******************************/
 
   template<typename T>
-  Waveform<T>::mod_phasor::mod_phasor(const Waveform<T>& wf, const phasor& rates, double start) :
+  Waveform<T>::mod_phasor::mod_phasor(Waveform<T>& wf, const phasor& rates, double start) :
     Waveform<T>::phasor_impl(wf, *rates, start), _modulator(rates)
   {
     

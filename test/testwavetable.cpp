@@ -49,7 +49,10 @@ protected:
     }
     else {
       while (interp) {
-        EXPECT_TRUE(interp>=begin);
+        if (speed > 0)
+          EXPECT_TRUE(interp>=begin) << "when speed = " << speed << " and start = " << start;
+        else
+          EXPECT_TRUE(interp<=begin) << "when speed = " << speed << " and start = " << start;
         EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
         val += speed;
       }

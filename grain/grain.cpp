@@ -28,14 +28,14 @@ namespace audioelectric {
   }
 
   template<typename T>
-  Grain<T>::Grain(const Waveform<T>& other, double rate, std::size_t len, InterpType it) : Wavetable<T>(other, rate, len, it)
+  Grain<T>::Grain(Waveform<T>& other, double rate, std::size_t len, InterpType it) : Wavetable<T>(other, rate, len, it)
   {
     
   }
 
   template<typename T>
   typename Waveform<T>::phasor Grain<T>::gmake(double start, double rate,
-                                               const typename Waveform<T>::phasor& phasor_other) const
+                                               const typename Waveform<T>::phasor& phasor_other)
 
   {
     auto granu = new granulator(*this,start,rate,phasor_other);
@@ -44,7 +44,7 @@ namespace audioelectric {
 
   template<typename T>
   typename Waveform<T>::phasor Grain<T>::rgmake(double start, double rate,
-                                                const typename Waveform<T>::phasor& phasor_other) const
+                                                const typename Waveform<T>::phasor& phasor_other)
   {
     auto granu = new granulator(*this,start,-rate,phasor_other);
     return Waveform<T>::make_phasor(granu);
@@ -53,7 +53,7 @@ namespace audioelectric {
   /******************** granulator ********************/
 
   template<typename T>
-  Grain<T>::granulator::granulator(const Grain<T>& grn, double start, double rate,
+  Grain<T>::granulator::granulator(Grain<T>& grn, double start, double rate,
                                    const typename Waveform<T>::phasor& interp_other) :
     Wavetable<T>::interpolator(grn,rate,start,start), _phasor_other(interp_other)
   {

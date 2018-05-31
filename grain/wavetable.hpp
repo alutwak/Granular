@@ -32,7 +32,6 @@ namespace audioelectric {
       
       virtual ~interpolator(void) {}
 
-
       /*!\brief Constructs an interpolator that starts at an interpolated position in the wavetable. 
        * 
        * See the discussion of how position relates to phase and rate in the Waveform::phasor_impl class documentation.
@@ -46,7 +45,7 @@ namespace audioelectric {
        *              interpolators and at the first sample for reverse interpolators.
        * \param cycle Whether or not to cycle over the waveform.
        */
-      interpolator(const Wavetable<T>& wt, double rate, double start=0, double begin=0, double end=-1, bool cycle=false);
+      interpolator(Wavetable<T>& wt, double rate, double start=0, double begin=0, double end=-1, bool cycle=false);
 
       interpolator(const interpolator& other);
       
@@ -60,8 +59,6 @@ namespace audioelectric {
 
       interpolator operator+(long n) const;     //!<\brief Random access +
 
-      virtual T value(void) const;              //!<\brief Returns the value of the Wavetable at the current phase
-
       /*!\brief Returns false if the current phase is outside the bounds of the wavetable. Otherwise returns true.
        */
       virtual operator bool(void) const;        
@@ -69,6 +66,8 @@ namespace audioelectric {
       /*!\brief Sets the rate (useful for vari-rate iterations)
        */
       virtual void setRate(double rate);
+
+      virtual void reset(void) {ph_im::_phase = _begin;}
       
       /*!\brief Copies this interpolator and returns a pointer to the newly constructed object
        */
@@ -99,7 +98,7 @@ namespace audioelectric {
 
       friend class Wavetable;
 
-      mod_interpolator(const Wavetable<T>& wt, const dphasor& modulator,
+      mod_interpolator(Wavetable<T>& wt, const dphasor& modulator,
                        double start, double begin, double end, bool cycle);
 
       mod_interpolator(const mod_interpolator& other);
@@ -147,7 +146,7 @@ namespace audioelectric {
     
     /*!\brief Copies a sample to a new length using interpolation
      */
-    Wavetable(const Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
+    Wavetable(Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
 
     ~Wavetable(void);
 
@@ -172,7 +171,7 @@ namespace audioelectric {
      * \param pos The position on the waveform
      * \return The interpolated value at pos
      */
-    virtual T waveform(double pos) const;
+    virtual T waveform(double pos);
 
     Wavetable<T>& operator=(const Wavetable<T>& other);
 
@@ -191,19 +190,19 @@ namespace audioelectric {
      * \param end The ending position
      * \param cycle Whether or not to cycle over the wavetable
      */
-    phasor pbegin(double rate, double start, double begin=0, double end=-1, bool cycle=false) const;
+    phasor pbegin(double rate, double start, double begin=0, double end=-1, bool cycle=false);
 
     /*!\brief Returns a forward modulating interpolator
      */
-    phasor pbegin(const dphasor& modulator, double start, double begin=0, double end=-1, bool cycle=false) const;    
+    phasor pbegin(const dphasor& modulator, double start, double begin=0, double end=-1, bool cycle=false);
 
     /*!\brief Returns a forward interpolator that points to the beginning of the waveform \see ibegin(long,double)
      *
      * \param rate The rate at which to advance through the waveform (>0, <1 is slower, >1 is faster)
      */
-    phasor pbegin(double rate) const;
+    phasor pbegin(double rate);
 
-    phasor pbegin(const dphasor& modulator) const;
+    phasor pbegin(const dphasor& modulator);
     
     // /*!\brief Returns a reverse interpolator that points to the end of the waveform
     //  *
