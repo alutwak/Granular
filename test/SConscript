@@ -5,8 +5,8 @@ Import('grain_lib')
 
 test_files = ['main.cpp',
               'testwavetable.cpp',
-              'testgrain.cpp',
-              'testfunctions.cpp',
+              # 'testgrain.cpp',
+              # 'testfunctions.cpp',
 ]
 
 include_dirs = [

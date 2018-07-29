@@ -5,7 +5,7 @@
 
 #include "audioplaybacktest.hpp"
 #include "wavetable.hpp"
-#include "function.hpp"
+//#include "function.hpp"
 
 using namespace audioelectric;
 
@@ -13,6 +13,15 @@ class SimpleWavetableTest : public ::testing::Test {
 protected:
 
   Wavetable<double> wt = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+  double *test;
+
+  virtual void SetUp(void) override {
+    test = new double[wt.size()];
+  }
+
+  virtual void TearDown(void) override {
+    delete[] test;
+  }
 
   void testBasic(void) {
     EXPECT_EQ(wt.size(),10);
@@ -35,75 +44,81 @@ protected:
   
   /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as speed
    */
-  void testInterpolator(double speed, double start=0) {
-    auto interp = wt.pbegin(speed,start);
-    auto begin = interp;
-    double val = *interp;
-    ASSERT_EQ(val, start) << "when speed = " << speed << " and start = " << start;
+  void testPhasor(double speed, double start=0) {
+    auto phs = Phasor<double>(wt,speed,start);
+    auto begin = phs;
+    double check = phs.value();
+    ASSERT_EQ(check, start) << "when speed = " << speed << " and start = " << start;
     if (speed == 0) {
+      EXPECT_TRUE(phs.generate(&test,3)); //generate 3 frames
+      EXPECT_TRUE(phs==begin);            //Should still be at the beginning
       for (int i=0;i<3;i++) {
-        EXPECT_TRUE(interp==begin);
-        EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
-        val += speed;
+        EXPECT_FLOAT_EQ(test[i],check) << "when speed = " << speed << " and start = " << start;
+        check += speed;
       }
     }
     else {
-      while (interp) {
+      int iters = 0;
+      while (phs) {
         if (speed > 0)
-          EXPECT_TRUE(interp>=begin) << "when speed = " << speed << " and start = " << start;
+          EXPECT_TRUE(phs>=begin) << "when speed = " << speed << " and start = " << start;
         else
-          EXPECT_TRUE(interp<=begin) << "when speed = " << speed << " and start = " << start;
-        EXPECT_FLOAT_EQ(*(interp++),val) << "when speed = " << speed << " and start = " << start;
-        val += speed;
+          EXPECT_TRUE(phs<=begin) << "when speed = " << speed << " and start = " << start;
+        phs.generate(&test,1);
+        EXPECT_FLOAT_EQ(test[0],check) << "when speed = " << speed << " and start = " << start;
+        check += speed;
+        iters++;
       }
     }
-    //testReverseInterpolator(speed,start);
+    //testReversePhasor(speed,start);
   }
 
-  // void testReverseInterpolator(double speed, double start) {
+  // void testReversePhasor(double speed, double start) {
   //   if (start == 0) start = wt.size()-1;
-  //   auto rinterp = wt.rpbegin(speed, start);
-  //   auto begin = rinterp;
-  //   double val = *rinterp;
+  //   auto rphs = wt.rpbegin(speed, start);
+  //   auto begin = rphs;
+  //   double val = *rphs;
   //   ASSERT_EQ(val,start);
   //   if (speed == 0) {
   //     for (int i=0;i<3;i++) {
-  //       EXPECT_TRUE(rinterp==begin);
-  //       EXPECT_FLOAT_EQ(*(rinterp++),val) << "when speed = " << speed << " and start = " << start;
+  //       EXPECT_TRUE(rphs==begin);
+  //       EXPECT_FLOAT_EQ(*(rphs++),val) << "when speed = " << speed << " and start = " << start;
   //       val += speed;
   //     }
   //   }
   //   else {
-  //     while (rinterp) {
-  //       EXPECT_TRUE(rinterp<=begin);
-  //       EXPECT_NEAR(*(rinterp++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
+  //     while (rphs) {
+  //       EXPECT_TRUE(rphs<=begin);
+  //       EXPECT_NEAR(*(rphs++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
   //       val -= speed;
   //     }
   //   }
   // }
 
-  void testVariableRateInterpolator(void) {
+  void testVariableRatePhasor(void) {
     double rate = 1;
-    auto interp = wt.pbegin(rate,0);
-    auto begin = interp;
-    double val = *interp;
+    auto phs = Phasor<double>(wt,rate,0);
+    auto begin = phs;
+    double val = phs.value();
     ASSERT_EQ(val,wt[0]);
-    while(interp) {
+    while(phs) {
       rate++;
-      interp.setRate(rate);
-      EXPECT_TRUE(interp>=begin);
-      ASSERT_FLOAT_EQ(*(interp++),val) << "when rate = " << rate;
+      phs.setRate(rate);
+      EXPECT_TRUE(phs>=begin);
+      phs.generate(&test,1);
+      ASSERT_FLOAT_EQ(test[0],val) << "when rate = " << rate;
       val += rate;
     }
     rate = -rate;
-    interp.setRate(rate);
-    interp++;
+    phs.setRate(rate);
+    phs.increment();
     val += rate;
-    while(interp) {
+    while(phs) {
       rate++;
-      interp.setRate(rate);
-      EXPECT_TRUE(interp>=begin);
-      EXPECT_FLOAT_EQ(*(interp++),val) << "when rate = " << rate;
+      phs.setRate(rate);
+      EXPECT_TRUE(phs>=begin);
+      phs.generate(&test,1);      
+      EXPECT_FLOAT_EQ(test[0],val) << "when rate = " << rate;
       val += rate;
     }
   }
@@ -125,26 +140,26 @@ protected:
 TEST_F(SimpleWavetableTest, basic) {
 
   testBasic();
-  testInterpolator(0, 1);
-  testInterpolator(0.5);
-  testInterpolator(0.5,1.2);
-  testInterpolator(1.0);
-  testInterpolator(1.0, 2.1);
-  testInterpolator(2.0);
-  testInterpolator(4.0);
-  testInterpolator(0.3428);
-  testInterpolator(1.2864);
-  testInterpolator(1.2864, 0.1);
-  testInterpolator(-0.5);
-  testInterpolator(-0.5,1.2);
-  testInterpolator(-1.0);
-  testInterpolator(-1.0, 2.1);
-  testInterpolator(-2.0);
-  testInterpolator(-4.0);
-  testInterpolator(-0.3428);
-  testInterpolator(-1.2864);
-  testInterpolator(-1.2864, 0.1);
-  testVariableRateInterpolator();
+  testPhasor(0, 1);
+  testPhasor(0.5);
+  testPhasor(0.5,1.2);
+  testPhasor(1.0);
+  testPhasor(1.0, 2.1);
+  testPhasor(2.0);
+  testPhasor(4.0);
+  testPhasor(0.3428);
+  testPhasor(1.2864);
+  testPhasor(1.2864, 0.1);
+  testPhasor(-0.5);
+  testPhasor(-0.5,1.2);
+  testPhasor(-1.0);
+  testPhasor(-1.0, 2.1);
+  testPhasor(-2.0);
+  testPhasor(-4.0);
+  testPhasor(-0.3428);
+  testPhasor(-1.2864);
+  testPhasor(-1.2864, 0.1);
+  testVariableRatePhasor();
 
   for (int i=0;i<10;i++)
     testCopy(i);
@@ -164,7 +179,6 @@ protected:
     ASSERT_TRUE(testfile) << "unable to open testfile.wav";
     wt = new Wavetable<float>(info.frames); //We know this is just one channel
     sf_count_t nread = sf_readf_float(testfile, wt->data(), info.frames);
-    //wt = dynamic_cast<Waveform<float>*>(wt);
     samplerate = info.samplerate;
     ASSERT_EQ(nread,info.frames) << "Failed to read entire testfile.wav";
     sf_close(testfile);
@@ -203,34 +217,34 @@ TEST_F(WavetablePlaybackTest, simple) {
   playBack(-4.2,35229);
 }
 
-TEST_F(WavetablePlaybackTest, modulated) {
-  playBack(
-    make_line(-2./wt->size(), 1),
-    0
-    );
-  playBack(
-    make_line(-2./wt->size(), 1),
-    0,
-    0,
-    -1,
-    true
-    );
-  playBack(
-    make_line(10./wt->size(), 1),
-    0
-    );
-  playBack(
-    make_line(10./wt->size(), 1),
-    0,
-    0,
-    -1,
-    true
-    );
-  playBack(
-    make_sinusoid(4./samplerate,2),
-    wt->size()/2,
-    0,
-    -1,
-    true
-    ); //this won't actually cycle, we just want to test it as if it did
-}
+// TEST_F(WavetablePlaybackTest, modulated) {
+//   playBack(
+//     make_line(-2./wt->size(), 1),
+//     0
+//     );
+//   playBack(
+//     make_line(-2./wt->size(), 1),
+//     0,
+//     0,
+//     -1,
+//     true
+//     );
+//   playBack(
+//     make_line(10./wt->size(), 1),
+//     0
+//     );
+//   playBack(
+//     make_line(10./wt->size(), 1),
+//     0,
+//     0,
+//     -1,
+//     true
+//     );
+//   playBack(
+//     make_sinusoid(4./samplerate,2),
+//     wt->size()/2,
+//     0,
+//     -1,
+//     true
+//     ); //this won't actually cycle, we just want to test it as if it did
+// }
