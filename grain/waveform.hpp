@@ -2,9 +2,6 @@
 #pragma once
 
 #include <cstdlib>
-#include <vector>
-#include <utility>
-#include <functional>
 
 namespace audioelectric {
 
@@ -39,25 +36,6 @@ namespace audioelectric {
      */
     virtual double end(void) const = 0;
 
-    // /*!\brief Provides access to phasor's protected constructor
-    //  */
-    // phasor make_phasor(phasor_impl* impl) const {return phasor(impl);}
-
-    // virtual phasor pbegin(double rate, double start);
-    
-    // /*!\brief Returns a phasor that starts at the beginning of the waveform
-    //  */
-    // virtual phasor pbegin(double rate);
-    
-    // virtual phasor rpbegin(double rate, double start) const;
-
-    // /*!\brief Returns a reverse phasor that starts at the end of the waveform
-    //  */
-    // virtual phasor rpbegin(double rate) const;
-
   };
 
-  // typedef typename Waveform<double>::phasor dphasor;
-  // typedef typename Waveform<float>::phasor fphasor;  
-  
 }
