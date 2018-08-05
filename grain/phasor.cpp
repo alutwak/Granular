@@ -140,23 +140,23 @@ namespace audioelectric {
   /*********************** ModPhasor *******************************/
 
   template<typename T>
-  ModPhasor<T>::ModPhasor(Waveform<T>& wf, const Phasor<T>& rates, double start) :
-    Phasor<T>(wf, rates.value(), start), _modulator(rates)
+  ModPhasor<T>::ModPhasor(Waveform<T>& wf, Phasor<T> modulator, double start, double begin, double end, bool cycle) :
+    Phasor<T>(wf,modulator.value(),start,begin,end,cycle), _modulator(modulator)
   {
     
   }
 
   template<typename T>
   ModPhasor<T>::ModPhasor(const ModPhasor& other) :
-    Phasor<T>(other._wf, other._rate, other._phase), _modulator(other._modulator)
+    Phasor<T>(*this), _modulator(other._modulator)
   {
     
   }
 
   template<typename T>
-  void ModPhasor<T>::setModulator(const Phasor<T> &rates)
+  void ModPhasor<T>::setModulator(const Phasor<T> &modulator)
   {
-    _modulator = rates;
+    _modulator = modulator;
   }
 
   template<typename T>
@@ -173,58 +173,6 @@ namespace audioelectric {
     Phasor<T>::setRate(_modulator.value());
   }
 
-  /*********************** Phasor *******************************/
-
-  // template<typename T>
-  // typename Phasor& Phasor<T>::operator++(void)
-  // {
-  //   _impl->increment();
-  //   return *this;
-  // }
-  
-  // template<typename T>
-  // typename Phasor Phasor<T>::operator++(int)
-  // {
-  //   auto old = *this;
-  //   _impl->increment();
-  //   return old;
-  // }
-
-  // template<typename T>
-  // bool Phasor<T>::operator==(const Phasor& other) const
-  // {
-  //   return *_impl == *other._impl;
-  // }
-
-  // template<typename T>
-  // bool Phasor<T>::operator!=(const Phasor& other) const
-  // {
-  //   return !(*this == other);
-  // }
-
-  // template<typename T>
-  // bool Phasor<T>::operator<(const Phasor& other) const
-  // {
-  //   return *_impl < *other._impl;
-  // }
-  
-  // template<typename T>
-  // bool Phasor<T>::operator>(const Phasor& other) const
-  // {
-  //   return *_impl > *other._impl;
-  // }
-
-  //   template<typename T>
-  // bool Phasor<T>::operator<=(const Phasor& other) const
-  // {
-  //   return *_impl <= *other._impl;
-  // }
-
-  // template<typename T>
-  // bool Phasor<T>::operator>=(const Phasor& other) const
-  // {
-  //   return *_impl >= *other._impl;
-  // }
   template class Phasor<double>;
   template class Phasor<float>;
   template class ModPhasor<double>;
