@@ -9,8 +9,6 @@
 
 using namespace audioelectric;
 
-typedef Phasor<double> dphasor;
-
 static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
                PaStreamCallbackFlags statusFlags, void *wtinterp_data)
 {
@@ -25,12 +23,12 @@ protected:
   Wavetable<float> *wt = nullptr;
   double samplerate;
   PaStream *stream;
-  
+
   virtual void TearDown(void) {
     if (wt != nullptr)
       delete wt;
   }
-
+  
   virtual void playBack(double rate, double start, double begin=0, double end=-1, bool cycle=false) {
     printf("\nPlayback rate: %f\n",rate);
     printf("Start position: %f\n",start);
@@ -55,12 +53,12 @@ protected:
     }
   }
 
-  virtual void playBack(dphasor rate, double start, double begin=0, double end=-1, bool cycle=false) {
+  virtual void playBack(Phasor<float> rate, double start, double begin=0, double end=-1, bool cycle=false) {
     printf("\nStarting playback rate: %f\n",rate.value());
     printf("Start position: %f\n",start);
     printf("End position: %f\n",end);
     if (cycle) printf("Cycling...\n");
-    auto phs = Phasor<float>(*wt, rate, start, begin, end, cycle);    
+    auto phs = ModPhasor<float>(*wt, rate, start, begin, end, cycle);
     long playtime = runPlayback(phs, 5000);
     if (cycle) {
       EXPECT_TRUE((bool)phs);

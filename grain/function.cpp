@@ -1,90 +1,74 @@
 
-#include <cmath>
-#include <utility>
+#include <type_traits>
 
 #include "function.hpp"
-
-#define PI 3.14159265359
 
 namespace audioelectric {
 
   /******************** Constant ****************************/
-  
-  class Constant : public Function {
 
-  public:
+  static Constant<float> _fconst;
+  static Constant<double> _dconst;
 
-    virtual ~Constant(void) {}
-
-    virtual double waveform(double pos) {
-      return 1;
-    }
-
-  };
-
-  static std::unique_ptr<Constant> _const;
-
-  dphasor make_constant(double value)
+  template <>
+  FunPhasor<float> makeConstant(float value)
   {
-    if (!_const) {
-      _const = std::make_unique<Constant>();
-    }
-    return _const->pbegin(1,value);
+    return FunPhasor<float>(_fconst,1,value);
   };
+
+  template <>
+  FunPhasor<double> makeConstant(double value)
+  {
+    return FunPhasor<double>(_dconst,1,value);
+  };
+
+  // template FunPhasor<double> makeConstant<double>(double value);
+  // template FunPhasor<float> makeConstant<float>(float value);
 
   /********************** Line **********************/
 
-  class Line : public Function {
-
-  public:
-
-    virtual ~Line(void) {}
-
-    virtual double waveform(double pos) {
-      return pos;
-    }
-    
-  };
-
-  static std::unique_ptr<Line> _line;
-
-  dphasor make_line(double slope, double start)
+  static Line<float> _fline;
+  static Line<double> _dline;
+  
+  template <>
+  FunPhasor<float> makeLine(float slope, float start)
   {
-    if(!_line) {
-      _line = std::make_unique<Line>();
-    }
-    return _line->pbegin(slope, 1, start); //rate=slope, ampl=1, offset=start, start=0
+    return FunPhasor<float>(_fline,slope,start);
   }
   
-  /******************** Sinusoid ****************************/
-
-  class Sinusoid : public Function {
-
-  public:
-
-    virtual ~Sinusoid(void) {}
-
-    virtual double waveform(double pos) {
-      return sin(2*PI*pos);
-    }
-  };
-
-  static std::unique_ptr<Sinusoid> _sin;
-
-  dphasor make_sinusoid(double freq, double ampl, double offset, double start)
+  template <>
+  FunPhasor<double> makeLine(double slope, double start)
   {
-    if (!_sin) {
-      _sin = std::make_unique<Sinusoid>();
-    }
-    return _sin->pbegin(freq,ampl,offset,start);
+    return FunPhasor<double>(_dline,slope,start);
+  }
+  // /******************** Sinusoid ****************************/
+
+  static Sinusoid<float> _fsin;
+  static Sinusoid<double> _dsin;
+
+  template <>
+  FunPhasor<float> makeSinusoid(double freq, float ampl, float offset, double start)
+  {
+    return FunPhasor<float>(_fsin,freq,ampl,offset,start);
   }
 
-  dphasor make_sinusoid(dphasor fmod, dphasor amod, double offset, double start)
+  template <>
+  FunPhasor<double> makeSinusoid(double freq, double ampl, double offset, double start)
   {
-    if (!_sin) {
-      _sin = std::make_unique<Sinusoid>();
-    }
-    return _sin->pbegin(fmod, amod, offset, start);
+    return FunPhasor<double>(_dsin,freq,ampl,offset,start);
   }
+
+  template <>
+  FunModPhasor<float> makeSinusoid(Phasor<float> fmod, Phasor<float> amod, float offset, double start)
+  {
+    return FunModPhasor<float>(_fsin,fmod,amod,offset,start);
+  }
+
+  template <>
+  FunModPhasor<double> makeSinusoid(Phasor<double> fmod, Phasor<double> amod, double offset, double start)
+  {
+    return FunModPhasor<double>(_dsin,fmod,amod,offset,start);
+  }
+  
   
 }

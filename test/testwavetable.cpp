@@ -5,7 +5,7 @@
 
 #include "audioplaybacktest.hpp"
 #include "wavetable.hpp"
-//#include "function.hpp"
+#include "function.hpp"
 
 using namespace audioelectric;
 
@@ -70,30 +70,7 @@ protected:
         iters++;
       }
     }
-    //testReversePhasor(speed,start);
   }
-
-  // void testReversePhasor(double speed, double start) {
-  //   if (start == 0) start = wt.size()-1;
-  //   auto rphs = wt.rpbegin(speed, start);
-  //   auto begin = rphs;
-  //   double val = *rphs;
-  //   ASSERT_EQ(val,start);
-  //   if (speed == 0) {
-  //     for (int i=0;i<3;i++) {
-  //       EXPECT_TRUE(rphs==begin);
-  //       EXPECT_FLOAT_EQ(*(rphs++),val) << "when speed = " << speed << " and start = " << start;
-  //       val += speed;
-  //     }
-  //   }
-  //   else {
-  //     while (rphs) {
-  //       EXPECT_TRUE(rphs<=begin);
-  //       EXPECT_NEAR(*(rphs++),val, 1e-3) << "when speed = " << speed << " and start = " << start;
-  //       val -= speed;
-  //     }
-  //   }
-  // }
 
   void testVariableRatePhasor(void) {
     double rate = 1;
@@ -217,34 +194,34 @@ TEST_F(WavetablePlaybackTest, simple) {
   playBack(-4.2,35229);
 }
 
-// TEST_F(WavetablePlaybackTest, modulated) {
-//   playBack(
-//     make_line(-2./wt->size(), 1),
-//     0
-//     );
-//   playBack(
-//     make_line(-2./wt->size(), 1),
-//     0,
-//     0,
-//     -1,
-//     true
-//     );
-//   playBack(
-//     make_line(10./wt->size(), 1),
-//     0
-//     );
-//   playBack(
-//     make_line(10./wt->size(), 1),
-//     0,
-//     0,
-//     -1,
-//     true
-//     );
-//   playBack(
-//     make_sinusoid(4./samplerate,2),
-//     wt->size()/2,
-//     0,
-//     -1,
-//     true
-//     ); //this won't actually cycle, we just want to test it as if it did
-// }
+TEST_F(WavetablePlaybackTest, modulated) {
+  playBack(
+    makeLine<float>(-2./wt->size(), 1),
+    0
+    );
+  playBack(
+    makeLine<float>(-2./wt->size(), 1),
+    0,
+    0,
+    -1,
+    true
+    );
+  playBack(
+    makeLine<float>(10./wt->size(), 1),
+    0
+    );
+  playBack(
+    makeLine<float>(10./wt->size(), 1),
+    0,
+    0,
+    -1,
+    true
+    );
+  playBack(
+    makeSinusoid<float>(4./samplerate,2),
+    wt->size()/2,
+    0,
+    -1,
+    true
+    ); //this won't actually cycle, we just want to test it as if it did
+}
