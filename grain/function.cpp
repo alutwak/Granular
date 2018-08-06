@@ -33,7 +33,7 @@ namespace audioelectric {
   template <>
   FunPhasor<float> makeLine(float slope, float start)
   {
-    return FunPhasor<float>(_fline,slope,start);
+    return FunPhasor<float>(_fline,slope,1,start); //rate=slope, ampl=1, offset=start, start=0
   }
   
   template <>

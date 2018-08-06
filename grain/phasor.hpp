@@ -148,8 +148,8 @@ namespace audioelectric {
   public:
     virtual ~FunPhasor(void) {}
 
-    FunPhasor(Waveform<T>& fun, double freq, double ampl=1, double offset=0, double start=0, double end=-1, bool cycle=true) :
-      Phasor<T>(fun, freq, start, end, cycle), _ampl(ampl), _offset(offset)
+    FunPhasor(Waveform<T>& fun, double freq, double ampl=1, double offset=0, double start=0):
+      Phasor<T>(fun, freq, start), _ampl(ampl), _offset(offset)
       {
 
       }
