@@ -1,0 +1,248 @@
+#+PROPERTY: Effort_ALL 0 0:10 0:30 1:00 2:00 3:00 4:00 5:00 6:00 7:00
+#+COLUMNS: %40ITEM(Task) %TODO %CLOSED %17Effort(Estimated Effort){:} %CLOCKSUM
+#+TODO: BACKLOG(b) SCHEDULED(s) INPROGRESS(i) | DONE(d) CANCELED(c)
+
+* Structural Overview
+
+  The underlying structure of the audio generation is going to consist of a generation function and a phasor to generate
+  audio from that function. The generation function could be considered to be the storage for the audio signal, and to begin
+  with, at least, that will be the only function that will be supported. This class will be called the Wavetable. The phasor
+  class will be called the Phasor.
+
+  Since a Wavetable will essentially just be the storage for a chunk of audio data, there could be many phasors all using the
+  same Wavetable.
+
+  In order to minimize function call overhead, I will try to keep all functions in the audio path non-virtual and final.
+
+** Wavetable Requirements
+*** v1 [0/3]
+    + [ ] Store audio data
+    + [ ] Provide access to the audio data by index
+      + [ ] Indexing must be able to interpolate between raw samples for multi-speed phasing
+    + [ ] Return size of memory
+*** v2 [0/1]
+    + [ ] Provide interface to write audio data to it on the fly
+**** Opens
+     + If audio is written while phasors are reading, does there need to be any locking to prevent the writer from overwriting the
+       phasors' data
+     + What about multi-channel waveforms?
+** Phasor Requirements
+*** v1 [0/4]
+    + [ ] Parameters for:
+      - rate (frequency)
+      - starting phase
+      - begin/end phases of the loop
+      - and whether to cycle or just play once
+    + [ ] A phasor that has finished its run (in non-cycle mode) will just output values of 0
+    + [ ] Phase will be represented in units of samples (floating-point interpolated)
+    + [ ] Rates will be represented in units of samples/iteration
+*** v2 [0/1]
+    + [ ] Rate and amplitude parameters must have an interface for modulation signals.
+      + [ ] These will use modulation index-style modulation
+      + [ ] These will use a separate, overridden function to avoid overhead in non-modulation applications
+*** Opens
+    + What about multi-channel phasors?
+** Grain Requirements
+*** v1 [0/4]
+    + [ ] Phasor for base waveform
+    + [ ] Phasor for "envelope" waveform
+    + [ ] Multiply waveform and envelope at each sample
+    + [ ] Function to determine when grain is done so it can be deleted
+** Envelope Requirements
+*** v1 [0/3]
+    + [ ] Linear ADSR
+    + [ ] Develop "trigger" and "release" signals
+    + [ ] Figure out how to attach to signals (maybe use the signal-slot system)
+** Grain Generator Requirements
+*** v1 [0/1]
+    + [ ] Controls:
+      + [ ] Waveform (select between a set of defined waveforms - no samples yet)
+      + [ ] Density
+        + [ ] Frequency (Hz)
+        + [ ] Randomness
+      + [ ] Size
+        + [ ] Length (ms)
+        + [ ] Randomness
+      + [ ] Grain Shape (select between a set of defined shapes)
+      + [ ] Single channel
+** Filter Requirements
+*** v1 (no filters in v1)
+*** v2 [0/3]
+    + [ ] 2-4 pole lowpass
+      + [ ] Frequency
+      + [ ] Resonance
+    + [ ] 2-4 pole highpass
+      + [ ] Frequency
+      + [ ] Resonance
+    + [ ] Cascade them
+* Development Plan
+** Phase 1: Simple Grain Cloud (single channel)[0/6]
+*** INPROGRESS Clean up old code[4/4]
+**** DONE Combine Wavetable and Waveform (remove inheritance)
+     CLOSED: [2019-06-06 Thu 23:16]
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-06 Thu 22:58]--[2019-06-06 Thu 23:16] =>  0:18
+     :END:
+**** DONE Remove alternative phasors (everything but basic Phasor)
+     CLOSED: [2019-06-06 Thu 23:19]
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-06 Thu 23:16]--[2019-06-06 Thu 23:19] =>  0:03
+     :END:
+**** DONE Remove alternative waveforms (everything but Wavetable)
+     CLOSED: [2019-06-06 Thu 23:25]
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-06 Thu 23:19]--[2019-06-06 Thu 23:25] =>  0:06
+     :END:
+**** DONE Clean up unit tests [2/2]
+     CLOSED: [2019-06-06 Thu 23:35]
+***** DONE Remove tests for deleted classes
+      CLOSED: [2019-06-06 Thu 23:30]
+      :PROPERTIES:
+      :Effort:   0:30
+      :END:
+      :LOGBOOK:
+      CLOCK: [2019-06-06 Thu 23:25]--[2019-06-06 Thu 23:30] =>  0:05
+      :END:
+***** DONE Fix tests for Wavetable/Waveform
+      CLOSED: [2019-06-06 Thu 23:35]
+      :PROPERTIES:
+      :Effort:   2:00
+      :END:
+      :LOGBOOK:
+      CLOCK: [2019-06-06 Thu 23:30]--[2019-06-06 Thu 23:35] =>  0:05
+      :END:
+*** BACKLOG Wavetable v1 requirements met [0/3]
+**** BACKLOG Store audio data
+     :PROPERTIES:
+     :Effort:   0:00
+     :END:
+**** BACKLOG Provide access to the audio data by index
+     Indexing must be able to interpolate between raw samples for multi-speed phasing
+     :PROPERTIES:
+     :Effort:   0:00
+     :END:
+**** BACKLOG Return size of memory
+     :PROPERTIES:
+     :Effort:   0:00
+     :END:
+**** BACKLOG Verify unit test coverage (using sin wave waveform)
+     :PROPERTIES:
+     :Effort:   1:00
+     :END:
+*** BACKLOG Phaser v1 requirements met [0/5]
+**** BACKLOG Parameters for:
+     :PROPERTIES:
+     :Effort:   0:00
+     :END:
+     - waveform
+     - rate (frequency)
+     - starting phase
+     - begin/end phases of the loop
+     - and whether to cycle or just play once
+**** BACKLOG A phasor that has finished its run (in non-cycle mode) will just output values of 0
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+**** BACKLOG Phase will be represented in units of samples (floating-point interpolated)
+     :PROPERTIES:
+     :Effort:   0:00
+     :END:
+**** BACKLOG Rates will be represented in units of samples/iteration
+     :PROPERTIES:
+     :Effort:   0:00
+     :END:
+**** BACKLOG Verify unit test coverage (using sin waveform)
+     :PROPERTIES:
+     :Effort:   1:00
+     :END:
+*** BACKLOG Grain v1 requirements met [0/6]
+**** BACKLOG Write Grain interface
+     :PROPERTIES:
+     :Effort:   2:00
+     :END:
+**** BACKLOG Phasor for base waveform
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+**** BACKLOG Phasor for "envelope" waveform
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+**** BACKLOG Multiply waveform and envelope at each sample
+     :PROPERTIES:
+     :Effort:   1:00
+     :END:
+**** BACKLOG Function to determine when grain is done so it can be deleted
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+**** BACKLOG Unit tests
+     :PROPERTIES:
+     :Effort:   4:00
+     :END:
+*** BACKLOG Envelope v1 requirements met [0/4]
+**** BACKLOG Linear ADSR
+     :PROPERTIES:
+     :Effort:   3:00
+     :END:
+**** BACKLOG Develop "trigger" and "release" signals
+     :PROPERTIES:
+     :Effort:   0:30
+     :END:
+**** BACKLOG Figure out how to attach to signals (maybe use the signal-slot system)
+     :PROPERTIES:
+     :Effort:   2:00
+     :END:
+**** BACKLOG Unit tests
+     :PROPERTIES:
+     :Effort:   4:00
+     :END:
+*** BACKLOG Grain Generator v1 requirements met [0/3]
+**** BACKLOG Controls [0/5]
+     This is basically just the interface to the generator
+***** BACKLOG Waveform (select between a set of defined waveforms - no samples yet)
+      :PROPERTIES:
+      :Effort:   0:30
+      :END:
+***** BACKLOG Density [0/2]
+****** BACKLOG Frequency (Hz)
+       :PROPERTIES:
+       :Effort:   0:15
+       :END:
+****** BACKLOG Randomness
+       :PROPERTIES:
+       :Effort:   0:15
+       :END:
+***** BACKLOG Size [0/2]
+****** BACKLOG Length (ms)
+       :PROPERTIES:
+       :Effort:   0:15
+       :END:
+****** BACKLOG Randomness
+       :PROPERTIES:
+       :Effort:   0:15
+       :END:
+***** BACKLOG Grain Shape (select between a set of defined shapes)
+      :PROPERTIES:
+      :Effort:   2:00
+      :END:
+      Shape options:
+      + Gaussian
+**** BACKLOG Cloud generation [0/2]
+***** BACKLOG Write grain generation algorithm
+      :PROPERTIES:
+      :Effort:   4:00
+      :END:
+***** BACKLOG Write grain cleanup algorithm
+      :PROPERTIES:
+      :Effort:   1:00
+      :END:
