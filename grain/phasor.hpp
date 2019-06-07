@@ -21,10 +21,10 @@ namespace audioelectric {
    * the digital realities.
    */
   template<typename T>
-  class Phasor {
+  class Phasor final {
   public:
 
-    virtual ~Phasor(void) {}
+    ~Phasor(void) {}
 
     /*!\brief Constructs a Phasor that starts at a particular position in the waveform. 
      * 
@@ -44,11 +44,11 @@ namespace audioelectric {
 
     Phasor(const Phasor& other);
 
-    virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
+    T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
 
-    virtual bool generate(T **outputs, int frames, int channels=1);
+    bool generate(T **outputs, int frames, int channels=1);
       
-    virtual operator bool(void) const;                //!<\brief Always returns true
+    operator bool(void) const;                //!<\brief Always returns true
 
     Phasor& operator=(const Phasor& other);
     // Phasor& operator++(void);                 //!<\brief Prefix increment
@@ -70,7 +70,7 @@ namespace audioelectric {
 
     /*!\brief Sets the rate (useful for vari-rate iterations)
      */
-    virtual void setRate(double rate);
+    void setRate(double rate);
 
     /*!\brief Returns the current phase of the Phasor
      */
@@ -78,9 +78,9 @@ namespace audioelectric {
 
     /*!\brief Increments the phase
      */
-    virtual void increment(void);
+    void increment(void);
 
-    virtual void reset(void) {_phase = _begin;}    
+    void reset(void) {_phase = _begin;}    
 
   protected:
 
@@ -96,7 +96,7 @@ namespace audioelectric {
      * This must be overridden by subclasses in order for Phasor::operator++ and the Phasor copy constructor
      * to work correctly.
      */
-    virtual Phasor* copy(void) const;
+    Phasor* copy(void) const;
       
   private:
 
@@ -108,94 +108,6 @@ namespace audioelectric {
      */
     bool checkPhase(double phase) const;
     
-  };
-
-  /*!\brief A phasor whose rate is modulated by another phasor
-   *
-   */
-  template<typename T>
-  class ModPhasor : public Phasor<T> {
-  public:
-    virtual ~ModPhasor(void) {}
-
-    ModPhasor(Waveform<T>& wf, Phasor<T> modulator, double start=0, double begin=0, double end=-1, bool cycle=false);
-
-    ModPhasor(const ModPhasor& other);
-
-    virtual void increment(void);
-
-  protected:
-
-    virtual void setModulator(const Phasor<T>& modulator);
-
-    virtual ModPhasor* copy(void) const;
-
-  private:
-
-    Phasor<T> _modulator;
-      
-  };
-
-  /*!\brief A phasor designed for phasing over functions, in that it can also adjust amplitude and offset
-   * 
-   * In general, functions are used as modulating signals, so it's necessary to adjust their amplitude and offset at the
-   * phasor level. This allows a single, generic function object to generate many different signals by passing different
-   * phasors over it. It's also entirely possible to use other types of Waveforms with the FunPhasor.
-   */
-  template <typename T>
-  class FunPhasor : public Phasor<T> {
-
-  public:
-    virtual ~FunPhasor(void) {}
-
-    FunPhasor(Waveform<T>& fun, double freq, double ampl=1, double offset=0, double start=0):
-      Phasor<T>(fun, freq, start), _ampl(ampl), _offset(offset)
-      {
-
-      }
-
-    FunPhasor(const FunPhasor& other) : Phasor<T>(other), _ampl(other._ampl), _offset(other._offset) {}
-
-  protected:
-
-    double _ampl;
-    double _offset;
-
-    virtual FunPhasor* copy(void) const {return new FunPhasor(*this);}
-
-    virtual T value(void) const {
-      return _ampl*Phasor<T>::value() + _offset;
-    }
-  };
-
-  /*!\brief A FunPhasor in which the frequency and amplitude are modulated with other phasors
-   */
-  template <typename T>
-  class FunModPhasor : public FunPhasor<T> {
-
-  public:
-    virtual ~FunModPhasor(void) {}
-
-    FunModPhasor(Waveform<T>& fun, Phasor<T> fmod, Phasor<T> amod, double offset, double start) :
-      FunPhasor<T>(fun, fmod.value(), amod.value(), offset, start), _fmod(fmod), _amod(amod) {}
-      
-    FunModPhasor(const FunModPhasor& other) : FunPhasor<T>(other), _fmod(other._fmod), _amod(other._amod) {}
-
-  protected:
-
-    virtual FunModPhasor* copy(void) const {return new FunModPhasor(*this);}
-
-    virtual void increment(void) {
-      Phasor<T>::increment();
-      _fmod.increment();
-      _amod.increment();
-      Phasor<T>::setRate(_fmod.value());
-      FunPhasor<T>::_ampl = _amod.value();
-    }
-
-  private:
-    Phasor<T> _fmod;
-    Phasor<T> _amod;
   };
 
 }

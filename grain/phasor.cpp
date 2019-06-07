@@ -120,12 +120,6 @@ namespace audioelectric {
     return new Phasor(*this);
   }
   
-  // template<typename T>
-  // void Phasor<T>::increment(void)
-  // {
-  //   _phase+=_rate;
-  // }
-
   template<typename T>
   Phasor<T>& Phasor<T>::operator=(const Phasor& other)
   {
@@ -137,45 +131,7 @@ namespace audioelectric {
     return *this;
   }
 
-  /*********************** ModPhasor *******************************/
-
-  template<typename T>
-  ModPhasor<T>::ModPhasor(Waveform<T>& wf, Phasor<T> modulator, double start, double begin, double end, bool cycle) :
-    Phasor<T>(wf,modulator.value(),start,begin,end,cycle), _modulator(modulator)
-  {
-    
-  }
-
-  template<typename T>
-  ModPhasor<T>::ModPhasor(const ModPhasor& other) :
-    Phasor<T>(*this), _modulator(other._modulator)
-  {
-    
-  }
-
-  template<typename T>
-  void ModPhasor<T>::setModulator(const Phasor<T> &modulator)
-  {
-    _modulator = modulator;
-  }
-
-  template<typename T>
-  ModPhasor<T>* ModPhasor<T>::copy(void) const
-  {
-    return new ModPhasor(*this);
-  }
-
-  template<typename T>
-  void ModPhasor<T>::increment(void)
-  {
-    Phasor<T>::increment();
-    _modulator.increment();
-    Phasor<T>::setRate(_modulator.value());
-  }
-
   template class Phasor<double>;
   template class Phasor<float>;
-  template class ModPhasor<double>;
-  template class ModPhasor<float>;
   
 }
