@@ -4,15 +4,14 @@
 #include <portaudio.h>
 
 #include "audioplaybacktest.hpp"
-#include "wavetable.hpp"
-#include "function.hpp"
+#include "waveform.hpp"
 
 using namespace audioelectric;
 
-class SimpleWavetableTest : public ::testing::Test {
+class SimpleWaveformTest : public ::testing::Test {
 protected:
 
-  Wavetable<double> wt = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
+  Waveform<double> wt = {0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0};
   double *test;
 
   virtual void SetUp(void) override {
@@ -102,7 +101,7 @@ protected:
 
   void testCopy(int len) {
     double speed = (double)wt.size()/(double)len;
-    Wavetable<double> wt_new(dynamic_cast<Wavetable<double>&>(wt), speed, len);
+    Waveform<double> wt_new(dynamic_cast<Waveform<double>&>(wt), speed, len);
     EXPECT_EQ(wt_new.size(), len);  //Length should be correct
     int n = len/wt.size();
     for (int i=0;i<len;i++) {
@@ -114,7 +113,7 @@ protected:
 
 };
 
-TEST_F(SimpleWavetableTest, basic) {
+TEST_F(SimpleWaveformTest, basic) {
 
   testBasic();
   testPhasor(0, 1);
@@ -146,7 +145,7 @@ TEST_F(SimpleWavetableTest, basic) {
 static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
                       PaStreamCallbackFlags statusFlags, void *wt );
 
-class WavetablePlaybackTest : public AudioPlaybackTest {
+class WaveformPlaybackTest : public AudioPlaybackTest {
 protected:
 
   virtual void SetUp(void) {
@@ -154,7 +153,7 @@ protected:
     info.format = 0;
     SNDFILE* testfile = sf_open("testfile.wav", SFM_READ, &info);
     ASSERT_TRUE(testfile) << "unable to open testfile.wav";
-    wt = new Wavetable<float>(info.frames); //We know this is just one channel
+    wt = new Waveform<float>(info.frames); //We know this is just one channel
     sf_count_t nread = sf_readf_float(testfile, wt->data(), info.frames);
     samplerate = info.samplerate;
     ASSERT_EQ(nread,info.frames) << "Failed to read entire testfile.wav";
@@ -163,7 +162,7 @@ protected:
 
 };
 
-TEST_F(WavetablePlaybackTest, simple) {
+TEST_F(WaveformPlaybackTest, simple) {
   double end = wt->end();  
   printf("Cycling over a short section at normal rate...\n");
   playBack(1, 17850, 17850, 27850, true);
@@ -176,52 +175,20 @@ TEST_F(WavetablePlaybackTest, simple) {
 
   printf("Cycling over an empty section. Should be silent...\n");  
   playBack(-1, 17850, 27850, 17850, true);
-  printf("Playing back the whole wavetable at various speeds...\n");
+  printf("Playing back the whole waveform at various speeds...\n");
   playBack(1, 0);
   playBack(0.5, 0);
   playBack(2, 0);
   playBack(1.232, 0);
-  printf("Playing back the whole wavetable backward at various speeds...\n");  
+  printf("Playing back the whole waveform backward at various speeds...\n");  
   playBack(1,17850);
   playBack(4.2,17850);
-  printf("Playing back the whole wavetable backward at various speeds...\n");  
+  printf("Playing back the whole waveform backward at various speeds...\n");  
   playBack(-1, end);
   playBack(-0.5, end);
   playBack(-2, end);
   playBack(-1.232, end);
-  printf("Playing back part of wavetable backward at various speeds...\n");
+  printf("Playing back part of waveform backward at various speeds...\n");
   playBack(-1,35229);
   playBack(-4.2,35229);
-}
-
-TEST_F(WavetablePlaybackTest, modulated) {
-  playBack(
-    makeLine<float>(-2./wt->size(), 1),
-    0
-    );
-  playBack(
-    makeLine<float>(-2./wt->size(), 1),
-    0,
-    0,
-    -1,
-    true
-    );
-  playBack(
-    makeLine<float>(10./wt->size(), 1),
-    0
-    );
-  playBack(
-    makeLine<float>(10./wt->size(), 1),
-    0,
-    0,
-    -1,
-    true
-    );
-  playBack(
-    makeSinusoid<float>(4./samplerate,2),
-    wt->size()/2,
-    0,
-    -1,
-    true
-    ); //this won't actually cycle, we just want to test it as if it did
 }

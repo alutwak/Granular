@@ -4,7 +4,7 @@
 #include <sndfile.h>
 #include <portaudio.h>
 
-#include "wavetable.hpp"
+#include "waveform.hpp"
 #include "phasor.hpp"
 
 using namespace audioelectric;
@@ -20,7 +20,7 @@ static int paCallback(const void *input, void *output, unsigned long frames, con
 class AudioPlaybackTest : public ::testing::Test {
 protected:
 
-  Wavetable<float> *wt = nullptr;
+  Waveform<float> *wt = nullptr;
   double samplerate;
   PaStream *stream;
 
@@ -50,23 +50,6 @@ protected:
     else {
       EXPECT_FALSE((bool)phs);
       EXPECT_LT(playtime, maxplay);
-    }
-  }
-
-  virtual void playBack(Phasor<float> rate, double start, double begin=0, double end=-1, bool cycle=false) {
-    printf("\nStarting playback rate: %f\n",rate.value());
-    printf("Start position: %f\n",start);
-    printf("End position: %f\n",end);
-    if (cycle) printf("Cycling...\n");
-    auto phs = ModPhasor<float>(*wt, rate, start, begin, end, cycle);
-    long playtime = runPlayback(phs, 5000);
-    if (cycle) {
-      EXPECT_TRUE((bool)phs);
-      EXPECT_GE(playtime, 5000);
-    }
-    else {
-      EXPECT_FALSE((bool)phs);
-      EXPECT_LT(playtime, 5000);
     }
   }
 
