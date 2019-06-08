@@ -1,4 +1,7 @@
 
+#include <cstdlib>
+#include <ctime>
+
 #include <gtest/gtest.h>
 #include <sndfile.h>
 #include <portaudio.h>
@@ -7,6 +10,31 @@
 #include "waveform.hpp"
 
 using namespace audioelectric;
+
+TEST(waveform, requirements)
+{
+  printf("Testing that Waveform can store data...\n");
+  Waveform<double> wf([](size_t i) {return i/48000.;}, 48000);
+
+  printf("Testing that the data was stored correctly...\n");
+  for (int i=0; i<48000; i+=1000)
+    EXPECT_EQ(wf[i], i/48000.);
+
+  printf("Testing that the waveform interpolates correctly...\n");
+  std::srand(std::time(nullptr));
+  for (int i=0; i<10; i++) {
+    double testpos = (48000-1)*(double)std::rand()/RAND_MAX;
+    EXPECT_FLOAT_EQ(wf.waveform(testpos), testpos/48000);
+  }
+
+  printf("Verifying the Waveform size...\n");
+  EXPECT_EQ(wf.size(), 48000);
+
+  printf("Verifying that the Waveform is 0 outside of its bounds...\n");
+  EXPECT_EQ(wf.waveform(-10), 0);
+  EXPECT_EQ(wf.waveform(49000), 0);
+}
+
 
 class SimpleWaveformTest : public ::testing::Test {
 protected:

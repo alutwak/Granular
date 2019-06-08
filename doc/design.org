@@ -15,11 +15,13 @@
   In order to minimize function call overhead, I will try to keep all functions in the audio path non-virtual and final.
 
 ** Wavetable Requirements
-*** v1 [0/3]
-    + [ ] Store audio data
-    + [ ] Provide access to the audio data by index
-      + [ ] Indexing must be able to interpolate between raw samples for multi-speed phasing
-    + [ ] Return size of memory
+*** v1 [5/5]
+    + [X] Store audio data
+    + [X] Provide access to the audio data by index
+      + [X] Indexing must be able to interpolate between raw samples for multi-speed phasing
+    + [X] Return size of waveform
+    + [X] Indexing outside of the waveform's bounds returns a value of zero
+    + [X] Deallocate memory on destruction
 *** v2 [0/1]
     + [ ] Provide interface to write audio data to it on the fly
 **** Opens
@@ -76,8 +78,9 @@
       + [ ] Resonance
     + [ ] Cascade them
 * Development Plan
-** Phase 1: Simple Grain Cloud (single channel)[0/6]
-*** INPROGRESS Clean up old code[4/4]
+** Phase 1: Simple Grain Cloud (single channel)[2/6]
+*** DONE Clean up old code[4/4]
+    CLOSED: [2019-06-06 Thu 23:36]
 **** DONE Combine Wavetable and Waveform (remove inheritance)
      CLOSED: [2019-06-06 Thu 23:16]
      :PROPERTIES:
@@ -120,24 +123,18 @@
       :LOGBOOK:
       CLOCK: [2019-06-06 Thu 23:30]--[2019-06-06 Thu 23:35] =>  0:05
       :END:
-*** BACKLOG Wavetable v1 requirements met [0/3]
-**** BACKLOG Store audio data
-     :PROPERTIES:
-     :Effort:   0:00
-     :END:
-**** BACKLOG Provide access to the audio data by index
-     Indexing must be able to interpolate between raw samples for multi-speed phasing
-     :PROPERTIES:
-     :Effort:   0:00
-     :END:
-**** BACKLOG Return size of memory
-     :PROPERTIES:
-     :Effort:   0:00
-     :END:
-**** BACKLOG Verify unit test coverage (using sin wave waveform)
-     :PROPERTIES:
-     :Effort:   1:00
-     :END:
+*** DONE Verify Waveform v1 requirements met (unit tests)[0/1]
+    CLOSED: [2019-06-07 Fri 23:57]
+    :PROPERTIES:
+    :Effort:   1:00
+    :END:
+    :LOGBOOK:
+    CLOCK: [2019-06-07 Fri 23:34]--[2019-06-07 Fri 23:57] =>  0:23
+    :END:
+    I'll use a line function to do this because that will make it easy to verify accuracy.
+    
+    I'm not quite sure how to test that the memory was deallocated correctly in a unit test. Periodic valgrind runs will
+    verify this though.
 *** BACKLOG Phaser v1 requirements met [0/5]
 **** BACKLOG Parameters for:
      :PROPERTIES:
