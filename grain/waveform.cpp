@@ -43,6 +43,12 @@ namespace audioelectric {
   }
 
   template<typename T>
+  Waveform<T>::Waveform(T (*generator)(size_t), size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0)
+  {
+    generate(generator, len);
+  }
+
+  template<typename T>
   Waveform<T>::Waveform(Waveform<T>& other, double rate, std::size_t len, InterpType it) :
     _interptype(it), _data(nullptr), _size(0)
   {
@@ -56,6 +62,15 @@ namespace audioelectric {
   Waveform<T>::~Waveform(void)
   {
     dealloc();
+  }
+
+  template<typename T>
+  void Waveform<T>::generate(T (*generator)(size_t), size_t len)
+  {
+    resize(len);
+    for (size_t i=0; i<len; i++) {
+      _data[i] = generator(i);
+    }
   }
 
   template<typename T>
