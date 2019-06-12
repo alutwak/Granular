@@ -1,4 +1,3 @@
-#+PROPERTY: Effort_ALL 0 0:10 0:30 1:00 2:00 3:00 4:00 5:00 6:00 7:00
 #+COLUMNS: %40ITEM(Task) %TODO %CLOSED %17Effort(Estimated Effort){:} %CLOCKSUM
 #+TODO: BACKLOG(b) SCHEDULED(s) INPROGRESS(i) | DONE(d) CANCELED(c)
 
@@ -6,15 +5,128 @@
 
   The underlying structure of the audio generation is going to consist of a generation function and a phasor to generate
   audio from that function. The generation function could be considered to be the storage for the audio signal, and to begin
-  with, at least, that will be the only function that will be supported. This class will be called the Wavetable. The phasor
+  with, at least, that will be the only function that will be supported. This class will be called the Waveform. The phasor
   class will be called the Phasor.
 
-  Since a Wavetable will essentially just be the storage for a chunk of audio data, there could be many phasors all using the
-  same Wavetable.
+  Since a Waveform will essentially just be the storage for a chunk of audio data, there could be many phasors all using the
+  same Waveform.
 
   In order to minimize function call overhead, I will try to keep all functions in the audio path non-virtual and final.
 
-** Wavetable Requirements
+** System Structure
+*** Grain Cloud System
+#+LATEX_HEADER: \usepackage{tikz}\usetikzlibrary{calc, shapes.geometric, fit, positioning, backgrounds}
+#+BEGIN_EXPORT latex
+\begin{tikzpicture} [
+  node distance = 0.75cm,
+  on grid = false,
+  block/.style={draw, minimum width=1.5cm, minimum height=1cm, rounded corners=0.1cm, align=center, font=\tiny}
+  ]
+  \node[block] (note) {Note};
+  \node[block, right=of note] (envelope) {Envelope};
+  \node[block, right=of envelope] (gen) {Grain\\Generator};
+  \node[block, right=of gen] (grains) {Grain\\List};
+  \node[block, right=of grains] (stream) {Audio\\Stream};
+  \node[block, below=of grains] (garbage) {Garbage\\Collector};
+
+  \draw[->] (note.east) -- (envelope.west);
+  \draw[->] (envelope.east) -- (gen.west);
+  \draw[->] (gen.east) -- (grains.west);
+  \draw[->] (grains.east) -- (stream.west);
+  \draw[->] (garbage.north) -- (grains.south);
+\end{tikzpicture}
+#+END_EXPORT
+
+**** Note
+    Contains info about the note. This includes the gate signal and the note frequency. This will most likely just be a set
+    of inputs to the Grain Cloud interface, which will come from the framework that controls the cloud.
+**** Envelope
+     Controls parameters of the grain generator.
+**** Grain Generator
+     Generates the grains. For details on the Grain Generator structure see the [[*Grain Generation System][Grain Generation System]] Section.
+**** Grain List
+     This is a list (or some kind of containter) of grains. Grains are put on the list when they are generated and they
+     destroyed by the garbage collector when they are finished. Each output sample contains the sum of all of grains
+     currently on the list.
+**** Garbage Collector
+     This periodically searches through the grain list for any grains that are finished and deletes them. It may also be
+     better to simply keep a pool of finished grains that can be recycled as new grains to avoid extra allocations and 
+     deallocations. In this scenario, we would start out with a certain number of grains in this pool, and then allocate
+     in chunks as extra grains are needed. At some point, the number of grains will probably hit some kind of maximum and 
+     allocations will halt. Since grains will have a pretty low memory impact, this should keep resource usage pretty low.
+**** Audio Stream
+     This is the output audio stream
+*** Grain Generation System
+#+BEGIN_EXPORT latex
+\begin{tikzpicture} [
+  node distance = 0.75cm,
+  on grid = false,
+  block/.style={draw, minimum width=1.5cm, minimum height=1cm, rounded corners=0.1cm, align=center, font=\tiny}
+  ]
+  \node[block] (gate) {Gate/\\Release};
+  \node[block, below=of gate] (note-freq) {Note/\\Frequency};
+  \node[block, right=of gate] (envelope) {Envelope};
+  \node[block, right=of envelope] (ampl) {Grain\\Amplitude};
+  \node[block, below=of ampl] (density) {Grain\\Density};
+  \node[block, below=of density] (size) {Grain\\Size};
+  \node[block, below=of size] (freq) {Grain\\Frequency};
+  \draw ($(density.east)!0.5!(size.east)$) ++(0.75,0) node[block, minimum height=6.25cm, anchor=west] (gen) {Generator\\Core};
+  \node[block, right=of gen] (wave) {Waveform\\Phasor};
+  \node[block, above=of wave] (shape) {Grain\\Shape\\Phasor};
+
+  \draw ($(wave.east)!0.5!(shape.east)$) ++(0.75, 0) node[draw, shape=circle] (mult) {$\times$};
+
+  \node[block, right=of mult] (stream) {Stream};
+
+  \node[block, inner sep=0.5cm, fit={(gate) (note-freq)}] (note) {};
+  \draw (gate.north) ++(0,0.25) node[font=\small] (note-title) {Note};
+  \node[block, inner sep=0.5cm, fit={(ampl) (density) (freq) (size) (gen)}] (grain-gen) {};
+  \draw (ampl.north east) ++(0,0.25) node[font=\small] (gen-title) {Grain Generator};  
+  \node[block, inner sep=0.5cm, fit={(shape) (wave) (mult)}] (grain) {}; 
+  \draw (shape.north east) ++(0,0.25) node[font=\small] (grain-title) {Grain};
+
+  \draw[->] (gate.east) -- (envelope.west);
+  \draw[->] (note-freq.south) |- (freq.west);
+  \draw[->] (envelope.east) -- (ampl.west);
+  \draw[->] (envelope.south) |- (density.west);
+  \draw[->] (envelope.south) |- (size.west);
+  \draw[->] (envelope.south) |- (freq.west);
+  \draw[->] (ampl.east) -- ($(gen.north west)!(ampl.east)!(gen.west)$);
+  \draw[->] (density.east) -- ($(gen.north west)!(density.east)!(gen.west)$);
+  \draw[->] (size.east) -- ($(gen.north west)!(size.east)!(gen.west)$);
+  \draw[->] (freq.east) -- ($(gen.north west)!(freq.east)!(gen.west)$);
+  \draw[->] ($(gen.north east)!(shape.west)!(gen.east)$) -- (shape.west);
+  \draw[->] (gen.east) -- (wave.west);
+  \draw[->] (shape.east) -| (mult.north);
+  \draw[->] (wave.east) -| (mult.south);
+  \draw[->] (mult.east) -- (stream.west);
+\end{tikzpicture}
+#+END_EXPORT
+**** Gate
+     Triggers and then releases the envelope (and thereby controls the beginning and end of the cloud).
+**** Note/Frequency
+     Sets the note/base frequency of the grain cloud (the frequency at which the waveform is played back).
+**** Envelope
+     Controls parameters of the grain generator. 
+**** Grain Amplitude
+     This will be the amplitude of the a grain if it is generated now.
+**** Grain Density
+     Defines the spacing between grains. In practice, the density signal will be used to set the time at which the *next*
+     grain will be generated.
+**** Grain Frequency
+     This will control the playback rate of the grain if it is generated now.
+**** Grain Generator
+     Generates grains according to the input parameters (amplitude, density and frequency). Grains will be generated at a rate 
+     defined by the density parameter. Each time a grain is generated, the density parameter will be used to calculate the time
+     at which the next grain will be generated.
+
+     Each of the parameters may also have some randomization applied.
+**** Waveform Phasor
+     A phasor for the base waveform of the grain.
+**** Grain Shape Phasor
+     The modulation envelope of the grain. This is basically another waveform phasor, but it must have (though I guess not
+     necessarily) a range of [0,1].
+** Waveform Requirements
 *** v1 [5/5]
     + [X] Store audio data
     + [X] Provide access to the audio data by index
@@ -29,12 +141,14 @@
        phasors' data
      + What about multi-channel waveforms?
 ** Phasor Requirements
-*** v1 [0/4]
+*** v1 [0/6]
     + [ ] Parameters for:
       - rate (frequency)
       - starting phase
       - begin/end phases of the loop
       - and whether to cycle or just play once
+    + [ ] Increment() method
+    + [ ] GetValue() method
     + [ ] A phasor that has finished its run (in non-cycle mode) will just output values of 0
     + [ ] Phase will be represented in units of samples (floating-point interpolated)
     + [ ] Rates will be represented in units of samples/iteration
@@ -45,19 +159,21 @@
 *** Opens
     + What about multi-channel phasors?
 ** Grain Requirements
-*** v1 [0/4]
+*** v1 [0/5]
     + [ ] Phasor for base waveform
     + [ ] Phasor for "envelope" waveform
-    + [ ] Multiply waveform and envelope at each sample
+    + [ ] Amplitude
+    + [ ] Multiply waveform, envelope and amplitude at each sample
     + [ ] Function to determine when grain is done so it can be deleted
 ** Envelope Requirements
-*** v1 [0/3]
+*** v1 [0/4]
     + [ ] Linear ADSR
-    + [ ] Develop "trigger" and "release" signals
-    + [ ] Figure out how to attach to signals (maybe use the signal-slot system)
+    + [ ] Ability to "trigger" and "release"
+    + [ ] Increment() method
+    + [ ] GetValue() method
 ** Grain Generator Requirements
-*** v1 [0/1]
-    + [ ] Controls:
+*** v1
+**** Controls [0/6]
       + [ ] Waveform (select between a set of defined waveforms - no samples yet)
       + [ ] Density
         + [ ] Frequency (Hz)
@@ -65,8 +181,11 @@
       + [ ] Size
         + [ ] Length (ms)
         + [ ] Randomness
+      + [ ] Amplitude
+        + [ ] Randomness
+      + [ ] Frequency
+        + [ ] Randomness
       + [ ] Grain Shape (select between a set of defined shapes)
-      + [ ] Single channel
 ** Filter Requirements
 *** v1 (no filters in v1)
 *** v2 [0/3]
@@ -81,7 +200,7 @@
 ** Phase 1: Simple Grain Cloud (single channel)[2/6]
 *** DONE Clean up old code[4/4]
     CLOSED: [2019-06-06 Thu 23:36]
-**** DONE Combine Wavetable and Waveform (remove inheritance)
+**** DONE Combine Waveform and Waveform (remove inheritance)
      CLOSED: [2019-06-06 Thu 23:16]
      :PROPERTIES:
      :Effort:   0:30
@@ -123,7 +242,7 @@
       :LOGBOOK:
       CLOCK: [2019-06-06 Thu 23:30]--[2019-06-06 Thu 23:35] =>  0:05
       :END:
-*** DONE Verify Waveform v1 requirements met (unit tests)[0/1]
+*** DONE Verify Waveform v1 requirements met (unit tests)
     CLOSED: [2019-06-07 Fri 23:57]
     :PROPERTIES:
     :Effort:   1:00
@@ -135,69 +254,37 @@
     
     I'm not quite sure how to test that the memory was deallocated correctly in a unit test. Periodic valgrind runs will
     verify this though.
-*** BACKLOG Phaser v1 requirements met [0/5]
-**** BACKLOG Parameters for:
+*** BACKLOG Verify Phaser v1 requirements met (unit tests) [0/5]
      :PROPERTIES:
-     :Effort:   0:00
+     :Effort:   1:30
      :END:
-     - waveform
-     - rate (frequency)
-     - starting phase
-     - begin/end phases of the loop
-     - and whether to cycle or just play once
-**** BACKLOG A phasor that has finished its run (in non-cycle mode) will just output values of 0
-     :PROPERTIES:
-     :Effort:   0:30
-     :END:
-**** BACKLOG Phase will be represented in units of samples (floating-point interpolated)
-     :PROPERTIES:
-     :Effort:   0:00
-     :END:
-**** BACKLOG Rates will be represented in units of samples/iteration
-     :PROPERTIES:
-     :Effort:   0:00
-     :END:
-**** BACKLOG Verify unit test coverage (using sin waveform)
-     :PROPERTIES:
-     :Effort:   1:00
-     :END:
-*** BACKLOG Grain v1 requirements met [0/6]
+*** BACKLOG Grain v1 [0/3]
 **** BACKLOG Write Grain interface
      :PROPERTIES:
-     :Effort:   2:00
-     :END:
-**** BACKLOG Phasor for base waveform
-     :PROPERTIES:
-     :Effort:   0:30
-     :END:
-**** BACKLOG Phasor for "envelope" waveform
-     :PROPERTIES:
-     :Effort:   0:30
-     :END:
-**** BACKLOG Multiply waveform and envelope at each sample
-     :PROPERTIES:
      :Effort:   1:00
      :END:
-**** BACKLOG Function to determine when grain is done so it can be deleted
+     Must support all of the [[*Grain Requirements][Grain Requirements]]
+**** BACKLOG Implement Grain
      :PROPERTIES:
-     :Effort:   0:30
+     :Effort:   1:00
      :END:
 **** BACKLOG Unit tests
      :PROPERTIES:
-     :Effort:   4:00
+     :Effort:   1:00
      :END:
-*** BACKLOG Envelope v1 requirements met [0/4]
-**** BACKLOG Linear ADSR
+*** BACKLOG Envelope v1 [0/5]
+**** BACKLOG Write Envelope interface
      :PROPERTIES:
-     :Effort:   3:00
+     :Effort:   1:00
+     :END:
+     Must support all requirements in [[*Envelope Requirements][Envelope Requirements]]
+**** BACKLOG Implement Envelope
+     :PROPERTIES:
+     :Effort:   1:00
      :END:
 **** BACKLOG Develop "trigger" and "release" signals
      :PROPERTIES:
      :Effort:   0:30
-     :END:
-**** BACKLOG Figure out how to attach to signals (maybe use the signal-slot system)
-     :PROPERTIES:
-     :Effort:   2:00
      :END:
 **** BACKLOG Unit tests
      :PROPERTIES:
