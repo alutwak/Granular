@@ -18,6 +18,20 @@ namespace audioelectric {
   }
 
   template <typename T>
+  Grain<T>::Grain(Phasor<T>& carrier, Phasor<T>& shape, T ampl)
+    : _carrier(carrier), _shape(shape), _ampl(ampl)
+  {
+    
+  }
+
+  template <typename T>
+  Grain<T>::Grain(Phasor<T>&& carrier, Phasor<T>&& shape, T ampl)
+    : _carrier(carrier), _shape(shape), _ampl(ampl)
+  {
+    
+  }
+
+  template <typename T>
   T Grain<T>::value(void)
   {
     return _carrier.value() * _shape.value() * _ampl;
@@ -60,4 +74,8 @@ namespace audioelectric {
     _carrier.reset();
     _shape.reset();
   }
+
+  template class Grain<double>;
+  template class Grain<float>;
+  
 }

@@ -5,7 +5,8 @@ Import('grain_lib')
 
 test_files = ['main.cpp',
               'testwaveform.cpp',
-              'testphasor.cpp'
+              'testphasor.cpp',
+              'testgrain.cpp'
 ]
 
 include_dirs = [

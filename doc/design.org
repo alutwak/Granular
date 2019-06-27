@@ -159,12 +159,12 @@
 *** Opens
     + What about multi-channel phasors?
 ** Grain Requirements
-*** v1 [0/6]
-    + [ ] Phasor for base waveform
-    + [ ] Phasor for "envelope" waveform
-    + [ ] Amplitude
-    + [ ] Multiply waveform, envelope and amplitude at each sample
-    + [ ] Function to determine when grain is done so it can be deleted
+*** v1 [5/5]
+    + [X] Phasor for base waveform
+    + [X] Phasor for "envelope" waveform
+    + [X] Amplitude
+    + [X] Multiply waveform, envelope and amplitude at each sample
+    + [X] Function to determine when grain is done so it can be deleted
 ** Envelope Requirements
 *** v1 [0/4]
     + [ ] Linear ADSR
@@ -262,7 +262,7 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 20:54]--[2019-06-26 Wed 22:22] =>  1:28
      :END:
-*** INPROGRESS Grain v1 [2/3]
+*** INPROGRESS Grain v1 [3/3]
 **** DONE Write Grain interface
      CLOSED: [2019-06-26 Wed 22:58]
      :PROPERTIES:
@@ -280,9 +280,13 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 23:00]--[2019-06-26 Wed 23:11] =>  0:11
      :END:
-**** BACKLOG Unit tests
+**** DONE Unit tests
+     CLOSED: [2019-06-27 Thu 00:01]
      :PROPERTIES:
      :Effort:   1:00
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-26 Wed 23:11]--[2019-06-27 Thu 00:00] =>  0:49
      :END:
 *** BACKLOG Envelope v1 [0/5]
 **** BACKLOG Write Envelope interface

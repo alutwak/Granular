@@ -25,6 +25,10 @@ namespace audioelectric {
      */
     Grain(Waveform<T>& carrier, double crate, Waveform<T>& shape, double srate, T ampl);
 
+    Grain(Phasor<T>& carrier, Phasor<T>& shape, T ampl);
+
+    Grain(Phasor<T>&& carrier, Phasor<T>&& shape, T ampl);    
+
     /*!\brief Returns the current value of the grain
      */
     T value(void);
