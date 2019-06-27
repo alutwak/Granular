@@ -141,17 +141,17 @@
        phasors' data
      + What about multi-channel waveforms?
 ** Phasor Requirements
-*** v1 [0/6]
-    + [ ] Parameters for:
+*** v1 [6/6]
+    + [X] Parameters for:
       - rate (frequency)
       - starting phase
       - begin/end phases of the loop
       - and whether to cycle or just play once
-    + [ ] Increment() method
-    + [ ] GetValue() method
-    + [ ] A phasor that has finished its run (in non-cycle mode) will just output values of 0
-    + [ ] Phase will be represented in units of samples (floating-point interpolated)
-    + [ ] Rates will be represented in units of samples/iteration
+    + [X] Increment() method
+    + [X] GetValue() method
+    + [X] A phasor that has finished its run (in non-cycle mode) will just output values of 0
+    + [X] Phase will be represented in units of samples (floating-point interpolated)
+    + [X] Rates will be represented in units of samples/iteration
 *** v2 [0/1]
     + [ ] Rate and amplitude parameters must have an interface for modulation signals.
       + [ ] These will use modulation index-style modulation
@@ -176,7 +176,7 @@
 **** Controls [0/6]
       + [ ] Waveform (select between a set of defined waveforms - no samples yet)
       + [ ] Density
-        + [ ] Frequency (Hz)
+        + [ ] Grains/second
         + [ ] Randomness
       + [ ] Size
         + [ ] Length (ms)
@@ -254,9 +254,12 @@
     
     I'm not quite sure how to test that the memory was deallocated correctly in a unit test. Periodic valgrind runs will
     verify this though.
-*** BACKLOG Verify Phaser v1 requirements met (unit tests) [0/5]
+*** BACKLOG Verify Phaser v1 requirements met (unit tests)
      :PROPERTIES:
      :Effort:   1:30
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-26 Wed 20:54]--[2019-06-26 Wed 22:22] =>  1:28
      :END:
 *** BACKLOG Grain v1 [0/3]
 **** BACKLOG Write Grain interface

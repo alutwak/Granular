@@ -8,20 +8,25 @@ namespace audioelectric {
     _wf(wf), _phase(start), _cycle(cycle), _begin(begin)
   {
     setRate(rate);
-    setEnd(end);
+    _setEnd(end);
+    if (!_checkPhase(_phase))
+      _phase = _begin;
   }
 
   template<typename T>
   Phasor<T>::Phasor(const Phasor& other) :
     _wf(other._wf), _phase(other._phase), _rate(other._rate), _begin(other._begin)
   {
-    setEnd(other._end);
+    _setEnd(other._end);
   }
 
   template<typename T>
   T Phasor<T>::value(void) const
   {
-    return _wf.waveform(_phase);
+    if (_checkPhase(_phase))
+      return _wf.waveform(_phase);
+    else
+      return 0;
   }
 
   template<typename T>
@@ -38,17 +43,17 @@ namespace audioelectric {
   template<typename T>
   Phasor<T>::operator bool(void) const
   {
-    return checkPhase(_phase);
+    return _checkPhase(_phase);
   }
 
   template<typename T>
-  bool Phasor<T>::checkPhase(double phase) const
+  bool Phasor<T>::_checkPhase(double phase) const
   {
     return phase>=_begin && phase<=_end;
   }
 
   template<typename T>
-  void Phasor<T>::setEnd(long end)
+  void Phasor<T>::_setEnd(long end)
   {
     if (end>=0)
       _end = end;
@@ -60,7 +65,7 @@ namespace audioelectric {
   void Phasor<T>::increment(void)
   {
     double nextphase = _phase+_rate;
-    if (_cycle && !checkPhase(nextphase)) {
+    if (_cycle && !_checkPhase(nextphase)) {
       //We've reached the end of the waveform, cycle around
       //I'd love to use fmod here, but fmod is crap for negative values
       if (_rate > 0)
@@ -113,11 +118,6 @@ namespace audioelectric {
   void Phasor<T>::setRate(double rate)
   {
     _rate = rate;
-  }
-  
-  template<typename T>
-  Phasor<T>* Phasor<T>::copy(void) const {
-    return new Phasor(*this);
   }
   
   template<typename T>

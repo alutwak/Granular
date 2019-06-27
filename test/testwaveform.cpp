@@ -69,73 +69,15 @@ protected:
     }
   }
   
-  /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as speed
-   */
-  void testPhasor(double speed, double start=0) {
-    auto phs = Phasor<double>(wt,speed,start);
-    auto begin = phs;
-    double check = phs.value();
-    ASSERT_EQ(check, start) << "when speed = " << speed << " and start = " << start;
-    if (speed == 0) {
-      EXPECT_TRUE(phs.generate(&test,3)); //generate 3 frames
-      EXPECT_TRUE(phs==begin);            //Should still be at the beginning
-      for (int i=0;i<3;i++) {
-        EXPECT_FLOAT_EQ(test[i],check) << "when speed = " << speed << " and start = " << start;
-        check += speed;
-      }
-    }
-    else {
-      int iters = 0;
-      while (phs) {
-        if (speed > 0)
-          EXPECT_TRUE(phs>=begin) << "when speed = " << speed << " and start = " << start;
-        else
-          EXPECT_TRUE(phs<=begin) << "when speed = " << speed << " and start = " << start;
-        phs.generate(&test,1);
-        EXPECT_FLOAT_EQ(test[0],check) << "when speed = " << speed << " and start = " << start;
-        check += speed;
-        iters++;
-      }
-    }
-  }
-
-  void testVariableRatePhasor(void) {
-    double rate = 1;
-    auto phs = Phasor<double>(wt,rate,0);
-    auto begin = phs;
-    double val = phs.value();
-    ASSERT_EQ(val,wt[0]);
-    while(phs) {
-      rate++;
-      phs.setRate(rate);
-      EXPECT_TRUE(phs>=begin);
-      phs.generate(&test,1);
-      ASSERT_FLOAT_EQ(test[0],val) << "when rate = " << rate;
-      val += rate;
-    }
-    rate = -rate;
-    phs.setRate(rate);
-    phs.increment();
-    val += rate;
-    while(phs) {
-      rate++;
-      phs.setRate(rate);
-      EXPECT_TRUE(phs>=begin);
-      phs.generate(&test,1);      
-      EXPECT_FLOAT_EQ(test[0],val) << "when rate = " << rate;
-      val += rate;
-    }
-  }
-
   void testCopy(int len) {
-    double speed = (double)wt.size()/(double)len;
-    Waveform<double> wt_new(dynamic_cast<Waveform<double>&>(wt), speed, len);
+    double rate = (double)wt.size()/(double)len;
+    Waveform<double> wt_new(dynamic_cast<Waveform<double>&>(wt), rate, len);
     EXPECT_EQ(wt_new.size(), len);  //Length should be correct
     int n = len/wt.size();
     for (int i=0;i<len;i++) {
       if (i >= n)
       break;
-      EXPECT_FLOAT_EQ(wt.waveform(i*speed),wt_new[i]) << "len: " << len << ", i: " << i << ", speed: " << speed;;
+      EXPECT_FLOAT_EQ(wt.waveform(i*rate),wt_new[i]) << "len: " << len << ", i: " << i << ", rate: " << rate;;
     }
   }
 
@@ -144,26 +86,6 @@ protected:
 TEST_F(SimpleWaveformTest, basic) {
 
   testBasic();
-  testPhasor(0, 1);
-  testPhasor(0.5);
-  testPhasor(0.5,1.2);
-  testPhasor(1.0);
-  testPhasor(1.0, 2.1);
-  testPhasor(2.0);
-  testPhasor(4.0);
-  testPhasor(0.3428);
-  testPhasor(1.2864);
-  testPhasor(1.2864, 0.1);
-  testPhasor(-0.5);
-  testPhasor(-0.5,1.2);
-  testPhasor(-1.0);
-  testPhasor(-1.0, 2.1);
-  testPhasor(-2.0);
-  testPhasor(-4.0);
-  testPhasor(-0.3428);
-  testPhasor(-1.2864);
-  testPhasor(-1.2864, 0.1);
-  testVariableRatePhasor();
 
   for (int i=0;i<10;i++)
     testCopy(i);
@@ -203,20 +125,20 @@ TEST_F(WaveformPlaybackTest, simple) {
 
   printf("Cycling over an empty section. Should be silent...\n");  
   playBack(-1, 17850, 27850, 17850, true);
-  printf("Playing back the whole waveform at various speeds...\n");
+  printf("Playing back the whole waveform at various rates...\n");
   playBack(1, 0);
   playBack(0.5, 0);
   playBack(2, 0);
   playBack(1.232, 0);
-  printf("Playing back the whole waveform backward at various speeds...\n");  
+  printf("Playing back the whole waveform backward at various rates...\n");  
   playBack(1,17850);
   playBack(4.2,17850);
-  printf("Playing back the whole waveform backward at various speeds...\n");  
+  printf("Playing back the whole waveform backward at various rates...\n");  
   playBack(-1, end);
   playBack(-0.5, end);
   playBack(-2, end);
   playBack(-1.232, end);
-  printf("Playing back part of waveform backward at various speeds...\n");
+  printf("Playing back part of waveform backward at various rates...\n");
   playBack(-1,35229);
   playBack(-4.2,35229);
 }

@@ -26,17 +26,18 @@ namespace audioelectric {
 
     ~Phasor(void) {}
 
-    /*!\brief Constructs a Phasor that starts at a particular position in the waveform. 
+    /*!\brief Constructs a Phasor that starts at a particular phase in the waveform. 
      * 
-     * See the discussion in the Phasor class documentation on how the start position relates to the phase
+     * See the discussion in the Phasor class documentation on how the start phase relates to the phase
      * and rate of the Phasor.
      * 
-     * \param wf The Waveform to iterate over.
-     * \param rate The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
-     *             reverse iteration.
-     * \param start The starting position in the Waveform
-     * \param begin The beginning position in the Wavetable. Values before this in the wavetable will not be played
-     * \param end   The ending position in the Wavetable. A negative value sets the ending at the last sample for forward 
+     * \param wf    The Waveform to iterate over.
+     * \param rate  The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
+     *              reverse iteration.
+     * \param start The starting phase in the Waveform. If this is not between the begin and end phases then it will be
+     *              set to begin.
+     * \param begin The beginning phase in the Wavetable. Values before this in the wavetable will not be played
+     * \param end   The ending phase in the Wavetable. A negative value sets the ending at the last sample for forward 
      *              interpolators and at the first sample for reverse interpolators.
      * \param cycle Whether or not to cycle over the waveform.
      */
@@ -47,19 +48,17 @@ namespace audioelectric {
     T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
 
     bool generate(T **outputs, int frames, int channels=1);
-      
-    operator bool(void) const;                //!<\brief Always returns true
+
+    /*!\brief Returns true if the phasor is still running
+     * 
+     * A phasor will still be running if its phase is between the begin phase and the end phase. A cycling phasor
+     * will always return true.
+     */
+    operator bool(void) const;                
 
     Phasor& operator=(const Phasor& other);
-    // Phasor& operator++(void);                 //!<\brief Prefix increment
-    // Phasor operator++(int);                   //!<\brief Postfix increment
 
-    // /*!\brief Retrieves the current value. Note that this is not a reference, as it would be with a common iterator
-    //  * 
-    //  */
-    // T operator*(void) const;
-
-    /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
+    /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially phase*rate)
      */
     bool operator==(const Phasor& other) const;
     bool operator!=(const Phasor& other) const;
@@ -82,7 +81,7 @@ namespace audioelectric {
 
     void reset(void) {_phase = _begin;}    
 
-  protected:
+  private:
 
     double _rate;       //!< The rate that the phase changes per iteration
     double _phase;      //!< The current phase
@@ -91,22 +90,13 @@ namespace audioelectric {
     bool _cycle;        //!< Whether to cycle the Waveform
     Waveform<T>& _wf;   //!< The waveform that we're phasing
 
-    /*!\brief Copies this Phasor implementation
-     *
-     * This must be overridden by subclasses in order for Phasor::operator++ and the Phasor copy constructor
-     * to work correctly.
-     */
-    Phasor* copy(void) const;
-      
-  private:
-
     /*!\brief Sets the value of the _end member.
      */
-    void setEnd(long end);
+    void _setEnd(long end);
     
     /*!\brief Checks whether the given phase is within the start and stop bounds
      */
-    bool checkPhase(double phase) const;
+    bool _checkPhase(double phase) const;
     
   };
 
