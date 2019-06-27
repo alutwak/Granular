@@ -79,6 +79,8 @@ namespace audioelectric {
      */
     void increment(void);
 
+    /*!\brief Resets the phase back to the beginning 
+     */
     void reset(void) {_phase = _begin;}    
 
   private:

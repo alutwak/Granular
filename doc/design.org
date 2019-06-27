@@ -159,7 +159,7 @@
 *** Opens
     + What about multi-channel phasors?
 ** Grain Requirements
-*** v1 [0/5]
+*** v1 [0/6]
     + [ ] Phasor for base waveform
     + [ ] Phasor for "envelope" waveform
     + [ ] Amplitude
@@ -197,7 +197,7 @@
       + [ ] Resonance
     + [ ] Cascade them
 * Development Plan
-** Phase 1: Simple Grain Cloud (single channel)[2/6]
+** Phase 1: Simple Grain Cloud (single channel)[3/6]
 *** DONE Clean up old code[4/4]
     CLOSED: [2019-06-06 Thu 23:36]
 **** DONE Combine Waveform and Waveform (remove inheritance)
@@ -254,22 +254,31 @@
     
     I'm not quite sure how to test that the memory was deallocated correctly in a unit test. Periodic valgrind runs will
     verify this though.
-*** BACKLOG Verify Phaser v1 requirements met (unit tests)
+*** DONE Verify Phaser v1 requirements met (unit tests)
+    CLOSED: [2019-06-26 Wed 22:57]
      :PROPERTIES:
      :Effort:   1:30
      :END:
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 20:54]--[2019-06-26 Wed 22:22] =>  1:28
      :END:
-*** BACKLOG Grain v1 [0/3]
-**** BACKLOG Write Grain interface
+*** INPROGRESS Grain v1 [2/3]
+**** DONE Write Grain interface
+     CLOSED: [2019-06-26 Wed 22:58]
      :PROPERTIES:
      :Effort:   1:00
      :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-26 Wed 22:45]--[2019-06-26 Wed 22:58] =>  0:13
+     :END:
      Must support all of the [[*Grain Requirements][Grain Requirements]]
-**** BACKLOG Implement Grain
+**** DONE Implement Grain
+     CLOSED: [2019-06-26 Wed 23:11]
      :PROPERTIES:
      :Effort:   1:00
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-06-26 Wed 23:00]--[2019-06-26 Wed 23:11] =>  0:11
      :END:
 **** BACKLOG Unit tests
      :PROPERTIES:
