@@ -1,4 +1,4 @@
-
+#include <cmath>
 #include <gtest/gtest.h>
 
 #include "grain.hpp"
@@ -18,17 +18,21 @@ protected:
     double scheck = 0;
     printf("Testing grain with crate(%f) and srate(%f)\n", crate, srate);
     Grain<double> grain(carrier, crate, shape, srate, ampl);
+    int itr = 0;
     while (grain) {
       double val = grain.value();
       double check = ccheck*scheck*ampl;
-      EXPECT_FLOAT_EQ(val, check);
+      EXPECT_FLOAT_EQ(val, check) << "iter " << itr << ": ccheck=" << ccheck << ", scheck=" << scheck;
       grain.increment();
       ccheck += crate;
+      if (ccheck > 9.0)
+        ccheck -= 9.0;
       scheck += srate;
-      if (scheck >= 1.) {
+      if (scheck > 1.-srate) { //">1-srate" instead of ">=1." helps deal with floating point errors
         scheck -= scheck-1;
         srate = -srate;
       }
+      itr++;
     }
     EXPECT_EQ(grain.value(), 0) << "finished grain should output value of 0";
   }

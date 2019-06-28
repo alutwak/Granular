@@ -22,7 +22,7 @@ protected:
   /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as rate
    */
   void testPhasor(double rate, double start=0) {
-    auto phs = Phasor<double>(wt,rate,start);
+    auto phs = Phasor<double>(wt,rate,false,start);
     auto begin = phs;
     double check = phs.value();
     ASSERT_EQ(check, start) << "when rate = " << rate << " and start = " << start;
@@ -53,7 +53,7 @@ protected:
 
   void testVariableRatePhasor(void) {
     double rate = 1;
-    auto phs = Phasor<double>(wt,rate,0);
+    auto phs = Phasor<double>(wt,rate);
     auto begin = phs;
     double val = phs.value();
     ASSERT_EQ(val,wt[0]);

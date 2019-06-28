@@ -36,7 +36,7 @@ protected:
     printf("End position: %f\n",end);
     if (cycle) printf("Cycling...\n");
     //ASSERT_FALSE(rate<0.1&&rate>-0.1) << "Rate too close to zero";
-    auto phs = Phasor<float>(*wt, rate, start, begin, end, cycle);
+    auto phs = Phasor<float>(*wt, rate, cycle, start, begin, end);
     long maxplay;
     if (cycle)
       maxplay = 1000; //just play for 1 second

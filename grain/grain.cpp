@@ -12,7 +12,7 @@ namespace audioelectric {
 
   template<typename T>
   Grain<T>::Grain(Waveform<T>& carrier, double crate, Waveform<T>& shape, double srate, T ampl) :
-    _carrier(carrier, crate), _shape(shape, srate), _ampl(ampl)
+    _carrier(carrier, crate, true), _shape(shape, srate), _ampl(ampl)
   {
     
   }
@@ -47,7 +47,7 @@ namespace audioelectric {
   template <typename T>
   Grain<T>::operator bool(void) const
   {
-    return _carrier && _shape;
+    return _shape;
   }
 
   template <typename T>

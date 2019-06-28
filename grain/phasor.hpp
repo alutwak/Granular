@@ -34,14 +34,14 @@ namespace audioelectric {
      * \param wf    The Waveform to iterate over.
      * \param rate  The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
      *              reverse iteration.
+     * \param cycle Whether or not to cycle over the waveform.
      * \param start The starting phase in the Waveform. If this is not between the begin and end phases then it will be
      *              set to begin.
      * \param begin The beginning phase in the Wavetable. Values before this in the wavetable will not be played
      * \param end   The ending phase in the Wavetable. A negative value sets the ending at the last sample for forward 
      *              interpolators and at the first sample for reverse interpolators.
-     * \param cycle Whether or not to cycle over the waveform.
      */
-    Phasor(Waveform<T>& wf, double rate, double start=0, double begin=0, double end=-1, bool cycle=false);
+    Phasor(Waveform<T>& wf, double rate, bool cycle=false, double start=0, double begin=0, double end=-1);
 
     Phasor(const Phasor& other);
 

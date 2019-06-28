@@ -4,7 +4,7 @@
 namespace audioelectric {
 
   template<typename T>
-  Phasor<T>::Phasor(Waveform<T>& wf, double rate, double start, double begin, double end, bool cycle) :
+  Phasor<T>::Phasor(Waveform<T>& wf, double rate, bool cycle, double start, double begin, double end) :
     _wf(wf), _phase(start), _cycle(cycle), _begin(begin)
   {
     setRate(rate);
