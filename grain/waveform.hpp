@@ -132,7 +132,8 @@ namespace audioelectric {
   private:
 
     InterpType _interptype;     //!< The interpolation type
-    long _size;                 //!< The size of _data
+    size_t _size;               //!< The size of data
+    size_t _end;                //!< The last index of _data
     T* _data;                   //!< The raw data
 
     /*!\brief Allocates a data array of length len

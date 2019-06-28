@@ -14,27 +14,27 @@ namespace audioelectric {
   /*********************** Public Waveform *******************************/
 
   template<typename T>
-  Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0)
+  Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0), _end(0)
   {
     
   }
 
   template<typename T>
-  Waveform<T>::Waveform(std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0)
+  Waveform<T>::Waveform(std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     alloc(len);
     memset(_data, 0, sizeof(T)*len);
   }
   
   template<typename T>
-  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(len)
+  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(len), _end(len-1)
   {
     alloc(len);
     memcpy(_data, data, sizeof(T)*len);
   }
 
   template<typename T>
-  Waveform<T>::Waveform(std::initializer_list<T> init, InterpType it) : _interptype(it), _data(nullptr), _size(0)
+  Waveform<T>::Waveform(std::initializer_list<T> init, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     alloc(init.size());
     T* p = _data;
@@ -43,14 +43,14 @@ namespace audioelectric {
   }
 
   template<typename T>
-  Waveform<T>::Waveform(T (*generator)(size_t), size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0)
+  Waveform<T>::Waveform(T (*generator)(size_t), size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     generate(generator, len);
   }
 
   template<typename T>
   Waveform<T>::Waveform(Waveform<T>& other, double rate, std::size_t len, InterpType it) :
-    _interptype(it), _data(nullptr), _size(0)
+    _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     alloc(len);
     auto phs = Phasor<T>(other, rate);
@@ -76,7 +76,7 @@ namespace audioelectric {
   template<typename T>
   T Waveform<T>::waveform(double pos, int channel)
   {
-    if (pos < 0 || pos > _size-1)
+    if (pos < 0 || pos > _end)
       return 0;
     return interpLinear(pos);
   }
@@ -118,6 +118,7 @@ namespace audioelectric {
     dealloc();
     _data = new T[len];
     _size = len;
+    _end = len-1;
   }
 
   template<typename T>
@@ -126,6 +127,7 @@ namespace audioelectric {
     if (_data)
       delete[] _data;
     _size = 0;
+    _end = 0;
   }
 
   template<typename T>
