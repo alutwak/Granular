@@ -150,7 +150,6 @@ namespace audioelectric {
      */
     T interpLinear(double pos) const;
 
-
   };
 
   /*!\brief Generates a gaussian function and puts it in a wavetable
@@ -159,11 +158,39 @@ namespace audioelectric {
    * beginning and end of the signal and r renormalizes the signal after that subtraction. This ensures that the signal
    * begins and ends with a value of zero.
    *
-   * \param[in,out] wt The Wavetable to fill (this will overwrite any function already in it)
-   * \param len The length of the gaussian function
-   * \param sigma The variance of the gaussian
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   * \param sigma      The variance of the gaussian
    */
   template<typename T>
-  void GenerateGaussian(Waveform<T> *wt, std::size_t len, T sigma);
+  void GenerateGaussian(Waveform<T>& wf, std::size_t len, T sigma);
+
+  /*!\brief Generates one cycle of a sine wave
+   * 
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   */
+  template <typename T>
+  void GenerateSin(Waveform<T>& wf, std::size_t len);
+
+  /*!\brief Generates one cycle of a triangle wave
+   * 
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   * \param slant      The anount of slant to the triangle. A value of 0 gives equal time to the rise and the fall. A value 
+   *                   of 1 results in all rise.
+   */
+  template <typename T>
+  void GenerateTriangle(Waveform<T>& wf, std::size_t len, T slant);
+
+  /*!\brief Generates one cycle of a square wave
+   * 
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   * \param width      The width of the square. A value of 0 results in a silent signal (all zeros). A value of 1 results in 
+   *                   all ones. Useful values are between those extremes.
+   */
+  template <typename T>
+  void GenerateSquare(Waveform<T>& wf, std::size_t len, T width);
 
 }

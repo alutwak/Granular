@@ -5,6 +5,8 @@
 #include "phasor.hpp"
 
 namespace audioelectric {
+
+  #define PI 3.1415926535
   
   /*********************** Public Waveform *******************************/
 
@@ -179,18 +181,59 @@ namespace audioelectric {
   template class Waveform<float>;
 
   template<typename T>
-  void GenerateGaussian(Waveform<T> *wt, std::size_t len, T sigma) {
-    wt->resize(len);
+  void GenerateGaussian(Waveform<T>& wf, std::size_t len, T sigma)
+  {
+    wf.resize(len);
     T flen = len;
     T mid = -flen/2;
     T sigma_norm = -2*(sigma*flen)*(sigma*flen);
     T offset = exp(mid*mid/sigma_norm);
     T norm = 1.0/(1.0-offset);
-    T* data = wt->data();
+    T* data = wf.data();
     for (std::size_t i=0; i<len; i++) {
       mid += 1.0;
       data[i] = norm*(exp(mid*mid/sigma_norm)-offset);
     }
   }
+
+  template <typename T>
+  void GenerateSin(Waveform<T>& wf, std::size_t len)
+  {
+    wf.resize(len);
+    T w = 2.*PI/len;
+    T* data = wf.data();
+    for (size_t i=0; i<len; i++) {
+      data[i] = sin(i*w);
+    }
+  }
   
+  template <typename T>
+  void GenerateTriangle(Waveform<T>& wf, std::size_t len, T slant)
+  {
+    wf.resize(len);
+    size_t uplen = (len/2)*(1 + slant);
+    T upslope = 1./uplen;
+    size_t downlen = len - uplen;
+    T dwnslope = 1./downlen;
+    T* data = wf.data();
+    size_t i = 0;
+    for (; i<uplen; i++)
+      data[i] = i*upslope;
+    for (size_t j=0; i<len; i++, j++)
+      data[i] = 1.0 - j*dwnslope;
+  }
+
+  template <typename T>
+  void GenerateSquare(Waveform<T>& wf, std::size_t len, T width)
+  {
+    wf.resize(len);
+    size_t rise_time = len*width;
+    T* data = wf.data();
+    for (size_t i=0; i<rise_time; i++)
+      data[i] = 0;
+    for (size_t i=rise_time; i<len; i++)
+      data[i] = 1.0;
+  }
+  
+
 }
