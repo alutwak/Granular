@@ -173,19 +173,20 @@
     + [ ] GetValue() method
 ** Grain Generator Requirements
 *** v1
-**** Controls [0/6]
-      + [ ] Waveform (select between a set of defined waveforms - no samples yet)
-      + [ ] Density
-        + [ ] Grains/second
-        + [ ] Randomness
-      + [ ] Size
-        + [ ] Length (ms)
-        + [ ] Randomness
-      + [ ] Amplitude
-        + [ ] Randomness
-      + [ ] Frequency
-        + [ ] Randomness
-      + [ ] Grain Shape (select between a set of defined shapes)
+**** Inputs [4/4]
+     Inputs are signals that come into the generator from outside
+      + [X] Grain Density (Grains/second)
+      + [X] Grain Length (ms)
+      + [X] Amplitude
+      + [X] Carrier Frequency
+**** Controls [6/6]
+     Controls are settings that the grain generator maintains itself
+      + [X] Waveform (select between a set of defined waveforms - no samples yet)
+      + [X] Grain Shape (select between a set of defined shapes)
+      + [X] Density Randomness
+      + [X] Length Randomness
+      + [X] Amplitude Randomness
+      + [X] Frequency Randomness
 ** Filter Requirements
 *** v1 (no filters in v1)
 *** v2 [0/3]
@@ -197,7 +198,7 @@
       + [ ] Resonance
     + [ ] Cascade them
 * Development Plan
-** Phase 1: Simple Grain Cloud (single channel)[3/6]
+** Phase 1: Simple Grain Cloud (single channel)[4/7]
 *** DONE Clean up old code[4/4]
     CLOSED: [2019-06-06 Thu 23:36]
 **** DONE Combine Waveform and Waveform (remove inheritance)
@@ -262,7 +263,8 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 20:54]--[2019-06-26 Wed 22:22] =>  1:28
      :END:
-*** INPROGRESS Grain v1 [3/3]
+*** DONE Grain v1 [3/3]
+    CLOSED: [2019-06-27 Thu 00:03]
 **** DONE Write Grain interface
      CLOSED: [2019-06-26 Wed 22:58]
      :PROPERTIES:
@@ -288,6 +290,52 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 23:11]--[2019-06-27 Thu 00:00] =>  0:49
      :END:
+*** INPROGRESS Grain Generator v1 requirements met [0/3]
+**** INPROGRESS Write interface
+     :LOGBOOK:
+     CLOCK: [2019-06-28 Fri 21:54]
+     :END:
+**** BACKLOG Write implementation
+***** BACKLOG Controls [0/5]
+      This is basically just the interface to the generator
+****** BACKLOG Waveform (select between a set of defined waveforms - no samples yet)
+       :PROPERTIES:
+       :Effort:   0:30
+       :END:
+****** BACKLOG Density [0/2]
+******* BACKLOG Frequency (Hz)
+        :PROPERTIES:
+        :Effort:   0:15
+        :END:
+******* BACKLOG Randomness
+        :PROPERTIES:
+        :Effort:   0:15
+        :END:
+****** BACKLOG Size [0/2]
+******* BACKLOG Length (ms)
+        :PROPERTIES:
+        :Effort:   0:15
+        :END:
+******* BACKLOG Randomness
+        :PROPERTIES:
+        :Effort:   0:15
+        :END:
+****** BACKLOG Grain Shape (select between a set of defined shapes)
+       :PROPERTIES:
+       :Effort:   2:00
+       :END:
+       Shape options:
+       + Gaussian
+***** BACKLOG Grain generation [0/2]
+****** BACKLOG Write grain generation algorithm
+       :PROPERTIES:
+       :Effort:   4:00
+       :END:
+****** BACKLOG Write grain cleanup algorithm
+       :PROPERTIES:
+       :Effort:   1:00
+       :END:
+**** BACKLOG Write Unit Tests
 *** BACKLOG Envelope v1 [0/5]
 **** BACKLOG Write Envelope interface
      :PROPERTIES:
@@ -306,43 +354,4 @@
      :PROPERTIES:
      :Effort:   4:00
      :END:
-*** BACKLOG Grain Generator v1 requirements met [0/3]
-**** BACKLOG Controls [0/5]
-     This is basically just the interface to the generator
-***** BACKLOG Waveform (select between a set of defined waveforms - no samples yet)
-      :PROPERTIES:
-      :Effort:   0:30
-      :END:
-***** BACKLOG Density [0/2]
-****** BACKLOG Frequency (Hz)
-       :PROPERTIES:
-       :Effort:   0:15
-       :END:
-****** BACKLOG Randomness
-       :PROPERTIES:
-       :Effort:   0:15
-       :END:
-***** BACKLOG Size [0/2]
-****** BACKLOG Length (ms)
-       :PROPERTIES:
-       :Effort:   0:15
-       :END:
-****** BACKLOG Randomness
-       :PROPERTIES:
-       :Effort:   0:15
-       :END:
-***** BACKLOG Grain Shape (select between a set of defined shapes)
-      :PROPERTIES:
-      :Effort:   2:00
-      :END:
-      Shape options:
-      + Gaussian
-**** BACKLOG Cloud generation [0/2]
-***** BACKLOG Write grain generation algorithm
-      :PROPERTIES:
-      :Effort:   4:00
-      :END:
-***** BACKLOG Write grain cleanup algorithm
-      :PROPERTIES:
-      :Effort:   1:00
-      :END:
+*** BACKLOG Write GrainCloud v1
