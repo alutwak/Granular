@@ -290,52 +290,66 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 23:11]--[2019-06-27 Thu 00:00] =>  0:49
      :END:
-*** INPROGRESS Grain Generator v1 requirements met [1/3]
+*** INPROGRESS Grain Generator v1 requirements met [2/3]
 **** DONE Write interface
      CLOSED: [2019-06-28 Fri 23:04]
      :LOGBOOK:
      CLOCK: [2019-06-28 Fri 21:54]--[2019-06-28 Fri 23:04] =>  1:10
      :END:
-**** INPROGRESS Write implementation
+**** DONE Write implementation
+     CLOSED: [2019-07-01 Mon 23:39]
      :LOGBOOK:
-     CLOCK: [2019-06-28 Fri 23:04]
+     CLOCK: [2019-07-01 Mon 22:34]--[2019-07-01 Mon 23:39] =>  1:05
+     CLOCK: [2019-06-28 Fri 23:04]--[2019-06-29 Sat 00:49] =>  1:45
      :END:
-***** BACKLOG Controls [0/5]
+***** DONE Controls [4/4]
+      CLOSED: [2019-07-01 Mon 23:38]
       This is basically just the interface to the generator
-****** BACKLOG Waveform (select between a set of defined waveforms - no samples yet)
+****** DONE Waveform (select between a set of defined waveforms - no samples yet)
+       CLOSED: [2019-07-01 Mon 23:35]
        :PROPERTIES:
        :Effort:   0:30
        :END:
-****** BACKLOG Density [0/2]
-******* BACKLOG Frequency (Hz)
+****** DONE Density [2/2]
+       CLOSED: [2019-07-01 Mon 23:35]
+******* DONE Frequency (Hz)
+        CLOSED: [2019-07-01 Mon 23:35]
         :PROPERTIES:
         :Effort:   0:15
         :END:
-******* BACKLOG Randomness
+******* DONE Randomness
+        CLOSED: [2019-07-01 Mon 23:35]
         :PROPERTIES:
         :Effort:   0:15
         :END:
-****** BACKLOG Size [0/2]
-******* BACKLOG Length (ms)
+****** DONE Size [2/2]
+       CLOSED: [2019-07-01 Mon 23:38]
+******* DONE Length (ms)
+        CLOSED: [2019-07-01 Mon 23:38]
         :PROPERTIES:
         :Effort:   0:15
         :END:
-******* BACKLOG Randomness
+******* DONE Randomness
+        CLOSED: [2019-07-01 Mon 23:38]
         :PROPERTIES:
         :Effort:   0:15
         :END:
-****** BACKLOG Grain Shape (select between a set of defined shapes)
+****** DONE Grain Shape (select between a set of defined shapes)
+       CLOSED: [2019-07-01 Mon 23:38]
        :PROPERTIES:
        :Effort:   2:00
        :END:
        Shape options:
        + Gaussian
-***** BACKLOG Grain generation [0/2]
-****** BACKLOG Write grain generation algorithm
+***** DONE Grain generation [2/2]
+      CLOSED: [2019-07-01 Mon 23:38]
+****** DONE Write grain generation algorithm
+       CLOSED: [2019-07-01 Mon 23:38]
        :PROPERTIES:
        :Effort:   4:00
        :END:
-****** BACKLOG Write grain cleanup algorithm
+****** DONE Write grain cleanup algorithm
+       CLOSED: [2019-07-01 Mon 23:38]
        :PROPERTIES:
        :Effort:   1:00
        :END:

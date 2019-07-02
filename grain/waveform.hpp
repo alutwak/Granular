@@ -160,7 +160,7 @@ namespace audioelectric {
    *
    * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
    * \param len        The length of the gaussian function
-   * \param sigma      The variance of the gaussian
+   * \param sigma      The variance of the gaussian. Useful values are on the range of [0,1]
    */
   template<typename T>
   void GenerateGaussian(Waveform<T>& wf, std::size_t len, T sigma);

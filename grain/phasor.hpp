@@ -67,6 +67,8 @@ namespace audioelectric {
     bool operator<=(const Phasor& other) const;
     bool operator>=(const Phasor& other) const;
 
+    void setWaveform(Waveform<T>& wf) {_wf = wf;}
+    
     /*!\brief Sets the rate (useful for vari-rate iterations)
      */
     void setRate(double rate);

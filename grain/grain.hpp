@@ -40,6 +40,10 @@ namespace audioelectric {
     /*!\brief Returns true if the grain is still running
      */
     operator bool(void) const;
+
+    void setCarrier(Waveform<T>& carrier) {_carrier.setWaveform(carrier);}
+
+    void setShape(Waveform<T>& shape) {_shape.setWaveform(shape);}
     
     /*!\brief Sets the carrier rate
      */
@@ -52,6 +56,8 @@ namespace audioelectric {
     /*!\brief Sets the amplitude
      */
     void setAmplitude(T ampl);
+
+    void setParams(double crate, double srate, T ampl);
     
     /*!\brief Resets the carrier and the shape back to their beginning phases
      */

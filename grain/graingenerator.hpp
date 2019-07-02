@@ -9,26 +9,25 @@
  * Last Modified Date: June 28, 2019
  */
 
-#include <vector>
+#include <list>
+#include <random>
 #include "grain.hpp"
 
 namespace audioelectric {
 
   /*!\brief Describes the set of carriers
    */
-  enum Carriers {
+  enum class Carriers {
     Sin,                //!< Sine wave
-    Saw,                //!< Saw wave
     Triangle,           //!< Triangle wave
+    Saw,                //!< Saw wave
     Square,             //!< Square wave
-    CarriersSize
   };
 
   /*!\brief Describes the set of shapes
    */
-  enum Shapes {
+  enum class Shapes {
     Gaussian,           //!< Gaussian
-    ShapesSize
   };
 
   /*!\brief Generates grains according to various parameters
@@ -37,7 +36,7 @@ namespace audioelectric {
   class GrainGenerator final {
   public:
     
-    GrainGenerator(void);
+    GrainGenerator(double fs);
 
     /*!\brief Returns the sum of all the active grains
      */
@@ -47,9 +46,9 @@ namespace audioelectric {
      */
     void increment(void);
 
-    /*!\brief Updates the values of the inputs
+    /*!\brief Generates a new grain if it needs to be generated and recycles old grains
      */
-    void adjustInputs(double density, double length, double freq, double ampl);
+    void updateGrains(double density, double length, double freq, T ampl);
 
     /*!\brief Sets the carrier waveform to use
      */
@@ -57,45 +56,55 @@ namespace audioelectric {
 
     /*!\brief Sets the grain shape
      */
-    void setShape(Shapes shape);
+    void setShape(Shapes shape); 
 
     /*!\brief Sets the amount of desnity randomization [0,1]
      */
-    void setDensityRand(double rand);
+    void setDensityRand(double rand) {_density_rnd = rand;}
 
     /*!\brief Sets the amount of length randomization [0,1]
      */
-    void setLengthRand(double rand);
+    void setLengthRand(double rand) {_length_rnd = rand;}
 
     /*!\brief Sets the amount of amplitude randomization [0,1]
      */
-    void setAmplRand(double rand);
+    void setAmplRand(double rand) {_ampl_rnd = rand;}
 
     /*!\brief Sets the amount of frequency randomization [0,1]
      */
-    void setFrequRand(double rand);
+    void setFrequRand(double rand) {_freq_rnd = rand;}
     
   private:
+    double _fs;                                 //!< The sample rate
+
+    // Random
+    std::mt19937 _gen;
+    std::uniform_real_distribution<> _rand;      //!< Random number generator
+    
     // Grains
-    std::vector<Grain<T>*> _active;     //!< The active grains
-    std::vector<Grain<T>*> _inactive;   //!< The inactive grains
+    std::list<Grain<T>*> _active;       //!< The active grains
+    std::list<Grain<T>*> _inactive;     //!< The inactive grains
     size_t _last_grain_t;               //!< The time since the last grain was generated
 
-    // Inputs (signals that come from outside)
-    double _density;                    //!< The last density input
-    double _length;                     //!< The last length input
-    double _freq;                       //!< The last frequency input
-    double _ampl;                       //!< The last amplitude input
-    
     // Controls (signals that are controlled by the generator)
-    Carriers _crnt_car;                         //!< The current carrier waveform
-    Waveform<T> _waveforms[CarriersSize];       //!< The set of available carrier waveforms
-    Shapes _crnt_shape;                         //!< The current shape waveform
-    Waveform<T> _shapes[ShapesSize];            //!< The set of available shape waveforms
-    double density_rnd;                         //!< The density randomization amount
-    double length_rnd;                          //!< The length randomization amount
-    double freq_rnd;                            //!< The frequency randomization amount
-    double ampl_rnd;                            //!< The amplitude randomization amount
+    Waveform<T> _carrier;               //!< The carrier waveform
+    Waveform<T> _shape;                 //!< The shape waveform
+    double _density_rnd;                //!< The density randomization amount
+    double _length_rnd;                 //!< The length randomization amount
+    double _freq_rnd;                   //!< The frequency randomization amount
+    double _ampl_rnd;                   //!< The amplitude randomization amount
+
+    void _allocateGrains(void);
+
+    void _moveAndSetGrain(double density, double length, double freq, T ampl);
+
+    /*!\brief Generates a random number on the interval of [-1,1]
+     * 
+     * \todo Right now this uses the mt19937 algorithm, but at some point I need to run some tests to find the fastest
+     *       algorithm
+     */
+    inline double _random(void);
+    
   };
 
 }  // audioelectric
