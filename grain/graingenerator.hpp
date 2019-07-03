@@ -85,6 +85,7 @@ namespace audioelectric {
     std::list<Grain<T>*> _active;       //!< The active grains
     std::list<Grain<T>*> _inactive;     //!< The inactive grains
     size_t _last_grain_t;               //!< The time since the last grain was generated
+    size_t _rand_grain_t;               //!< The time of the next grain
 
     // Controls (signals that are controlled by the generator)
     Waveform<T> _carrier;               //!< The carrier waveform
