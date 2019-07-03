@@ -19,7 +19,7 @@ namespace audioelectric {
     _last_grain_t(0), _density_rnd(0), _length_rnd(0), _freq_rnd(0), _ampl_rnd(0), _fs(fs), _rand(-1,1), _rand_grain_t(0)
   {
     std::random_device rd;
-    _gen(rd());
+    _gen = std::mt19937(rd());
     setCarrier(DEFAULT_CARRIER);
     setShape(DEFAULT_SHAPE);
     _allocateGrains();
@@ -46,14 +46,14 @@ namespace audioelectric {
   void GrainGenerator<T>::updateGrains(double density, double length, double freq, T ampl)
   {
     // Generate a grain if it is time
-    if (_last_grain_t >= density*(1. + _rand_grain_t*_density_rnd)) {
+    double grain_period = _fs/density;
+    if (_last_grain_t >= grain_period*(1. + _rand_grain_t*_density_rnd)) {
       _rand_grain_t = _random(); 
       _last_grain_t = 0;
       if (_inactive.empty())
         _allocateGrains();
-      _moveAndSetGrain(density*(1. + _density_rnd*_random()),
-                       length*(1. + _length_rnd*_random()),
-                       freq*(1. + _freq_rnd*_random()),
+      _moveAndSetGrain(freq*(1. + _freq_rnd*_random()),
+                       (1. + _length_rnd*_random()/length),
                        ampl*(1. + _ampl_rnd*random()));
     }
 
@@ -76,13 +76,13 @@ namespace audioelectric {
       GenerateSin(_carrier, _fs);
       return;
     case Carriers::Triangle:
-      GenerateTriangle(_carrier, _fs, 0);
+      GenerateTriangle(_carrier, _fs, T(0));
       return;
     case Carriers::Saw:
-      GenerateTriangle(_carrier, _fs, 0.8);
+      GenerateTriangle(_carrier, _fs, T(0.8));
       return;
     case Carriers::Square:
-      GenerateSquare(_carrier, _fs, 0.5);
+      GenerateSquare(_carrier, _fs, T(0.5));
       return;
     }
   }
@@ -92,7 +92,7 @@ namespace audioelectric {
   {
     switch(shape) {
     case Shapes::Gaussian:
-      GenerateGaussian(_shape, _fs, 0.15);
+      GenerateGaussian(_shape, _fs, T(0.15));
       return;
     }
   }
@@ -100,20 +100,13 @@ namespace audioelectric {
   template <typename T>
   void GrainGenerator<T>::_allocateGrains(void)
   {
-    size_t old_size = _inactive.size();
-    _inactive.resize(old_size + GRAIN_ALLOC_NUM);
-    Grain<T> *new_grains = _inactive.data() + old_size;
-    new_grains = new Grain<T>[GRAIN_ALLOC_NUM];
-    for (size_t i=old_size; i<_inactive.size(); i++) {
-      new_grains[i].setCarrier(_carrier);
-      new_grains[i].setShape(_shape);
-    }
+    _inactive.resize(GRAIN_ALLOC_NUM, Grain<T>(_carrier, 0, _shape, 0, 1));
   }
 
   template <typename T>
-  void GrainGenerator<T>::_moveAndSetGrain(double density, double length, double freq, T ampl)
+  void GrainGenerator<T>::_moveAndSetGrain(double crate, double srate, T ampl)
   {
-    _inactive.front().setParameters(density, freq, 1./length, ampl);
+    _inactive.front().setParams(crate, srate, ampl);
     _active.splice(_active.end(), _inactive, _inactive.begin());
   }
   
@@ -123,6 +116,8 @@ namespace audioelectric {
   {
     return _rand(_gen);
   }
-  
+
+  template class GrainGenerator<double>;
+  template class GrainGenerator<float>;
 
 }  // audioelectric

@@ -47,6 +47,11 @@ namespace audioelectric {
     void increment(void);
 
     /*!\brief Generates a new grain if it needs to be generated and recycles old grains
+     * 
+     * \param density The number of grains per second
+     * \param length  The length of the grains (in seconds)
+     * \param freq    The frequency of the carrier (in Hz)
+     * \param ampl    The amplitude of the grains [0,1]
      */
     void updateGrains(double density, double length, double freq, T ampl);
 
@@ -78,14 +83,14 @@ namespace audioelectric {
     double _fs;                                 //!< The sample rate
 
     // Random
-    std::mt19937 _gen;
-    std::uniform_real_distribution<> _rand;      //!< Random number generator
+    std::mt19937 _gen;                          //!< Random number algorithm
+    std::uniform_real_distribution<> _rand;     //!< Random number generator
     
     // Grains
-    std::list<Grain<T>*> _active;       //!< The active grains
-    std::list<Grain<T>*> _inactive;     //!< The inactive grains
-    size_t _last_grain_t;               //!< The time since the last grain was generated
-    size_t _rand_grain_t;               //!< The time of the next grain
+    std::list<Grain<T>> _active;       //!< The active grains
+    std::list<Grain<T>> _inactive;     //!< The inactive grains
+    double _last_grain_t;              //!< The time since the last grain was generated
+    double _rand_grain_t;              //!< The time of the next grain
 
     // Controls (signals that are controlled by the generator)
     Waveform<T> _carrier;               //!< The carrier waveform
@@ -97,7 +102,7 @@ namespace audioelectric {
 
     void _allocateGrains(void);
 
-    void _moveAndSetGrain(double density, double length, double freq, T ampl);
+    void _moveAndSetGrain(double crate, double srate, T ampl);
 
     /*!\brief Generates a random number on the interval of [-1,1]
      * 
