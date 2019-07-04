@@ -69,6 +69,14 @@ namespace audioelectric {
   }
 
   template <typename T>
+  void Grain<T>::setParams(double crate, double srate, T ampl)
+  {
+    setCarrierRate(crate);
+    setShapeRate(srate);
+    setAmplitude(ampl);
+  }
+
+  template <typename T>
   void Grain<T>::reset(void)
   {
     _carrier.reset();
