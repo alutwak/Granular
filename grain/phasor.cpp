@@ -15,7 +15,7 @@ namespace audioelectric {
 
   template<typename T>
   Phasor<T>::Phasor(const Phasor& other) :
-    _wf(other._wf), _phase(other._phase), _rate(other._rate), _begin(other._begin)
+    _wf(other._wf), _phase(other._phase), _rate(other._rate), _begin(other._begin), _cycle(other._cycle)
   {
     _setEnd(other._end);
   }
