@@ -57,6 +57,6 @@ TEST_F(GrainGenTest, simp48k100d10ms440Hz0_25a) {
   SimpleTest(48000, 100, 0.01, 440, 0.25);
 }
 
-TEST_F(GrainGenTest, simp48k100d100ms440Hz0_25a) {
-  SimpleTest(48000, 100, 0.1, 440, 0.25);
+TEST_F(GrainGenTest, simp48k100d33ms440Hz0_25a) {
+  SimpleTest(48000, 100, 0.033, 440, 0.25);
 }
