@@ -7,18 +7,18 @@
 namespace audioelectric {
 
   #define PI 3.1415926535
-  
+
   /*********************** Public Waveform *******************************/
 
   template<typename T>
   T doInterpolate(const T* a, double offset, InterpType it);
-  
+
   /*********************** Public Waveform *******************************/
 
   template<typename T>
   Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0), _end(0)
   {
-    
+
   }
 
   template<typename T>
@@ -27,7 +27,7 @@ namespace audioelectric {
     alloc(len);
     memset(_data, 0, sizeof(T)*len);
   }
-  
+
   template<typename T>
   Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(len), _end(len-1)
   {
@@ -82,7 +82,7 @@ namespace audioelectric {
       return 0;
     return interpLinear(pos);
   }
-  
+
   template<typename T>
   Waveform<T>& Waveform<T>::operator=(const Waveform<T>& other)
   {
@@ -111,7 +111,7 @@ namespace audioelectric {
       return;
     alloc(len);
   }
-  
+
   /*********************** Private Waveform *******************************/
 
   template<typename T>
@@ -141,9 +141,9 @@ namespace audioelectric {
     double diff = fmod(pos,1.0);
     return (b-a)*diff + a;
   }
-  
+
   /********************* iterator ********************/
-  
+
   template<typename T>
   typename Waveform<T>::iterator& Waveform<T>::iterator::operator++(void)
   {
@@ -170,7 +170,7 @@ namespace audioelectric {
   {
     return _data == other._data;
   }
-  
+
   template<typename T>
   bool Waveform<T>::iterator::operator!=(const Waveform<T>::iterator& other) const
   {
@@ -196,6 +196,9 @@ namespace audioelectric {
     }
   }
 
+  template void GenerateGaussian<double>(Waveform<double>&, std::size_t, double);
+  template void GenerateGaussian<float>(Waveform<float>&, std::size_t, float);
+
   template <typename T>
   void GenerateSin(Waveform<T>& wf, std::size_t len)
   {
@@ -206,7 +209,10 @@ namespace audioelectric {
       data[i] = sin(i*w);
     }
   }
-  
+
+  template void GenerateSin<double>(Waveform<double>&, std::size_t);
+  template void GenerateSin<float>(Waveform<float>&, std::size_t);
+
   template <typename T>
   void GenerateTriangle(Waveform<T>& wf, std::size_t len, T slant)
   {
@@ -223,6 +229,10 @@ namespace audioelectric {
       data[i] = 1.0 - j*dwnslope;
   }
 
+  template void GenerateTriangle<double>(Waveform<double>&, std::size_t, double);
+  template void GenerateTriangle<float>(Waveform<float>&, std::size_t, float);
+
+
   template <typename T>
   void GenerateSquare(Waveform<T>& wf, std::size_t len, T width)
   {
@@ -234,6 +244,8 @@ namespace audioelectric {
     for (size_t i=rise_time; i<len; i++)
       data[i] = 1.0;
   }
-  
+
+  template void GenerateSquare<double>(Waveform<double>&, std::size_t, double);
+  template void GenerateSquare<float>(Waveform<float>&, std::size_t, float);
 
 }
