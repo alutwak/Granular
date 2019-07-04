@@ -107,6 +107,7 @@ namespace audioelectric {
   void GrainGenerator<T>::_moveAndSetGrain(double crate, double srate, T ampl)
   {
     _inactive.front().setParams(crate, srate, ampl);
+    _inactive.front().reset();
     _active.splice(_active.end(), _inactive, _inactive.begin());
   }
   
