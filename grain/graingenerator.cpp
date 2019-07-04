@@ -53,8 +53,8 @@ namespace audioelectric {
       if (_inactive.empty())
         _allocateGrains();
       _moveAndSetGrain(freq*(1. + _freq_rnd*_random()),
-                       (1. + _length_rnd*_random()/length),
-                       ampl*(1. + _ampl_rnd*random()));
+                       (1. + _length_rnd*_random())/length,
+                       ampl*(1. + _ampl_rnd*_random()));
     }
 
     // Remove all completed grains to the _inactive list
