@@ -1,44 +1,90 @@
-
+#include <chrono>
 #include <gtest/gtest.h>
-#include <sndfile.h>
+#include <portaudio.h>
 
 #include "graingenerator.hpp"
 
 using namespace audioelectric;
 
-#define BUFSIZE 1024
+#define BUFSIZE 256
+
+struct paData {
+  GrainGenerator<float>* graingen;
+  double density;
+  double length;
+  double freq;
+  float ampl;
+};
 
 class GrainGenTest : public ::testing::Test {
 protected:
+  
+  PaStream *stream = nullptr;
 
-  void SimpleTest(double fs, double density, double length, double freq, double ampl) {
-    GrainGenerator<double> graingen(fs);
-    SF_INFO info;
-    info.channels = 1;
-    info.samplerate = fs;
-    info.format = SF_FORMAT_PCM_16 | SF_FORMAT_WAV;
-    std::stringstream fname;
-    fname << "graingen-simple-" << density << "-" << length << "-" << freq << "-" << ampl << "-" << (int)fs <<"Hz.wav";
-    
-    SNDFILE* fout = sf_open(fname.str().c_str(), SFM_WRITE, &info);
-    double buffer[BUFSIZE];
-
-    size_t ctl_per = fs/1000;   // Give the control period 1ms
-    double *b = buffer;
-    for (size_t i=0; i<fs*10; i++) {
-      if (i%ctl_per == 0) {
-        graingen.updateGrains(density, length, freq, ampl);
-      }
-      *b = graingen.value();
-      graingen.increment();
-      b++;
-      if (b >= buffer + BUFSIZE) {
-        sf_write_double(fout, buffer, BUFSIZE);
-        b = buffer;
-      }
+  void TearDown(void) {
+    if (stream != nullptr) {
+      printf("Shutting down PA\n");
+      Pa_StopStream(stream);
+      Pa_CloseStream(stream);
+      Pa_Terminate();
     }
+  }
+  
+  void SimpleTest(double fs, double density, double length, double freq, float ampl) {
+
+    printf("Playing simple grains: \n");
+    printf("\tfs:      %f\n", fs);
+    printf("\tdensity: %f\n", density);
+    printf("\tlength:  %f\n", length);
+    printf("\tfreq:    %f\n", freq);
+    printf("\tampl:    %f\n", ampl);
     
-    sf_close(fout);
+    PaError err = Pa_Initialize();
+    ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
+    
+    GrainGenerator<float> graingen(fs);
+    paData data = {
+      &graingen,
+      density,
+      length,
+      freq,
+      ampl
+    };
+    
+    auto paCallback = [] (const void *input, void *output,
+                          unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
+                          PaStreamCallbackFlags statusFlags, void *graingen_data)
+                        {
+                          paData *data = static_cast<paData*>(graingen_data);
+                          data->graingen->updateGrains(data->density, data->length, data->freq, data->ampl);
+                          float *buffer = (float*)output;
+                          for (int i=0; i<frames; i++) {
+                            buffer[i] = data->graingen->value();
+                            data->graingen->increment();
+                          }
+                          return 0;
+                        };
+
+    err = Pa_OpenDefaultStream( &stream,
+                                0,          /* no input channels */
+                                1,          /* mono output */
+                                paFloat32,  /* 32 bit floating point output */
+                                fs,
+                                BUFSIZE,    /* frames per buffer*/
+                                paCallback, /* this is your callback function */
+                                &data);
+    ASSERT_EQ(err, paNoError) << "PA error when opening stream: " << Pa_GetErrorText(err);
+    err = Pa_StartStream(stream);
+    ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);
+
+    std::chrono::system_clock::time_point tstart = std::chrono::system_clock::now();
+    long playtime = 0;
+    while (playtime < 2000) {
+      playtime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tstart).count();
+    }
+  }
+
+  void RandTest(double drand, double lrand, double arand, double frand) {
     
   }
   

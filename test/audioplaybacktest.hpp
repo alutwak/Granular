@@ -9,13 +9,13 @@
 
 using namespace audioelectric;
 
-static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
-               PaStreamCallbackFlags statusFlags, void *wtinterp_data)
-{
-  Phasor<float> *phs = static_cast<Phasor<float>*>(wtinterp_data);
-  phs->generate((float**)&output, frames, 1);
-  return 0;
-}
+// static int paCallback(const void *input, void *output, unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
+//                PaStreamCallbackFlags statusFlags, void *wtinterp_data)
+// {
+//   Phasor<float> *phs = static_cast<Phasor<float>*>(wtinterp_data);
+//   phs->generate((float**)&output, frames, 1);
+//   return 0;
+// }
 
 class AudioPlaybackTest : public ::testing::Test {
 protected:
@@ -68,6 +68,16 @@ protected:
   void initPA(Phasor<float>& wtiter) {
     PaError err = Pa_Initialize();
     ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
+
+    auto paCallback =  [] (const void *input, void *output,
+                           unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
+                           PaStreamCallbackFlags statusFlags, void *wtinterp_data)
+                         {
+                           Phasor<float> *phs = static_cast<Phasor<float>*>(wtinterp_data);
+                           phs->generate((float**)&output, frames, 1);
+                           return 0;
+                         };
+
     err = Pa_OpenDefaultStream( &stream,
                                 0,          /* no input channels */
                                 1,          /* mono output */
@@ -76,6 +86,7 @@ protected:
                                 256,        /* frames per buffer*/
                                 paCallback, /* this is your callback function */
                                 &wtiter);
+    
     ASSERT_EQ(err, paNoError) << "PA error when opening stream: " << Pa_GetErrorText(err);
     err = Pa_StartStream(stream);
     ASSERT_EQ(err, paNoError) << "PA error when starting stream: " << Pa_GetErrorText(err);
