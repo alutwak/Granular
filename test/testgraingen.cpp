@@ -16,33 +16,42 @@ struct paData {
   float ampl;
 };
 
-class GrainGenTest : public ::testing::Test {
+class SimpleGrainGenTest : public ::testing::Test {
 protected:
   
   PaStream *stream = nullptr;
 
   void TearDown(void) {
+    killStream();
+    Pa_Terminate();
+  }
+
+  void killStream(void) {
     if (stream != nullptr) {
       printf("Shutting down PA\n");
       Pa_StopStream(stream);
       Pa_CloseStream(stream);
-      Pa_Terminate();
+      stream = nullptr;
     }
   }
   
-  void SimpleTest(double fs, double density, double length, double freq, float ampl) {
+  void runTest(double fs, double density, double length, double freq, float ampl,
+               double drand=0, double lrand=0, double arand=0, double frand=0) {
 
     printf("Playing simple grains: \n");
-    printf("\tfs:      %f\n", fs);
-    printf("\tdensity: %f\n", density);
-    printf("\tlength:  %f\n", length);
-    printf("\tfreq:    %f\n", freq);
-    printf("\tampl:    %f\n", ampl);
+    printf("\tfs\tdensity\tlength\tfreq\tampl\n");
+    printf("\t%0.0f\t%0.0f\t%0.2f\t%0.0f\t%0.2f\n\n", fs, density, length, freq, ampl);
+    printf("\tdrand\tlrand\tarand\tfrand\n");
+    printf("\t%0.3f\t%0.3f\t%0.3f\t%0.3f\n", drand, lrand, arand, frand);
     
     PaError err = Pa_Initialize();
     ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
     
     GrainGenerator<float> graingen(fs);
+    graingen.setDensityRand(drand);
+    graingen.setLengthRand(lrand);
+    graingen.setAmplRand(arand);
+    graingen.setFreqRand(frand);
     paData data = {
       &graingen,
       density,
@@ -82,27 +91,38 @@ protected:
     while (playtime < 2000) {
       playtime = std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::system_clock::now() - tstart).count();
     }
+    killStream();
   }
 
-  void RandTest(double drand, double lrand, double arand, double frand) {
-    
+  void runTestSuite(double fs, double density, double length, double freq, float ampl) {
+    std::random_device rd;  
+    std::mt19937 gen(rd());
+    std::uniform_real_distribution<> rand(0,1);
+  
+    runTest(fs, density, length, freq, ampl);
+    runTest(fs, density, length, freq, ampl, rand(gen), 0, 0, 0);
+    runTest(fs, density, length, freq, ampl, 0, rand(gen), 0, 0);
+    runTest(fs, density, length, freq, ampl, 0, 0, rand(gen), 0);
+    runTest(fs, density, length, freq, ampl, 0, 0, 0, rand(gen));
+    runTest(fs, density, length, freq, ampl, rand(gen), rand(gen), rand(gen), rand(gen));
   }
   
 };
 
 
-TEST_F(GrainGenTest, simp48k10d10ms440Hz0_25a) {
-  SimpleTest(48000, 10, 0.01, 440, 0.25);
+TEST_F(SimpleGrainGenTest, sparseShort) {
+  runTestSuite(48000, 10, 0.01, 440, 0.25);
 }
 
-TEST_F(GrainGenTest, simp48k10d100ms440Hz0_25a) {
-  SimpleTest(48000, 10, 0.1, 440, 0.25);
+TEST_F(SimpleGrainGenTest, sparseLong) {
+  runTestSuite(48000, 10, 0.1, 440, 0.25);
 }
 
-TEST_F(GrainGenTest, simp48k100d10ms440Hz0_25a) {
-  SimpleTest(48000, 100, 0.01, 440, 0.25);
+TEST_F(SimpleGrainGenTest, denseShort) {
+  runTestSuite(48000, 100, 0.01, 440, 0.25);
 }
 
-TEST_F(GrainGenTest, simp48k100d33ms440Hz0_25a) {
-  SimpleTest(48000, 100, 0.033, 440, 0.25);
+TEST_F(SimpleGrainGenTest, denseLong) {
+  runTestSuite(48000, 100, 0.033, 440, 0.25);
 }
+

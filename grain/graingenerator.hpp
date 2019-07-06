@@ -77,7 +77,7 @@ namespace audioelectric {
 
     /*!\brief Sets the amount of frequency randomization [0,1]
      */
-    void setFrequRand(double rand) {_freq_rnd = rand;}
+    void setFreqRand(double rand) {_freq_rnd = rand;}
     
   private:
     double _fs;                                 //!< The sample rate
