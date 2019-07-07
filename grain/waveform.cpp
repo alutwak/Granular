@@ -138,7 +138,7 @@ namespace audioelectric {
     long p = pos;
     T a = _data[p];
     T b = _data[p+1];
-    double diff = fmod(pos,1.0);
+    double diff = pos - (double)p;
     return (b-a)*diff + a;
   }
 
