@@ -198,7 +198,7 @@
       + [ ] Resonance
     + [ ] Cascade them
 * Development Plan
-** Phase 1: Simple Grain Cloud (single channel)[4/7]
+** Phase 1: Simple Grain Cloud (single channel)[5/7]
 *** DONE Clean up old code[4/4]
     CLOSED: [2019-06-06 Thu 23:36]
 **** DONE Combine Waveform and Waveform (remove inheritance)
@@ -290,7 +290,8 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 23:11]--[2019-06-27 Thu 00:00] =>  0:49
      :END:
-*** INPROGRESS Grain Generator v1 requirements met [2/3]
+*** DONE Grain Generator v1 requirements met [2/4]
+    CLOSED: [2019-07-05 Fri 23:35]
 **** DONE Write interface
      CLOSED: [2019-06-28 Fri 23:04]
      :LOGBOOK:
@@ -353,7 +354,14 @@
        :PROPERTIES:
        :Effort:   1:00
        :END:
-**** BACKLOG Write Unit Tests
+**** INPROGRESS Write Unit Tests
+     :LOGBOOK:
+     CLOCK: [2019-07-03 Wed 21:54]--[2019-07-04 Thu 00:28] =>  2:34
+     :END:
+**** INPROGRESS Profiling
+     :LOGBOOK:
+     CLOCK: [2019-07-06 Sat 22:15]--[2019-07-07 Sun 01:21] =>  3:06
+     :END:
 *** BACKLOG Envelope v1 [0/5]
 **** BACKLOG Write Envelope interface
      :PROPERTIES:

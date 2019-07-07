@@ -11,6 +11,7 @@ namespace audioelectric {
     _setEnd(end);
     if (!_checkPhase(_phase))
       _phase = _begin;
+    _phase_good = true;
   }
 
   template<typename T>
@@ -18,15 +19,15 @@ namespace audioelectric {
     _wf(other._wf), _phase(other._phase), _rate(other._rate), _begin(other._begin), _cycle(other._cycle)
   {
     _setEnd(other._end);
+    _phase_good = _checkPhase(_phase);
   }
 
   template<typename T>
   T Phasor<T>::value(void) const
   {
-    if (_checkPhase(_phase))
+    if (_phase_good)
       return _wf.waveform(_phase);
-    else
-      return 0;
+    return 0;
   }
 
   template<typename T>
@@ -43,7 +44,7 @@ namespace audioelectric {
   template<typename T>
   Phasor<T>::operator bool(void) const
   {
-    return _checkPhase(_phase);
+    return _phase_good;
   }
 
   template<typename T>
@@ -59,6 +60,7 @@ namespace audioelectric {
       _end = end;
     else
       _end = (double)(_wf.size()-1);
+    _phase_good = _checkPhase(_phase);
   }
 
   template<typename T>
@@ -66,16 +68,26 @@ namespace audioelectric {
   {
     double nextphase = _phase+_rate;
     if (_cycle && !_checkPhase(nextphase)) {
-      //We've reached the end of the waveform, cycle around
-      //I'd love to use fmod here, but fmod is crap for negative values
+      // We've reached the end of the waveform, cycle around
+      // No need to set _phase_good because it's always good when we cycle
       if (_rate > 0)
         _phase = _begin + nextphase-_end;
       else
         _phase = _end - (_begin - nextphase);
     }
-    else
+    else {
       _phase = nextphase;
+      _phase_good = _checkPhase(_phase);
+    }
+      
   }
+
+  template <typename T>
+  void Phasor<T>::reset(void)
+  {
+    _phase = _begin;
+    _phase_good = true;
+  }    
 
   
   template<typename T>
@@ -128,6 +140,7 @@ namespace audioelectric {
     _rate = other._rate;
     _phase = other._phase;
     _wf = other._wf;
+    _phase_good = other._phase_good;
     return *this;
   }
 

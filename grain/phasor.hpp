@@ -83,7 +83,7 @@ namespace audioelectric {
 
     /*!\brief Resets the phase back to the beginning 
      */
-    void reset(void) {_phase = _begin;}    
+    void reset(void);
 
   private:
 
@@ -93,6 +93,8 @@ namespace audioelectric {
     double _end;        //!< The end of the wavetable in iterations (the units of the phase)
     bool _cycle;        //!< Whether to cycle the Waveform
     Waveform<T>& _wf;   //!< The waveform that we're phasing
+
+    bool _phase_good;   //!< Whether the phase is between begin and end
 
     /*!\brief Sets the value of the _end member.
      */

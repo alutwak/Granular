@@ -1,4 +1,4 @@
-
+#include <cmath>
 #include <gtest/gtest.h>
 
 #include "phasor.hpp"
@@ -19,9 +19,14 @@ protected:
     delete[] test;
   }
 
+  void testPhasor(double rate, double start=0) {
+    testNonCyclePhasor(rate, start);
+    testCyclingPhasor(rate, start);
+  }
+  
   /* Since the values in wt have a constant slope of 1, iterations should increment at the same rate as rate
    */
-  void testPhasor(double rate, double start=0) {
+  void testNonCyclePhasor(double rate, double start=0) {
     auto phs = Phasor<double>(wt,rate,false,start);
     auto begin = phs;
     double check = phs.value();
@@ -35,7 +40,6 @@ protected:
       }
     }
     else {
-      int iters = 0;
       while (phs) {
         if (rate > 0)
           EXPECT_TRUE(phs>=begin) << "when rate = " << rate << " and start = " << start;
@@ -45,8 +49,11 @@ protected:
         EXPECT_FLOAT_EQ(val,check) << "when rate = " << rate << " and start = " << start;
         phs.increment();
         check += rate;
-        iters++;
       }
+      double exp_phs = start;
+      while (exp_phs >= 0.0 && exp_phs <= 9.0)
+        exp_phs += rate;
+      EXPECT_EQ(phs.getPhase(), exp_phs);
       EXPECT_EQ(phs.value(), 0) << "finished phasor should output value of 0";
     }
   }
@@ -77,6 +84,25 @@ protected:
       EXPECT_FLOAT_EQ(test[0],val) << "when rate = " << rate;
       val += rate;
     }
+  }
+
+  void testCyclingPhasor(double rate, double start=0) {
+    if (rate == 0)
+      return;
+    auto phs = Phasor<double>(wt, rate, true, start);
+    double non_cyc_phs = start;
+    while (non_cyc_phs >= 0 && non_cyc_phs <= 9.0) {
+      phs.increment();
+      non_cyc_phs += rate;
+      EXPECT_TRUE(phs);
+    }
+    double exp_phs;
+    if (rate > 0)
+      exp_phs = non_cyc_phs - 9.0;
+    else
+      exp_phs = 9.0 + non_cyc_phs;
+    EXPECT_EQ(phs.getPhase(), exp_phs);
+    EXPECT_EQ(phs.value(), exp_phs);
   }
 
 };
