@@ -52,6 +52,8 @@ protected:
     graingen.setLengthRand(lrand);
     graingen.setAmplRand(arand);
     graingen.setFreqRand(frand);
+    graingen.applyInputs(density, length, freq, ampl);
+
     paData data = {
       &graingen,
       density,
@@ -68,7 +70,6 @@ protected:
                           //data->graingen->updateGrains(data->density, data->length, data->freq, data->ampl);
                           float *buffer = (float*)output;
                           for (int i=0; i<frames; i++) {
-                            data->graingen->updateGrains(data->density, data->length, data->freq, data->ampl);
                             buffer[i] = data->graingen->value();
                             data->graingen->increment();
                           }

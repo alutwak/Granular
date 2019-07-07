@@ -46,14 +46,14 @@ namespace audioelectric {
      */
     void increment(void);
 
-    /*!\brief Generates a new grain if it needs to be generated and recycles old grains
+    /*!\brief Updates the values of the inputs
      * 
      * \param density The number of grains per second
      * \param length  The length of the grains (in seconds)
      * \param freq    The frequency of the carrier (in Hz)
      * \param ampl    The amplitude of the grains [0,1]
      */
-    void updateGrains(double density, double length, double freq, T ampl);
+    void applyInputs(double density, double length, double freq, T ampl);
 
     /*!\brief Sets the carrier waveform to use
      */
@@ -92,7 +92,13 @@ namespace audioelectric {
     double _last_grain_t;              //!< The time since the last grain was generated
     double _rand_grain_t;              //!< The time of the next grain
 
-    // Controls (signals that are controlled by the generator)
+    // Inputs (signals that come from signal generators of some sort)
+    double _density;
+    double _length;
+    double _freq;
+    T _ampl;
+
+    // Controls (settings that are controlled by the user)
     Waveform<T> _carrier;               //!< The carrier waveform
     Waveform<T> _shape;                 //!< The shape waveform
     double _density_rnd;                //!< The density randomization amount
