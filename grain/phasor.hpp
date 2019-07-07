@@ -102,7 +102,7 @@ namespace audioelectric {
     
     /*!\brief Checks whether the given phase is within the start and stop bounds
      */
-    bool _checkPhase(double phase) const;
+    inline bool _checkPhase(double phase) const;
     
   };
 

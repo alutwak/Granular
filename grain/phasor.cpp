@@ -50,7 +50,7 @@ namespace audioelectric {
   template<typename T>
   bool Phasor<T>::_checkPhase(double phase) const
   {
-    return phase>=_begin && phase<=_end;
+    return phase <= _end && phase>=_begin;
   }
 
   template<typename T>
@@ -67,7 +67,8 @@ namespace audioelectric {
   void Phasor<T>::increment(void)
   {
     double nextphase = _phase+_rate;
-    if (_cycle && !_checkPhase(nextphase)) {
+    bool good = _checkPhase(nextphase);
+    if (_cycle && !good) {
       // We've reached the end of the waveform, cycle around
       // No need to set _phase_good because it's always good when we cycle
       if (_rate > 0)
@@ -77,7 +78,7 @@ namespace audioelectric {
     }
     else {
       _phase = nextphase;
-      _phase_good = _checkPhase(_phase);
+      _phase_good = good;
     }
       
   }
