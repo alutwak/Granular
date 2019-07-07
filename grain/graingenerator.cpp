@@ -10,18 +10,16 @@
 
 namespace audioelectric {
 
-#define DEFAULT_CARRIER Carriers::Sin
-#define DEFAULT_SHAPE Shapes::Gaussian
 #define GRAIN_ALLOC_NUM 5
 
   template <typename T>
-  GrainGenerator<T>::GrainGenerator(double fs) :
+  GrainGenerator<T>::GrainGenerator(Shapes shape, Carriers carrier, double fs) :
     _last_grain_t(0), _density_rnd(0), _length_rnd(0), _freq_rnd(0), _ampl_rnd(0), _fs(fs), _rand(-1,1), _rand_grain_t(0)
   {
     std::random_device rd;
     _gen = std::mt19937(rd());
-    setCarrier(DEFAULT_CARRIER);
-    setShape(DEFAULT_SHAPE);
+    setShape(shape);
+    setCarrier(carrier);
     _allocateGrains();
   }
 

@@ -16,7 +16,7 @@ struct paData {
   float ampl;
 };
 
-class SimpleGrainGenTest : public ::testing::Test {
+class StreamingGrainGenTest : public ::testing::Test {
 protected:
   
   PaStream *stream = nullptr;
@@ -47,7 +47,7 @@ protected:
     PaError err = Pa_Initialize();
     ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
     
-    GrainGenerator<float> graingen(fs);
+    GrainGenerator<float> graingen(Shapes::Gaussian, Carriers::Triangle, fs);
     graingen.setDensityRand(drand);
     graingen.setLengthRand(lrand);
     graingen.setAmplRand(arand);
@@ -65,9 +65,10 @@ protected:
                           PaStreamCallbackFlags statusFlags, void *graingen_data)
                         {
                           paData *data = static_cast<paData*>(graingen_data);
-                          data->graingen->updateGrains(data->density, data->length, data->freq, data->ampl);
+                          //data->graingen->updateGrains(data->density, data->length, data->freq, data->ampl);
                           float *buffer = (float*)output;
                           for (int i=0; i<frames; i++) {
+                            data->graingen->updateGrains(data->density, data->length, data->freq, data->ampl);
                             buffer[i] = data->graingen->value();
                             data->graingen->increment();
                           }
@@ -110,19 +111,23 @@ protected:
 };
 
 
-TEST_F(SimpleGrainGenTest, sparseShort) {
+TEST_F(StreamingGrainGenTest, sparseShort) {
   runTestSuite(48000, 10, 0.01, 440, 0.25);
 }
 
-TEST_F(SimpleGrainGenTest, sparseLong) {
+TEST_F(StreamingGrainGenTest, sparseLong) {
   runTestSuite(48000, 10, 0.1, 440, 0.25);
 }
 
-TEST_F(SimpleGrainGenTest, denseShort) {
+TEST_F(StreamingGrainGenTest, denseShort) {
   runTestSuite(48000, 100, 0.01, 440, 0.25);
 }
 
-TEST_F(SimpleGrainGenTest, denseLong) {
+TEST_F(StreamingGrainGenTest, denseLong) {
   runTestSuite(48000, 100, 0.033, 440, 0.25);
+}
+
+TEST_F(StreamingGrainGenTest, veryDenseShort) {
+  runTestSuite(48000, 1000, 0.01, 440, 0.25);
 }
 

@@ -36,7 +36,7 @@ namespace audioelectric {
   class GrainGenerator final {
   public:
     
-    GrainGenerator(double fs);
+    GrainGenerator(Shapes shape, Carriers carrier, double fs);
 
     /*!\brief Returns the sum of all the active grains
      */
