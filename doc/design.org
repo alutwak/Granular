@@ -290,7 +290,7 @@
      :LOGBOOK:
      CLOCK: [2019-06-26 Wed 23:11]--[2019-06-27 Thu 00:00] =>  0:49
      :END:
-*** DONE Grain Generator v1 requirements met [2/4]
+*** DONE Grain Generator v1 requirements met [4/4]
     CLOSED: [2019-07-05 Fri 23:35]
 **** DONE Write interface
      CLOSED: [2019-06-28 Fri 23:04]
@@ -300,6 +300,7 @@
 **** DONE Write implementation
      CLOSED: [2019-07-01 Mon 23:39]
      :LOGBOOK:
+     CLOCK: [2019-07-07 Sun 10:49]--[2019-07-07 Sun 11:03] =>  0:14
      CLOCK: [2019-07-01 Mon 22:34]--[2019-07-01 Mon 23:39] =>  1:05
      CLOCK: [2019-06-28 Fri 23:04]--[2019-06-29 Sat 00:49] =>  1:45
      :END:
@@ -354,12 +355,15 @@
        :PROPERTIES:
        :Effort:   1:00
        :END:
-**** INPROGRESS Write Unit Tests
+**** DONE Write Unit Tests
+     CLOSED: [2019-07-12 Fri 23:01]
      :LOGBOOK:
      CLOCK: [2019-07-03 Wed 21:54]--[2019-07-04 Thu 00:28] =>  2:34
      :END:
-**** INPROGRESS Profiling
+**** DONE Profiling
+     CLOSED: [2019-07-12 Fri 23:01]
      :LOGBOOK:
+     CLOCK: [2019-07-07 Sun 11:03]--[2019-07-08 Mon 10:31] => 23:28
      CLOCK: [2019-07-06 Sat 22:15]--[2019-07-07 Sun 01:21] =>  3:06
      :END:
 *** BACKLOG Envelope v1 [0/5]
