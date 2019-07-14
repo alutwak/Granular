@@ -366,15 +366,23 @@
      CLOCK: [2019-07-07 Sun 11:03]--[2019-07-08 Mon 10:31] => 23:28
      CLOCK: [2019-07-06 Sat 22:15]--[2019-07-07 Sun 01:21] =>  3:06
      :END:
-*** BACKLOG Envelope v1 [0/5]
-**** BACKLOG Write Envelope interface
+*** INPROGRESS Envelope v1 [2/4]
+**** DONE Write Envelope interface
+     CLOSED: [2019-07-13 Sat 22:32]
      :PROPERTIES:
      :Effort:   1:00
      :END:
+     :LOGBOOK:
+     CLOCK: [2019-07-13 Sat 22:21]--[2019-07-13 Sat 22:32] =>  0:11
+     :END:
      Must support all requirements in [[*Envelope Requirements][Envelope Requirements]]
-**** BACKLOG Implement Envelope
+**** DONE Implement Envelope
+     CLOSED: [2019-07-13 Sat 23:13]
      :PROPERTIES:
      :Effort:   1:00
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-07-13 Sat 22:32]--[2019-07-13 Sat 23:13] =>  0:41
      :END:
 **** BACKLOG Develop "trigger" and "release" signals
      :PROPERTIES:
