@@ -1,4 +1,13 @@
-
+/* \file envelope.hpp
+ * \brief Contains the Envelope class
+ *
+ * (c) AudioElectric. All rights reserved.
+ * 
+ * Author:             Ayal Lutwak <alutwak@audioelectric.com>
+ * Date:               July 14, 2019
+ * Last Modified By:   Ayal Lutwak <alutwak@audioelectric.com>
+ * Last Modified Date: July 14, 2019
+ */
 #pragma once
 
 #include <list>
@@ -15,13 +24,19 @@ namespace audioelectric {
   class Envelope final {
   public:
 
+    Envelope(double delay, double attack, double hold,  double decay, double sustain, double release);
+
     Envelope(double attack, double decay, double sustain, double release);
-    
-    double value(void) {return _out;}
+
+    /*!\brief Returns the current value of the envelope. 
+     * 
+     * This value is undefined if operator bool returns false
+     */
+    double value(void) const {return _out;}
 
     void increment(void);
 
-    operator bool(void);
+    operator bool(void) const {return _phase != EnvPhase::inactive;}
 
     /*!\brief Controls the gate value
      *
@@ -29,27 +44,37 @@ namespace audioelectric {
      */
     void gate(bool g);
 
-    /*!\brief Sets the attack in samples
+    /*!\brief Sets the delay [0..inf]
      */
-    void setAttack(double attack);
+    void setDelay(size_t delay) {_delay = delay;}
+    
+    /*!\brief Sets the attack in samples [1..inf]
+     */
+    void setAttack(size_t attack) {_attack = attack;}
 
-    /*!\brief Sets the decay in samples
+    /*!\brief Sets the hold in samples [0..inf]
      */
-    void setDecay(double decay);
+    void setHold(size_t hold) {_hold = hold;}
 
-    /*!\brief Sets the sustain amplitude [0-1]
+    /*!\brief Sets the decay in samples [1..inf]
      */
-    void setSustain(double sustain);
+    void setDecay(size_t decay) {_decay = decay;}
 
-    /*!\brief Sets the release in samples
+    /*!\brief Sets the sustain amplitude [0..1]
      */
-    void setRelease(double release);
+    void setSustain(double sustain) {_sustain = sustain;}
+
+    /*!\brief Sets the release in samples [1..inf]
+     */
+    void setRelease(size_t release) {_release = release;}
 
   private:
 
     enum class EnvPhase {
       inactive,
+      del,
       att,
+      hol,
       dec,
       sus,
       rel
@@ -58,13 +83,17 @@ namespace audioelectric {
     double _out;        //!< The current output
     double _slope;      //!< The current slope
     EnvPhase _phase;    //!< The current phase of the envelope
-    double _phs_rem;    //!< The remaining time in the current phase
-    
-    double _attack;     //!< The attack time (in samples)
-    double _decay;      //!< The decay time (in samples)
-    double _sustain;    //!< The sustain amplitude [0-1]
-    double _release;    //!< The release time (in samples)
+    size_t _phs_rem;    //!< The remaining time in the current phase
 
+    size_t _delay;      //!< The delay time (in samples)
+    size_t _attack;     //!< The attack time (in samples)
+    size_t _hold;       //!< The hold time (in samples)
+    size_t _decay;      //!< The decay time (in samples)
+    double _sustain;    //!< The sustain amplitude [0-1]
+    size_t _release;    //!< The release time (in samples)
+
+    void _updatePhase(void);
+    
   };
   
 }
