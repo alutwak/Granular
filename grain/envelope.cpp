@@ -13,14 +13,14 @@ namespace audioelectric {
 
   Envelope::Envelope(double delay, double attack, double hold, double decay, double sustain, double release) :
     _delay(delay), _attack(attack), _hold(hold), _decay(decay), _sustain(sustain), _release(release),
-    _phase(EnvPhase::inactive), _out(0)
+    _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
     
   }
 
   Envelope::Envelope(double attack, double decay, double sustain, double release) :
     _delay(0), _attack(attack), _hold(0), _decay(decay), _sustain(sustain), _release(release),
-    _phase(EnvPhase::inactive), _out(0)
+    _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
     
   }
@@ -42,6 +42,7 @@ namespace audioelectric {
       _phase = EnvPhase::rel;
       _phs_rem = _release;
       _slope = -_out/_release;
+      _updatePhase();
     }
   }
 
