@@ -46,27 +46,27 @@ namespace audioelectric {
 
     /*!\brief Sets the delay [0..inf]
      */
-    void setDelay(size_t delay) {_delay = delay;}
+    void setDelay(size_t delay);
     
     /*!\brief Sets the attack in samples [1..inf]
      */
-    void setAttack(size_t attack) {_attack = attack;}
+    void setAttack(size_t attack);
 
     /*!\brief Sets the hold in samples [0..inf]
      */
-    void setHold(size_t hold) {_hold = hold;}
+    void setHold(size_t hold);
 
     /*!\brief Sets the decay in samples [1..inf]
      */
-    void setDecay(size_t decay) {_decay = decay;}
+    void setDecay(size_t decay);
 
     /*!\brief Sets the sustain amplitude [0..1]
      */
-    void setSustain(double sustain) {_sustain = sustain;}
+    void setSustain(double sustain);
 
     /*!\brief Sets the release in samples [1..inf]
      */
-    void setRelease(size_t release) {_release = release;}
+    void setRelease(size_t release);
 
   private:
 

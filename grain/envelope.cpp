@@ -85,5 +85,93 @@ namespace audioelectric {
       }
     }
   }
+
+  void Envelope::setDelay(size_t delay)
+  {
+    if (_phase == EnvPhase::del) {
+      size_t eaten = _delay - _phs_rem;
+      if (delay <= eaten) {
+        _phs_rem = 0;
+        _updatePhase();
+      }
+      else {
+        _phs_rem = delay-eaten;
+      }
+    }
+    _delay = delay;
+  }
+    
+  void Envelope::setAttack(size_t attack)
+  {
+    if (_phase == EnvPhase::att) {
+      size_t eaten = _attack - _phs_rem;
+      if (attack <= eaten) {
+        _phs_rem = 0;
+        _updatePhase();
+      }
+      else {
+        _phs_rem = attack-eaten;
+        _slope = (1.-_out)/_phs_rem;
+      }
+    }
+    _attack = attack;
+  }
+
+  void Envelope::setHold(size_t hold)
+  {
+    if (_phase == EnvPhase::hol) {
+      size_t eaten = _hold - _phs_rem;
+      if (hold <= eaten) {
+        _phs_rem = 0;
+        _updatePhase();
+      }
+      else {
+        _phs_rem = hold-eaten;
+      }
+    }
+    _hold = hold;
+  }
+
+  void Envelope::setDecay(size_t decay)
+  {
+    if (_phase == EnvPhase::dec) {
+      size_t eaten = _decay - _phs_rem;
+      if (decay <= eaten) {
+        _phs_rem = 0;
+        _out = _sustain;
+        _updatePhase();
+      }
+      else {
+        _phs_rem = decay-eaten;
+        _slope = -(_out - _sustain)/_phs_rem;
+      }
+    }
+    _decay = decay;
+  }
+
+  void Envelope::setSustain(double sustain)
+  {
+    if (_phase == EnvPhase::dec)
+      _slope = -(_out - sustain)/_phs_rem;
+    _sustain = sustain;
+  }
+
+  void Envelope::setRelease(size_t release)
+  {
+    if (_phase == EnvPhase::rel) {
+      size_t eaten = _release - _phs_rem;
+      if (release <= eaten) {
+        _phs_rem = 0;
+        _out = 0;
+        _updatePhase();
+      }
+      else {
+        _phs_rem = release-eaten;
+        _slope = -_out/_phs_rem;
+      }
+    }
+    _release = release;
+  }
+
   
 }

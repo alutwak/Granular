@@ -213,4 +213,13 @@ TEST(envelope, DAHDSR) {
   }
 }
 
+TEST(envelope, att_change) {
+  FAIL() << "This test is not complete yet";
+  Envelope env(100, 5, 0 , 0);
+  env.gate(true);
+  for (double i=1; i<2; i++) {
+    env.increment();
+  }
+  EXPECT_DOUBLE_EQ(env.value(), 0.02);
+  env.setAttack(10);
 }
