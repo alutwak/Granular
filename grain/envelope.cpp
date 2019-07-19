@@ -107,6 +107,7 @@ namespace audioelectric {
       size_t eaten = _attack - _phs_rem;
       if (attack <= eaten) {
         _phs_rem = 0;
+        _out = 1;
         _updatePhase();
       }
       else {

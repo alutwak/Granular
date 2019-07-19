@@ -214,12 +214,50 @@ TEST(envelope, DAHDSR) {
 }
 
 TEST(envelope, att_change) {
-  FAIL() << "This test is not complete yet";
   Envelope env(100, 5, 0 , 0);
+  printf("Testing attack reduction...\n");
   env.gate(true);
-  for (double i=1; i<2; i++) {
+  for (int i=0; i<5; i++)
     env.increment();
-  }
-  EXPECT_DOUBLE_EQ(env.value(), 0.02);
+  EXPECT_DOUBLE_EQ(env.value(), 0.05);
   env.setAttack(10);
+  for (int i=0; i<5; i++ )
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.8);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing attack increase...\n");
+  env.gate(true);
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.5);
+  env.setAttack(100);
+  for (int i=0; i<95; i++)
+    env.increment();
+  EXPECT_NEAR(env.value(), 1, 1e-9);
+  env.increment();
+  EXPECT_NEAR(env.value(), 0.8, 1e-9);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing attack decrease beyond current time...\n");
+  env.gate(true);
+  for (int i=0; i<11; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.11);
+  env.setAttack(10);
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.8);
+}
+
+TEST(envelope, dec_change) {
+  
 }
