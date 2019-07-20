@@ -366,7 +366,7 @@
      CLOCK: [2019-07-07 Sun 11:03]--[2019-07-08 Mon 10:31] => 23:28
      CLOCK: [2019-07-06 Sat 22:15]--[2019-07-07 Sun 01:21] =>  3:06
      :END:
-*** INPROGRESS Envelope v1 [3/4]
+*** INPROGRESS Envelope v1 [4/4]
 **** DONE Write Envelope interface
      CLOSED: [2019-07-13 Sat 22:32]
      :PROPERTIES:
@@ -389,11 +389,16 @@
      :PROPERTIES:
      :Effort:   0:30
      :END:
-**** INPROGRESS Unit tests
+**** DONE Unit tests
+     CLOSED: [2019-07-20 Sat 00:01]
      :PROPERTIES:
      :Effort:   4:00
      :END:
      :LOGBOOK:
+     CLOCK: [2019-07-19 Fri 23:00]--[2019-07-20 Sat 00:01] =>  1:01
+     CLOCK: [2019-07-18 Thu 19:47]--[2019-07-18 Thu 20:18] =>  0:31
+     CLOCK: [2019-07-17 Wed 20:35]--[2019-07-17 Wed 20:50] =>  0:15
+     CLOCK: [2019-07-16 Tue 23:13]--[2019-07-17 Wed 00:35] =>  1:22
      CLOCK: [2019-07-14 Sun 23:30]--[2019-07-15 Mon 00:30] =>  1:00
      :END:
 *** BACKLOG Write GrainCloud v1

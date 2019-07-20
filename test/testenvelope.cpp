@@ -259,5 +259,247 @@ TEST(envelope, att_change) {
 }
 
 TEST(envelope, dec_change) {
-  
+  Envelope env(1, 100, 0 , 0);
+  printf("Testing decay reduction...\n");
+  env.gate(true);
+  env.increment(); //Get through the attack
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1-0.05);
+  env.setDecay(10);
+  for (int i=0; i<5; i++ )
+    env.increment();
+  EXPECT_NEAR(env.value(), 0, 1e-9);
+  env.increment();
+  EXPECT_NEAR(env.value(), 0, 1e-9);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing decay increase...\n");
+  env.gate(true);
+  env.increment(); //Get through the attack  
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.5);
+  env.setDecay(100);
+  for (int i=0; i<95; i++)
+    env.increment();
+  EXPECT_NEAR(env.value(), 0, 1e-9);
+  env.increment();
+  EXPECT_NEAR(env.value(), 0, 1e-9);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing decay decrease beyond current time...\n");
+  env.gate(true);
+  env.increment(); //Get through the attack
+  for (int i=0; i<11; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1-0.11);
+  env.setDecay(10);
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+}
+
+TEST(envelope, rel_change) {
+  Envelope env(1, 1, 1 , 100);
+  printf("Testing release reduction...\n");
+  env.gate(true);
+  env.increment(); //Get through the attack
+  env.gate(false); //Relase env
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1-0.05);
+  env.setRelease(10);
+  for (int i=0; i<5; i++ ) {
+    EXPECT_TRUE(env);
+    env.increment();
+  }
+  EXPECT_FALSE(env);
+
+  printf("Testing release increase...\n");
+  env.gate(true);
+  env.increment(); //Get through the attack
+  env.gate(false); //Release env
+  for (int i=0; i<5; i++) 
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.5);
+  env.setRelease(100);
+  for (int i=0; i<95; i++) {
+    EXPECT_TRUE(env);
+    env.increment();
+  }
+  EXPECT_FALSE(env);
+
+  printf("Testing release decrease beyond current time...\n");
+  env.gate(true);
+  env.increment(); //Get through the attack
+  env.gate(false); //Release env
+  for (int i=0; i<11; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1-0.11);
+  env.setRelease(10);
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  EXPECT_FALSE(env);
+}
+
+TEST(envelope, del_change) {
+  Envelope env(100, 1, 0, 1, 1 , 1);
+  printf("Testing delay reduction...\n");
+  env.gate(true);
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.setDelay(10);
+  for (int i=0; i<5; i++ )
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing delay increase...\n");
+  env.gate(true);
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.setDelay(100);
+  for (int i=0; i<95; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing delay decrease beyond current time...\n");
+  env.gate(true);
+  for (int i=0; i<11; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.setDelay(10);
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+}
+
+TEST(envelope, hold_change) {
+  Envelope env(0, 1, 100, 1, 0, 1);
+  printf("Testing hold reduction...\n");
+  env.gate(true);
+  env.increment(); //Get through attack
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.setHold(10);
+  for (int i=0; i<5; i++ )
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing hold increase...\n");
+  env.gate(true);
+  env.increment(); //Get through attack  
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.setHold(100);
+  for (int i=0; i<95; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing hold decrease beyond current time...\n");
+  env.gate(true);
+  env.increment(); //Get through attack  
+  for (int i=0; i<11; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.setHold(10);
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0);
+}
+
+TEST(enveloope, sus_change) {
+  Envelope env(1,10, 1, 10);
+  printf("Testing sustain reduction during decay...\n");
+  env.gate(true);
+  env.increment(); //Get through attack
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.setSustain(0.5);
+  for (double i=0; i<5; i++ ) {
+    EXPECT_DOUBLE_EQ(env.value(), 1 - 0.5*i/5.);
+    env.increment();
+  }
+  EXPECT_DOUBLE_EQ(env.value(), 0.5);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.5);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing sustain increase during decay...\n");
+  env.gate(true);
+  env.increment(); //Get through attack
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 0.75);
+  env.setSustain(1);
+  for (double i=0; i<5; i++ ) {
+    EXPECT_DOUBLE_EQ(env.value(), 0.75 + 0.25*i/5.);
+    env.increment();
+  }
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  //Close the gate and make sure the envelope completes
+  env.gate(false);
+  while(env)
+    env.increment();
+
+  printf("Testing sustain change during sustain...\n");
+  env.gate(true);
+  env.increment(); //Get through attack
+  for (int i=0; i<5; i++)
+    env.increment();
+  EXPECT_DOUBLE_EQ(env.value(), 1);
+  env.setSustain(0.5);
+  EXPECT_DOUBLE_EQ(env.value(), 0.5);
+  env.setSustain(0.999);
+  EXPECT_DOUBLE_EQ(env.value(), 0.999);
+  env.increment();
+  env.setSustain(0.666);
+  EXPECT_DOUBLE_EQ(env.value(), 0.666);
+  //Close the gate and make sure the envelope completes
+  env.setSustain(0.2);
+  EXPECT_DOUBLE_EQ(env.value(), 0.2);
+  env.gate(false);
+  for (double i=0; i<10; i++) {
+    env.increment();
+    EXPECT_DOUBLE_EQ(env.value(), 0.2-0.2*i/10.);
+  }
 }

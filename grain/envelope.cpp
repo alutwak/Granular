@@ -154,6 +154,8 @@ namespace audioelectric {
   {
     if (_phase == EnvPhase::dec)
       _slope = -(_out - sustain)/_phs_rem;
+    else if (_phase == EnvPhase::sus)
+      _out = sustain;
     _sustain = sustain;
   }
 
