@@ -31,7 +31,7 @@ namespace audioelectric {
 
     /*!\brief Returns the current value of the grain
      */
-    T value(void);
+    T value(void) const;
 
     /*!\brief Increments the phases of the carrier and the shape
      */

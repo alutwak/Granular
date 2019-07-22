@@ -30,22 +30,21 @@ namespace audioelectric {
     
   public:
 
-    Voice(Waveform<T>& shape, Waveform<T>& carrier);
+    Voice(Waveform<T>& shape, Waveform<T>& carrier, Envelope<T>& env1, Envelope<T>& env2);
 
     /*!\brief Evaluates to true if the voice is active and false otherwise
      */
     operator bool(void) const {return _env1 || _env2 || _graingen;}
 
-    T value(void) const;
+    T value(void) const {return _graingen.value();}
 
     void increment(void);
 
     /*!\brief Starts the voice
      *
-     * \param freq The "base" frequency of the voice
-     * \param ampl The "base" amplitude of the voice
+     * \param params The "base" parameters of the note (which may get modulated by the envelopes)
      */
-    void trigger(T freq, T ampl);
+    void trigger(GrainParams<T> params);
 
     /*!\brief Causes both envelopes to be released
      */
@@ -57,9 +56,8 @@ namespace audioelectric {
     GrainParams<T> _env1_mult;          //!< Multipliers for envelope 1
     Envelope<T> _env2;                  //!< Envelope 2
     GrainParams<T> _env2_mult;          //!< Multipliers for envelope 2
-
     GrainGenerator<T> _graingen;        //!< The grain generator
-    
+    GrainParams<T> _base_params;        //!< The base parameters
   };
   
 }

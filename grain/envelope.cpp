@@ -1,5 +1,5 @@
 /* (c) AudioElectric. All rights reserved.
- * 
+ *
  * Author:             Ayal Lutwak <alutwak@audioelectric.com>
  * Date:               July 14, 2019
  * Last Modified By:   Ayal Lutwak <alutwak@audioelectric.com>
@@ -16,7 +16,7 @@ namespace audioelectric {
     _delay(delay), _attack(attack), _hold(hold), _decay(decay), _sustain(sustain), _release(release),
     _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
-    
+
   }
 
   template <typename T>
@@ -24,7 +24,15 @@ namespace audioelectric {
     _delay(0), _attack(attack), _hold(0), _decay(decay), _sustain(sustain), _release(release),
     _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
-    
+
+  }
+
+  template <typename T>
+  Envelope<T>::Envelope(double delay, double attack, double release) :
+    _delay(delay), _attack(attack), _hold(0), _decay(0), _sustain(1), _release(release),
+    _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
+  {
+
   }
 
   template <typename T>
@@ -106,7 +114,7 @@ namespace audioelectric {
     }
     _delay = delay;
   }
-    
+
   template <typename T>
   void Envelope<T>::setAttack(size_t attack)
   {
@@ -189,5 +197,5 @@ namespace audioelectric {
 
   template class Envelope<double>;
   template class Envelope<float>;
-  
+
 }

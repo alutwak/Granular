@@ -1,5 +1,5 @@
 /* (c) AudioElectric. All rights reserved.
- * 
+ *
  * Author:             Ayal Lutwak <alutwak@audioelectric.com>
  * Date:               June 28, 2019
  * Last Modified By:   Ayal Lutwak <alutwak@audioelectric.com>
@@ -11,6 +11,74 @@
 namespace audioelectric {
 
 #define GRAIN_ALLOC_NUM 5
+
+  template <typename T>
+  void GrainParams<T>::modulate(GrainParams<T>& other)
+  {
+    density *= 1. + other.density;
+    length  *= 1. + other.length;
+    freq    *= 1. + other.freq;
+    ampl    *= 1. + other.ampl;
+  }
+
+  template <typename T>
+  GrainParams<T>& GrainParams<T>::operator*=(const GrainParams<T> &rhs)
+  {
+    density *= rhs.density;
+    length *= rhs.length;
+    freq *= rhs.freq;
+    ampl *= rhs.ampl;
+    return *this;
+  }
+
+  template <typename T>
+  GrainParams<T>& GrainParams<T>::operator*=(T rhs)
+  {
+    density *= rhs;
+    length *= rhs;
+    freq *= rhs;
+    ampl *= rhs;
+    return *this;
+  }
+
+  template <typename T>
+  GrainParams<T>& GrainParams<T>::operator+=(const GrainParams<T> &rhs)
+  {
+    density += rhs.density;
+    length += rhs.length;
+    freq += rhs.freq;
+    ampl += rhs.ampl;
+    return *this;
+  }
+
+  template <typename T>
+  GrainParams<T> operator*(GrainParams<T> lhs, T rhs)
+  {
+    lhs *= rhs;
+    return lhs;
+  }
+
+  template <typename T>
+  GrainParams<T> operator*(T lhs, GrainParams<T> rhs)
+  {
+    rhs *= lhs;
+    return rhs;
+  }
+
+  template <typename T>
+  GrainParams<T> operator*(GrainParams<T> lhs, const GrainParams<T>& rhs)
+  {
+    lhs *= rhs;
+    return lhs;
+  }
+
+  template <typename T>
+  GrainParams<T> operator+(GrainParams<T> lhs, const GrainParams<T>& rhs)
+  {
+    lhs += rhs;
+    return lhs;
+  }
+
 
   template <typename T>
   GrainGenerator<T>::GrainGenerator(Waveform<T>& shape, Waveform<T>& carrier) :
@@ -29,7 +97,7 @@ namespace audioelectric {
   }
 
   template <typename T>
-  T GrainGenerator<T>::value(void)
+  T GrainGenerator<T>::value(void) const
   {
     T val = 0;
     for (auto& grn : _active)
@@ -54,7 +122,7 @@ namespace audioelectric {
     // Generate a grain if it is time
     double grain_period = 1./_params.density;
     if (_last_grain_t >= grain_period*(1. + _rand_grain_t*_rand.density)) {
-      _rand_grain_t = _random(); 
+      _rand_grain_t = _random();
       _last_grain_t = 0;
       if (_inactive.empty())
         _allocateGrains();
@@ -89,8 +157,8 @@ namespace audioelectric {
     _inactive.front().reset();
     _active.splice(_active.end(), _inactive, _inactive.begin());
   }
-  
-  
+
+
   template <typename T>
   double GrainGenerator<T>::_random(void)
   {

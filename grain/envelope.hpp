@@ -29,6 +29,8 @@ namespace audioelectric {
 
     Envelope(double attack, double decay, double sustain, double release);
 
+    Envelope(double delay, double attack, double release);
+
     /*!\brief Returns the current value of the envelope. 
      * 
      * This value is undefined if operator bool returns false

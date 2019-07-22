@@ -165,12 +165,6 @@
     + [X] Amplitude
     + [X] Multiply waveform, envelope and amplitude at each sample
     + [X] Function to determine when grain is done so it can be deleted
-** Envelope Requirements
-*** v1 [4/4]
-    + [X] Linear ADSR
-    + [X] Ability to "trigger" and "release"
-    + [X] Increment() method
-    + [X] GetValue() method
 ** Grain Generator Requirements
 *** v1
 **** Inputs [4/4]
@@ -187,6 +181,27 @@
       + [X] Length Randomness
       + [X] Amplitude Randomness
       + [X] Frequency Randomness
+** Envelope Requirements
+*** v1 [4/4]
+    + [X] Linear ADSR
+    + [X] Ability to "trigger" and "release"
+    + [X] Increment() method
+    + [X] GetValue() method
+** Voice Requirements
+*** v1 [2/3]
+    + [X] Contains: [2/2]
+      + [X] Grain generator
+      + [X] 2 envelopes
+    + [X] Parameters: [1/1]
+      These don't change while the voice is playing, so we should just give these in the function that generates the note
+      + [X] Multipliers for both Env 1 and 2:
+        - Amplitude
+        - Density
+        - Size
+        - Frequency
+    + [-] Interface: [1/2]
+      + [X] Note interface (gate and frequency)
+      + [ ] Parameter setting interface
 ** Filter Requirements
 *** v1 (no filters in v1)
 *** v2 [0/3]
@@ -198,7 +213,7 @@
       + [ ] Resonance
     + [ ] Cascade them
 * Development Plan
-** Phase 1: Simple Grain Cloud (single channel)[5/7]
+** Phase 1: Simple Grain Cloud (single channel)[6/8]
 *** DONE Clean up old code[4/4]
     CLOSED: [2019-06-06 Thu 23:36]
 **** DONE Combine Waveform and Waveform (remove inheritance)
@@ -366,7 +381,8 @@
      CLOCK: [2019-07-07 Sun 11:03]--[2019-07-08 Mon 10:31] => 23:28
      CLOCK: [2019-07-06 Sat 22:15]--[2019-07-07 Sun 01:21] =>  3:06
      :END:
-*** INPROGRESS Envelope v1 [4/4]
+*** DONE Envelope v1 [4/4]
+    CLOSED: [2019-07-20 Sat 21:21]
 **** DONE Write Envelope interface
      CLOSED: [2019-07-13 Sat 22:32]
      :PROPERTIES:
@@ -400,5 +416,27 @@
      CLOCK: [2019-07-17 Wed 20:35]--[2019-07-17 Wed 20:50] =>  0:15
      CLOCK: [2019-07-16 Tue 23:13]--[2019-07-17 Wed 00:35] =>  1:22
      CLOCK: [2019-07-14 Sun 23:30]--[2019-07-15 Mon 00:30] =>  1:00
+     :END:
+*** INPROGRESS Voice v1 [2/3]
+**** DONE Write voice interface
+     CLOSED: [2019-07-21 Sun 22:23]
+     :PROPERTIES:
+     :Effort:   1:00
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-07-21 Sun 22:25]--[2019-07-21 Sun 22:43] =>  0:18
+     CLOCK: [2019-07-21 Sun 20:52]--[2019-07-21 Sun 22:23] =>  1:31
+     :END:
+**** DONE Implement voice
+     CLOSED: [2019-07-22 Mon 00:21]
+     :PROPERTIES:
+     :Effort:   1:00
+     :END:
+     :LOGBOOK:
+     CLOCK: [2019-07-21 Sun 22:43]--[2019-07-22 Mon 00:21] =>  1:38
+     :END:
+**** BACKLOG Unit tests
+     :PROPERTIES:
+     :Effort:   2:00
      :END:
 *** BACKLOG Write GrainCloud v1

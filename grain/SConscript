@@ -2,7 +2,12 @@ import os
 
 Import('env')
 
-source_files = ['waveform.cpp', 'phasor.cpp',  'grain.cpp', 'graingenerator.cpp', 'envelope.cpp']
+source_files = ['waveform.cpp',
+                'phasor.cpp',
+                'grain.cpp',
+                'graingenerator.cpp',
+                'envelope.cpp',
+                'voice.cpp']
 
 grain_lib = env.Library('grain', source_files)
 

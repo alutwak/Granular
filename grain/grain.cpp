@@ -32,7 +32,7 @@ namespace audioelectric {
   }
 
   template <typename T>
-  T Grain<T>::value(void)
+  T Grain<T>::value(void) const
   {
     return _carrier.value() * _shape.value() * _ampl;
   }
