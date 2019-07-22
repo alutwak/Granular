@@ -484,7 +484,7 @@ TEST(enveloope, sus_change) {
   printf("Testing sustain change during sustain...\n");
   env.gate(true);
   env.increment(); //Get through attack
-  for (int i=0; i<5; i++)
+  for (int i=0; i<10; i++)
     env.increment();
   EXPECT_DOUBLE_EQ(env.value(), 1);
   env.setSustain(0.5);
@@ -498,7 +498,7 @@ TEST(enveloope, sus_change) {
   env.setSustain(0.2);
   EXPECT_DOUBLE_EQ(env.value(), 0.2);
   env.gate(false);
-  for (double i=0; i<10; i++) {
+  for (double i=1; i<10; i++) {
     env.increment();
     EXPECT_DOUBLE_EQ(env.value(), 0.2-0.2*i/10.);
   }
