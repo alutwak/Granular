@@ -5,7 +5,7 @@
 using namespace audioelectric;
 
 TEST(envelope, gate) {
-  Envelope env(1,1,1,1);
+  Envelope<double> env(1,1,1,1);
 
   EXPECT_FALSE(env) << "Ungated envelope should be false";
   EXPECT_EQ(env.value(), 0);
@@ -30,7 +30,7 @@ TEST(envelope, gate) {
 
 TEST(envelope, ADSR) {
 
-  Envelope env(10, 5, 0.5, 5);
+  Envelope<double> env(10, 5, 0.5, 5);
   env.gate(true);
   EXPECT_EQ(env.value(), 0);
 
@@ -102,7 +102,7 @@ TEST(envelope, ADSR) {
 
 TEST(envelope, AD) {
 
-  Envelope env(10, 5, 0 , 0);
+  Envelope<double> env(10, 5, 0 , 0);
   env.gate(true);
   printf("Testing attack...\n");
   for (double i=1; i<=10; i++) {
@@ -127,7 +127,7 @@ TEST(envelope, AD) {
 }
 
 TEST(envelope, DAHDSR) {
-  Envelope env(3, 10, 3, 5, 0.5, 5);
+  Envelope<double> env(3, 10, 3, 5, 0.5, 5);
   env.gate(true);
   EXPECT_EQ(env.value(), 0);
 
@@ -214,7 +214,7 @@ TEST(envelope, DAHDSR) {
 }
 
 TEST(envelope, att_change) {
-  Envelope env(100, 5, 0 , 0);
+  Envelope<double> env(100, 5, 0 , 0);
   printf("Testing attack reduction...\n");
   env.gate(true);
   for (int i=0; i<5; i++)
@@ -259,7 +259,7 @@ TEST(envelope, att_change) {
 }
 
 TEST(envelope, dec_change) {
-  Envelope env(1, 100, 0 , 0);
+  Envelope<double> env(1, 100, 0 , 0);
   printf("Testing decay reduction...\n");
   env.gate(true);
   env.increment(); //Get through the attack
@@ -307,7 +307,7 @@ TEST(envelope, dec_change) {
 }
 
 TEST(envelope, rel_change) {
-  Envelope env(1, 1, 1 , 100);
+  Envelope<double> env(1, 1, 1 , 100);
   printf("Testing release reduction...\n");
   env.gate(true);
   env.increment(); //Get through the attack
@@ -349,7 +349,7 @@ TEST(envelope, rel_change) {
 }
 
 TEST(envelope, del_change) {
-  Envelope env(100, 1, 0, 1, 1 , 1);
+  Envelope<double> env(100, 1, 0, 1, 1 , 1);
   printf("Testing delay reduction...\n");
   env.gate(true);
   for (int i=0; i<5; i++)
@@ -394,7 +394,7 @@ TEST(envelope, del_change) {
 }
 
 TEST(envelope, hold_change) {
-  Envelope env(0, 1, 100, 1, 0, 1);
+  Envelope<double> env(0, 1, 100, 1, 0, 1);
   printf("Testing hold reduction...\n");
   env.gate(true);
   env.increment(); //Get through attack
@@ -442,7 +442,7 @@ TEST(envelope, hold_change) {
 }
 
 TEST(enveloope, sus_change) {
-  Envelope env(1,10, 1, 10);
+  Envelope<double> env(1,10, 1, 10);
   printf("Testing sustain reduction during decay...\n");
   env.gate(true);
   env.increment(); //Get through attack

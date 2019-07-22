@@ -21,6 +21,7 @@ namespace audioelectric {
   
   /*!\brief A generic envelope
    */
+  template <typename T>
   class Envelope final {
   public:
 
@@ -62,7 +63,7 @@ namespace audioelectric {
 
     /*!\brief Sets the sustain amplitude [0..1]
      */
-    void setSustain(double sustain);
+    void setSustain(T sustain);
 
     /*!\brief Sets the release in samples [1..inf]
      */
@@ -80,8 +81,8 @@ namespace audioelectric {
       rel
     };
 
-    double _out;        //!< The current output
-    double _slope;      //!< The current slope
+    T _out;             //!< The current output
+    T _slope;           //!< The current slope
     EnvPhase _phase;    //!< The current phase of the envelope
     size_t _phs_rem;    //!< The remaining time in the current phase
 
@@ -89,7 +90,7 @@ namespace audioelectric {
     size_t _attack;     //!< The attack time (in samples)
     size_t _hold;       //!< The hold time (in samples)
     size_t _decay;      //!< The decay time (in samples)
-    double _sustain;    //!< The sustain amplitude [0-1]
+    T _sustain;         //!< The sustain amplitude [0-1]
     size_t _release;    //!< The release time (in samples)
 
     void _updatePhase(void);
