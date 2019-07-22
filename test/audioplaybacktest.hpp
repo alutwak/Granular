@@ -43,7 +43,7 @@ protected:
     else
       maxplay = 5000; //Give 5 seconds for a slow test file
     long playtime = runPlayback(phs, maxplay);
-    if (cycle && begin < end) {
+    if (cycle) {
       EXPECT_TRUE((bool)phs);
       EXPECT_GE(playtime, maxplay);
     }
