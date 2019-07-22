@@ -33,7 +33,7 @@ namespace audioelectric {
      * 
      * This value is undefined if operator bool returns false
      */
-    double value(void) const {return _out;}
+    T value(void) const {return _out;}
 
     void increment(void);
 
