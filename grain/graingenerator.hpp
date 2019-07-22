@@ -18,26 +18,12 @@ namespace audioelectric {
   template <typename T>
   struct GrainParams {
     GrainParams<T>(T d, T l, T f, T a) : density(d), length(l), freq(f), ampl(a) {}
-    T density;  //!< The number of grains per second
-    T length;   //!< The length of the grains (in seconds)
-    T freq;     //!< The frequency of the carrier (in Hz)
+    T density;  //!< The number of grains per sample
+    T length;   //!< The length of the grains (in samples)
+    T freq;     //!< The frequency of the carrier (normalized to the sample rate)
     T ampl;     //!< The amplitude of the grains [0,1]
   };
   
-  /*!\brief Describes the set of carriers
-   */
-  enum class Carriers {
-    Sin,                //!< Sine wave
-    Triangle,           //!< Triangle wave
-    Saw,                //!< Saw wave
-    Square,             //!< Square wave
-  };
-
-  /*!\brief Describes the set of shapes
-   */
-  enum class Shapes {
-    Gaussian,           //!< Gaussian
-  };
 
   /*!\brief Generates grains according to various parameters
    */
@@ -45,8 +31,12 @@ namespace audioelectric {
   class GrainGenerator final {
   public:
     
-    GrainGenerator(Shapes shape, Carriers carrier, double fs);
+    GrainGenerator(Waveform<T>& shape, Waveform<T>& carrier);
 
+    GrainGenerator(void) = delete;
+
+    operator bool(void) const;
+    
     /*!\brief Returns the sum of all the active grains
      */
     T value(void);
@@ -63,11 +53,11 @@ namespace audioelectric {
 
     /*!\brief Sets the carrier waveform to use
      */
-    void setCarrier(Carriers wvfm);
+    void setCarrier(Waveform<T>& carrier) {_carrier = carrier;}
 
     /*!\brief Sets the grain shape
      */
-    void setShape(Shapes shape); 
+    void setShape(Waveform<T>& shape) {_shape = shape;}
 
     /*!\brief Sets the amount of desnity randomization [0,1]
      */
@@ -86,7 +76,6 @@ namespace audioelectric {
     void setFreqRand(double rand) {_rand.freq = rand;}
     
   private:
-    double _fs;                                 //!< The sample rate
 
     // Random
     std::mt19937 _gen;                          //!< Random number algorithm
@@ -102,8 +91,8 @@ namespace audioelectric {
     GrainParams<T> _params;
 
     // Controls (settings that are controlled by the user)
-    Waveform<T> _carrier;               //!< The carrier waveform
-    Waveform<T> _shape;                 //!< The shape waveform
+    Waveform<T>& _carrier;              //!< The carrier waveform
+    Waveform<T>& _shape;                //!< The shape waveform
     GrainParams<T> _rand;               //!< Thre randomization amount for the params
 
     void _allocateGrains(void);

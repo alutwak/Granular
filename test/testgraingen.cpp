@@ -17,6 +17,13 @@ class StreamingGrainGenTest : public ::testing::Test {
 protected:
   
   PaStream *stream = nullptr;
+  Waveform<float> shape;
+  Waveform<float> carrier;
+
+  void SetUp(void) {
+    GenerateGaussian(shape, 48000, (float)0.15);
+    GenerateTriangle(carrier, 48000, (float)0);
+  }
 
   void TearDown(void) {
     killStream();
@@ -40,10 +47,12 @@ protected:
     printf("\tdrand\tlrand\tarand\tfrand\n");
     printf("\t%0.3f\t%0.3f\t%0.3f\t%0.3f\n", rand.density, rand.length, rand.freq, rand.ampl);
     
-    PaError err = Pa_Initialize();
-    ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
-    
-    GrainGenerator<float> graingen(Shapes::Gaussian, Carriers::Triangle, fs);
+    // Normalize parameters
+    params.density /= fs;
+    params.length *= fs;
+    params.freq /= fs;
+
+    GrainGenerator<float> graingen(shape, carrier);
     graingen.setDensityRand(rand.density);
     graingen.setLengthRand(rand.length);
     graingen.setAmplRand(rand.ampl);
@@ -54,6 +63,9 @@ protected:
       &graingen,
       params
     };
+    
+    PaError err = Pa_Initialize();
+    ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
     
     auto paCallback = [] (const void *input, void *output,
                           unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,
@@ -137,11 +149,13 @@ public:
     printf("\t%0.0f\t%0.0f\t%0.2f\t%0.0f\t%0.2f\n\n", fs, params.density, params.length, params.freq, params.ampl);
     printf("\tdrand\tlrand\tarand\tfrand\n");
     printf("\t%0.3f\t%0.3f\t%0.3f\t%0.3f\n", rand.density, rand.length, rand.freq, rand.ampl);
+
+    // Normalize parameters
+    params.density /= fs;
+    params.length *= fs;
+    params.freq /= fs;
     
-    PaError err = Pa_Initialize();
-    ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
-    
-    GrainGenerator<float> graingen(Shapes::Gaussian, Carriers::Triangle, fs);
+    GrainGenerator<float> graingen(shape, carrier);
     graingen.setDensityRand(rand.density);
     graingen.setLengthRand(rand.length);
     graingen.setAmplRand(rand.ampl);
@@ -152,6 +166,9 @@ public:
       &graingen,
       params
     };
+    
+    PaError err = Pa_Initialize();
+    ASSERT_EQ(err, paNoError) << "PA error during init: " << Pa_GetErrorText(err);
     
     auto paCallback = [] (const void *input, void *output,
                           unsigned long frames, const PaStreamCallbackTimeInfo* timeInfo,

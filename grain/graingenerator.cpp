@@ -13,15 +13,19 @@ namespace audioelectric {
 #define GRAIN_ALLOC_NUM 5
 
   template <typename T>
-  GrainGenerator<T>::GrainGenerator(Shapes shape, Carriers carrier, double fs) :
-    _last_grain_t(0), _rand_grain_t(0), _params({1e-9, 0, 0, 0}), _rand({0,0,0,0}),
-    _fs(fs), _dist(-1,1)
+  GrainGenerator<T>::GrainGenerator(Waveform<T>& shape, Waveform<T>& carrier) :
+    _last_grain_t(0), _rand_grain_t(0), _params({1e-9, 0, 0, 0}), _rand({0,0,0,0}), _dist(-1,1),
+    _shape(shape), _carrier(carrier)
   {
     std::random_device rd;
     _gen = std::mt19937(rd());
-    setShape(shape);
-    setCarrier(carrier);
     _allocateGrains();
+  }
+
+  template <typename T>
+  GrainGenerator<T>::operator bool(void) const
+  {
+    return !_active.empty();
   }
 
   template <typename T>
@@ -48,7 +52,7 @@ namespace audioelectric {
     }
 
     // Generate a grain if it is time
-    double grain_period = _fs/_params.density;
+    double grain_period = 1./_params.density;
     if (_last_grain_t >= grain_period*(1. + _rand_grain_t*_rand.density)) {
       _rand_grain_t = _random(); 
       _last_grain_t = 0;
@@ -68,35 +72,8 @@ namespace audioelectric {
     _params = params;
     if (_params.density == 0)
       _params.density = 1e-9;
-  }
-
-  template <typename T>
-  void GrainGenerator<T>::setCarrier(Carriers wvfm)
-  {
-    switch(wvfm) {
-    case Carriers::Sin:
-      GenerateSin(_carrier, _fs);
-      return;
-    case Carriers::Triangle:
-      GenerateTriangle(_carrier, _fs, T(0));
-      return;
-    case Carriers::Saw:
-      GenerateTriangle(_carrier, _fs, T(0.8));
-      return;
-    case Carriers::Square:
-      GenerateSquare(_carrier, _fs, T(0.5));
-      return;
-    }
-  }
-
-  template <typename T>
-  void GrainGenerator<T>::setShape(Shapes shape)
-  {
-    switch(shape) {
-    case Shapes::Gaussian:
-      GenerateGaussian(_shape, _fs, T(0.15));
-      return;
-    }
+    _params.length /= _shape.size();
+    _params.freq *= _carrier.size();    // This assumes that the carrier length is 1 second
   }
 
   template <typename T>
