@@ -15,6 +15,15 @@
 
 namespace audioelectric {
 
+  template <typename T>
+  struct GrainParams {
+    GrainParams<T>(T d, T l, T f, T a) : density(d), length(l), freq(f), ampl(a) {}
+    T density;  //!< The number of grains per second
+    T length;   //!< The length of the grains (in seconds)
+    T freq;     //!< The frequency of the carrier (in Hz)
+    T ampl;     //!< The amplitude of the grains [0,1]
+  };
+  
   /*!\brief Describes the set of carriers
    */
   enum class Carriers {
@@ -48,12 +57,9 @@ namespace audioelectric {
 
     /*!\brief Updates the values of the inputs
      * 
-     * \param density The number of grains per second
-     * \param length  The length of the grains (in seconds)
-     * \param freq    The frequency of the carrier (in Hz)
-     * \param ampl    The amplitude of the grains [0,1]
+     * \param params The input parameters
      */
-    void applyInputs(double density, double length, double freq, T ampl);
+    void applyInputs(GrainParams<T> params);
 
     /*!\brief Sets the carrier waveform to use
      */
@@ -65,26 +71,26 @@ namespace audioelectric {
 
     /*!\brief Sets the amount of desnity randomization [0,1]
      */
-    void setDensityRand(double rand) {_density_rnd = rand;}
+    void setDensityRand(double rand) {_rand.density = rand;}
 
     /*!\brief Sets the amount of length randomization [0,1]
      */
-    void setLengthRand(double rand) {_length_rnd = rand;}
+    void setLengthRand(double rand) {_rand.length = rand;}
 
     /*!\brief Sets the amount of amplitude randomization [0,1]
      */
-    void setAmplRand(double rand) {_ampl_rnd = rand;}
+    void setAmplRand(double rand) {_rand.ampl = rand;}
 
     /*!\brief Sets the amount of frequency randomization [0,1]
      */
-    void setFreqRand(double rand) {_freq_rnd = rand;}
+    void setFreqRand(double rand) {_rand.freq = rand;}
     
   private:
     double _fs;                                 //!< The sample rate
 
     // Random
     std::mt19937 _gen;                          //!< Random number algorithm
-    std::uniform_real_distribution<> _rand;     //!< Random number generator
+    std::uniform_real_distribution<> _dist;     //!< Random number generator
     
     // Grains
     std::list<Grain<T>> _active;       //!< The active grains
@@ -93,18 +99,12 @@ namespace audioelectric {
     double _rand_grain_t;              //!< The time of the next grain
 
     // Inputs (signals that come from signal generators of some sort)
-    double _density;
-    double _length;
-    double _freq;
-    T _ampl;
+    GrainParams<T> _params;
 
     // Controls (settings that are controlled by the user)
     Waveform<T> _carrier;               //!< The carrier waveform
     Waveform<T> _shape;                 //!< The shape waveform
-    double _density_rnd;                //!< The density randomization amount
-    double _length_rnd;                 //!< The length randomization amount
-    double _freq_rnd;                   //!< The frequency randomization amount
-    double _ampl_rnd;                   //!< The amplitude randomization amount
+    GrainParams<T> _rand;               //!< Thre randomization amount for the params
 
     void _allocateGrains(void);
 

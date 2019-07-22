@@ -14,9 +14,8 @@ namespace audioelectric {
 
   template <typename T>
   GrainGenerator<T>::GrainGenerator(Shapes shape, Carriers carrier, double fs) :
-    _last_grain_t(0), _rand_grain_t(0),
-    _density(1e-9), _length(0), _freq(0), _ampl(0),
-    _density_rnd(0), _length_rnd(0), _freq_rnd(0), _ampl_rnd(0), _fs(fs), _rand(-1,1)
+    _last_grain_t(0), _rand_grain_t(0), _params({1e-9, 0, 0, 0}), _rand({0,0,0,0}),
+    _fs(fs), _dist(-1,1)
   {
     std::random_device rd;
     _gen = std::mt19937(rd());
@@ -49,27 +48,26 @@ namespace audioelectric {
     }
 
     // Generate a grain if it is time
-    double grain_period = _fs/_density;
-    if (_last_grain_t >= grain_period*(1. + _rand_grain_t*_density_rnd)) {
+    double grain_period = _fs/_params.density;
+    if (_last_grain_t >= grain_period*(1. + _rand_grain_t*_rand.density)) {
       _rand_grain_t = _random(); 
       _last_grain_t = 0;
       if (_inactive.empty())
         _allocateGrains();
-      _moveAndSetGrain(_freq*(1. + _freq_rnd*_random()),
-                       (1. + _length_rnd*_random())/_length,
-                       _ampl*(1. + _ampl_rnd*_random()));
+      _moveAndSetGrain(_params.freq*(1. + _rand.freq*_random()),
+                       (1. + _rand.length*_random())/_params.length,
+                       _params.ampl*(1. + _rand.ampl*_random()));
     }
 
     _last_grain_t++;
   }
 
   template <typename T>
-  void GrainGenerator<T>::applyInputs(double density, double length, double freq, T ampl)
+  void GrainGenerator<T>::applyInputs(GrainParams<T> params)
   {
-    _density = density != 0 ? density : 1e-9;
-    _length = length;
-    _freq = freq;
-    _ampl = ampl;
+    _params = params;
+    if (_params.density == 0)
+      _params.density = 1e-9;
   }
 
   template <typename T>
@@ -119,7 +117,7 @@ namespace audioelectric {
   template <typename T>
   double GrainGenerator<T>::_random(void)
   {
-    return _rand(_gen);
+    return _dist(_gen);
   }
 
   template class GrainGenerator<double>;
