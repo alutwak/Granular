@@ -69,6 +69,10 @@ namespace audioelectric {
      */
     void setShape(Waveform<T>& shape) {_shape = shape;}
 
+    /*!\brief Sets the random parameters
+     */
+    void setRandParams(GrainParams<T> rand) {_rand = rand;}
+    
     /*!\brief Sets the amount of desnity randomization [0,1]
      */
     void setDensityRand(double rand) {_rand.density = rand;}
