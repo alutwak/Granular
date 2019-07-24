@@ -6,7 +6,7 @@
 
 namespace audioelectric {
 
-  #define PI 3.1415926535
+  #define PI M_PI
 
   /*********************** Public Waveform *******************************/
 
