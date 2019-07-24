@@ -122,6 +122,8 @@ TEST(envelope, AD) {
     EXPECT_NEAR(env.value(), 0, 1e-12);
   }
   env.gate(false);
+  EXPECT_TRUE(env);
+  env.increment();
   EXPECT_FALSE(env);
   EXPECT_EQ(env.value(), 0);
 }

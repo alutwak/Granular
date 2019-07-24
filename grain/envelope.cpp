@@ -12,27 +12,53 @@
 namespace audioelectric {
 
   template <typename T>
-  Envelope<T>::Envelope(double delay, double attack, double hold, double decay, double sustain, double release) :
-    _delay(delay), _attack(attack), _hold(hold), _decay(decay), _sustain(sustain), _release(release),
+  Envelope<T>::Envelope(void) :
     _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
-
+    setDelay(0);
+    setAttack(1);
+    setHold(0);
+    setDecay(1);
+    setSustain(1);
+    setRelease(1);
+  }
+  
+  
+  template <typename T>
+  Envelope<T>::Envelope(size_t delay, size_t attack, size_t hold, size_t decay, T sustain, size_t release) :
+    _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
+  {
+    setDelay(delay);
+    setAttack(attack);
+    setHold(hold);
+    setDecay(decay);
+    setSustain(sustain);
+    setRelease(release);
   }
 
   template <typename T>
-  Envelope<T>::Envelope(double attack, double decay, double sustain, double release) :
+  Envelope<T>::Envelope(size_t attack, size_t decay, T sustain, size_t release) :
     _delay(0), _attack(attack), _hold(0), _decay(decay), _sustain(sustain), _release(release),
     _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
-
+    setDelay(0);
+    setAttack(attack);
+    setHold(0);
+    setDecay(decay);
+    setSustain(sustain);
+    setRelease(release);
   }
 
   template <typename T>
-  Envelope<T>::Envelope(double delay, double attack, double release) :
-    _delay(delay), _attack(attack), _hold(0), _decay(0), _sustain(1), _release(release),
+  Envelope<T>::Envelope(size_t delay, size_t attack, size_t release) :
     _phase(EnvPhase::inactive), _phs_rem(0), _out(0)
   {
-
+    setDelay(delay);
+    setAttack(attack);
+    setHold(0);
+    setDecay(1);
+    setSustain(1);
+    setRelease(release);
   }
 
   template <typename T>
@@ -118,6 +144,8 @@ namespace audioelectric {
   template <typename T>
   void Envelope<T>::setAttack(size_t attack)
   {
+    if (attack == 0)
+      attack = 1;
     if (_phase == EnvPhase::att) {
       size_t eaten = _attack - _phs_rem;
       if (attack <= eaten) {
@@ -152,6 +180,8 @@ namespace audioelectric {
   template <typename T>
   void Envelope<T>::setDecay(size_t decay)
   {
+    if (decay == 0)
+      decay = 1;
     if (_phase == EnvPhase::dec) {
       size_t eaten = _decay - _phs_rem;
       if (decay <= eaten) {
@@ -180,6 +210,8 @@ namespace audioelectric {
   template <typename T>
   void Envelope<T>::setRelease(size_t release)
   {
+    if (release == 0)
+      release = 1;
     if (_phase == EnvPhase::rel) {
       size_t eaten = _release - _phs_rem;
       if (release <= eaten) {

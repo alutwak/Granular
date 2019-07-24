@@ -25,11 +25,13 @@ namespace audioelectric {
   class Envelope final {
   public:
 
-    Envelope(double delay, double attack, double hold,  double decay, double sustain, double release);
+    Envelope(void);
 
-    Envelope(double attack, double decay, double sustain, double release);
+    Envelope(size_t delay, size_t attack, size_t hold,  size_t decay, T sustain, size_t release);
 
-    Envelope(double delay, double attack, double release);
+    Envelope(size_t attack, size_t decay, T sustain, size_t release);
+
+    Envelope(size_t delay, size_t attack, size_t release);
 
     /*!\brief Returns the current value of the envelope. 
      * 
