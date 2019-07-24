@@ -30,7 +30,7 @@ namespace audioelectric {
     
   public:
 
-    Voice(Waveform<T>& shape, Waveform<T>& carrier, Envelope<T>& env1, Envelope<T>& env2);
+    Voice(Waveform<T>& shape, Waveform<T>& carrier);
 
     /*!\brief Evaluates to true if the voice is active and false otherwise
      */
