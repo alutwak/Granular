@@ -7,6 +7,7 @@
  */
 
 #include "graingenerator.hpp"
+#include "algorithm.hpp"
 
 namespace audioelectric {
 
@@ -109,15 +110,7 @@ namespace audioelectric {
   void GrainGenerator<T>::increment(void)
   {
     // Increment grains and move completed grains to the _inactive list
-    auto itr = _active.begin();
-    while (itr != _active.end()) {
-      itr->increment();
-      auto old_itr = itr;
-      itr++;
-      if (!*old_itr) {
-        _inactive.splice(_inactive.end(), _active, old_itr);
-      }
-    }
+    incrementAndRemove(_active, _inactive);
 
     // Generate a grain if it is time
     double grain_period = 1./_params.density;
