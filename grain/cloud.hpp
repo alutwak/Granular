@@ -29,34 +29,39 @@ namespace audioelectric {
     Gaussian,           //!< Gaussian
   };
 
+#define DEFAULT_SHAPE Shape::Gaussian
+#define DEFAULT_CARRIER Carrier::Sin
+
   template <typename T>
   class Cloud final {
 
   public:
 
-    /*!\brief Constructs a cloud with zero voices
+    /*!\brief Constructs a cloud with zero voices and default shape and carrier
      */
-    Cloud(void);
+    Cloud(size_t fs);
     
     /*!\brief Constructs a Cloud with a specified number of voices
      * 
+     * \param fs      The samplerate
      * \param voices  The number of voices
      * \param shape   The shape to use
      * \param carrier The carrier to use
      */
-    Cloud(int voices, Shape shape, Carrier carrier);
+    Cloud(size_t fs, int voices, Shape shape, Carrier carrier);
 
     /*!\brief Starts a new note by adding a voice to the list of active voices
      * 
+     * The velocity will be used to modulate the user parameters.
+     * 
+     * If the maximum number of voices are already active then the oldest voice will be retriggered with the new parameters.
+     * 
      * If a note with the same frequency is already being played then this command will be ignored. 
      * 
-     * If the maximum number of voices are already active then the oldest voice will be released to allow the new voice to
-     * start.
-     * 
-     * \param freq The frequency of the note
-     * \param ampl The amplitude of the note
+     * \param freq     The frequency of the note
+     * \param velocity The velocity of the note.
      */
-    void startNote(T freq, T ampl);
+    void startNote(T freq, T velocity);
 
     /*!\brief Releases a note that's already playing
      * 
@@ -70,7 +75,10 @@ namespace audioelectric {
 
     void increment(void);
     
-    /*!\brief Sets the number of voices
+    /*!\brief Sets the number of voices.
+     * 
+     * This will remove all active voices without releasing them, so calling it when there are active voices will cause an
+     * audible glitch.
      */
     void setVoiceNumber(int voices);
 
@@ -79,6 +87,7 @@ namespace audioelectric {
     void setCarrier(Carrier carrier);
 
     GrainParams<T>& params(void) {return _params;}
+    GrainParams<T>& velocityModulators(void) {return _vel_mod;}
     GrainParams<T>& rand(void) {return _rand;}
     Envelope<T>& env1(void) {return _env1;}
     Envelope<T>& env2(void) {return _env2;}
@@ -87,19 +96,28 @@ namespace audioelectric {
     
   private:
 
+    size_t _fs;      //!< The sample rate
+    
+    // Waveforms
+    Waveform<T> _shape;
+    Waveform<T> _carrier;
+    
     // Voices
-    std::list<Voice<T>> _active;
-    std::list<Voice<T>> _inactive;
+    std::list<Voice<T>> _active;        //!< The active voices 
+    std::list<Voice<T>> _inactive;      //!< The inactive voices
 
     // User Parameters
-    GrainParams<T> _params;
-    GrainParams<T> _rand;
+    GrainParams<T> _params;     //!< Base parameters. freq->tuning, ampl->overall volume, density & length -> base grains
+    GrainParams<T> _vel_mod;    //!< Amount to modulate the parameters based on velocity
+    GrainParams<T> _rand;       //!< The randomization parameters
 
     // Envelopes
     Envelope<T> _env1;
     Envelope<T> _env2;
     GrainParams<T> _env1_mult;          //!< Multipliers for envelope 1
     GrainParams<T> _env2_mult;          //!< Multipliers for envelope 2
+
+    typename std::list<Voice<T>>::iterator checkForActiveFreq(T freq);
     
   };
   
