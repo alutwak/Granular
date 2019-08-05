@@ -505,3 +505,7 @@ TEST(enveloope, sus_change) {
     EXPECT_DOUBLE_EQ(env.value(), 0.2-0.2*i/10.);
   }
 }
+
+TEST(envelope, retrigger) {
+  FAIL() << "Need to implement test in which trigger is applied while envelope is running";
+}

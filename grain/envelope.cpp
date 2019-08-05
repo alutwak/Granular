@@ -73,7 +73,10 @@ namespace audioelectric {
   template <typename T>
   void Envelope<T>::gate(bool g)
   {
-    if (g && _phase == EnvPhase::inactive) {
+    if (g) {
+      // Force the phase to inactive and then run through the phase update to restart the envelope
+      _phase = EnvPhase::inactive;
+      _phs_rem = 0;
       _updatePhase();
     }
     else if (!g && _phase != EnvPhase::inactive) {
@@ -97,7 +100,7 @@ namespace audioelectric {
       case EnvPhase::del:
         _phase = EnvPhase::att;
         _phs_rem = _attack;
-        _slope = 1./_attack;
+        _slope = (1. - _out)/_attack;
         break;
       case EnvPhase::att:
         _phase = EnvPhase::hol;
@@ -118,7 +121,6 @@ namespace audioelectric {
         return;
       case EnvPhase::rel:
         _phase = EnvPhase::inactive;
-        _phs_rem = 0;
         _out = 0;
         return;
       }
