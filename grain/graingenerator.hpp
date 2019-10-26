@@ -3,9 +3,9 @@
  *
  * (c) AudioElectric. All rights reserved.
  *
- * Author:             Ayal Lutwak alutwak@audioelectric.com
+ * Author:             Ayal Lutwak <alutwak@audioelectric.com>
  * Date:               June 28, 2019
- * Last Modified By:   Ayal Lutwak alutwak@audioelectic.com
+ * Last Modified By:   Ayal Lutwak <alutwak@audioelectic.com>
  * Last Modified Date: June 28, 2019
  */
 

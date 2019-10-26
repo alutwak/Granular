@@ -45,7 +45,7 @@ protected:
     printf("\tfs\tdensity\tlength\tfreq\tampl\n");
     printf("\t%0.0f\t%0.0f\t%0.2f\t%0.0f\t%0.2f\n\n", fs, params.density, params.length, params.freq, params.ampl);
     printf("\tdrand\tlrand\tarand\tfrand\n");
-    printf("\t%0.3f\t%0.3f\t%0.3f\t%0.3f\n", rand.density, rand.length, rand.freq, rand.ampl);
+    printf("\t%0.3f\t%0.3f\t%0.3f\t%0.3f\n", rand.density, rand.length, rand.ampl, rand.freq);
     
     // Normalize parameters
     params.density /= fs;

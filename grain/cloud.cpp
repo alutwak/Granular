@@ -5,12 +5,9 @@
  * Last Modified By:   Ayal Lutwak <alutwak@audioelectric.com>
  * Last Modified Date: July 27, 2019
  */
-
 #include "cloud.hpp"
 #include "algorithm.hpp"
 #include "waveform.hpp"
-
-#define FORCE_REL_TIME  0.001   //!< The release time (in seconds) of a force release
 
 namespace audioelectric {
 

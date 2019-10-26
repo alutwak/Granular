@@ -18,7 +18,7 @@ namespace audioelectric {
   template<typename T>
   Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0), _end(0)
   {
-
+    
   }
 
   template<typename T>

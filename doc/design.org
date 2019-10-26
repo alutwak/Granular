@@ -212,6 +212,7 @@
       + [ ] Frequency
       + [ ] Resonance
     + [ ] Cascade them
+* Interface
 * Development Plan
 ** Phase 1: Simple Grain Cloud (single channel)[6/8]
 *** DONE Clean up old code[4/4]
@@ -382,7 +383,7 @@
      CLOCK: [2019-07-06 Sat 22:15]--[2019-07-07 Sun 01:21] =>  3:06
      :END:
 *** DONE Envelope v1 [4/4]
-    CLOSED: [2019-07-20 Sat 21:21]
+    CLOSED: [2019-09-21 Sat 16:17]
 **** DONE Write Envelope interface
      CLOSED: [2019-07-13 Sat 22:32]
      :PROPERTIES:
@@ -406,7 +407,7 @@
      :Effort:   0:30
      :END:
 **** DONE Unit tests
-     CLOSED: [2019-07-20 Sat 00:01]
+     CLOSED: [2019-09-21 Sat 16:17]
      :PROPERTIES:
      :Effort:   4:00
      :END:
@@ -440,3 +441,15 @@
      :Effort:   2:00
      :END:
 *** BACKLOG Write GrainCloud v1
+**** DONE Write Cloud interface
+     CLOSED: [2019-07-24 Wed 00:25]
+     :LOGBOOK:
+     CLOCK: [2019-07-23 Tue 23:40]--[2019-07-24 Wed 00:25] =>  0:45
+     :END:
+**** DONE Implement Cloud
+     CLOSED: [2019-08-04 Sun 23:06]
+     :LOGBOOK:
+     CLOCK: [2019-08-04 Sun 21:07]--[2019-08-04 Sun 23:06] =>  1:59
+     CLOCK: [2019-07-27 Sat 20:49]--[2019-07-27 Sat 23:00] =>  2:11
+     :END:
+**** BACKLOG Unit tests
