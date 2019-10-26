@@ -1,24 +1,21 @@
 
+#include <cmath>
+
 #include "phasor.hpp"
 
 namespace audioelectric {
 
   template<typename T>
-  Phasor<T>::Phasor(Waveform<T>& wf, double rate, bool cycle, double start, double begin, double end) :
-    _wf(wf), _phase(start), _cycle(cycle), _begin(begin)
+  Phasor<T>::Phasor(Waveform<T>& wf, double rate, bool cycle, double start, double front, double back) :
+    _wf(wf), _cycle(cycle)
   {
-    setRate(rate);
-    _setEnd(end);
-    if (!_checkPhase(_phase))
-      _phase = _begin;
-    _phase_good = true;
+    setParameters(rate, start, front, back);
   }
 
   template<typename T>
   Phasor<T>::Phasor(const Phasor& other) :
-    _wf(other._wf), _phase(other._phase), _rate(other._rate), _begin(other._begin), _cycle(other._cycle)
+    _wf(other._wf), _phase(other._phase), _rate(other._rate), _front(other._front), _cycle(other._cycle), _back(other._back)
   {
-    _setEnd(other._end);
     _phase_good = _checkPhase(_phase);
   }
 
@@ -48,49 +45,33 @@ namespace audioelectric {
   }
 
   template<typename T>
-  bool Phasor<T>::_checkPhase(double phase) const
-  {
-    return phase <= _end && phase>=_begin;
-  }
-
-  template<typename T>
-  void Phasor<T>::_setEnd(long end)
-  {
-    if (end>=0)
-      _end = end;
-    else
-      _end = (double)(_wf.size()-1);
-    _phase_good = _checkPhase(_phase);
-  }
-
-  template<typename T>
   void Phasor<T>::increment(void)
   {
     double nextphase = _phase+_rate;
     bool good = _checkPhase(nextphase);
     if (_cycle && !good) {
-      // We've reached the end of the waveform, cycle around
-      // No need to set _phase_good because it's always good when we cycle
+      // We've reached the back of the waveform, cycle around
       if (_rate > 0)
-        _phase = _begin + nextphase-_end;
+        _phase = fmod(nextphase - _front, _back - _front) + _front;
       else
-        _phase = _end - (_begin - nextphase);
+        _phase = _back - fmod(_back - nextphase, _back - _front);
+      _phase_good = true;
     }
     else {
       _phase = nextphase;
       _phase_good = good;
     }
-      
+
   }
 
   template <typename T>
   void Phasor<T>::reset(void)
   {
-    _phase = _begin;
+    _phase = _front;
     _phase_good = true;
-  }    
+  }
 
-  
+
   template<typename T>
   bool Phasor<T>::operator==(const Phasor& other) const
   {
@@ -108,7 +89,7 @@ namespace audioelectric {
   {
     return _phase < other._phase;
   }
-  
+
   template<typename T>
   bool Phasor<T>::operator>(const Phasor& other) const
   {
@@ -127,12 +108,54 @@ namespace audioelectric {
     return _phase >= other._phase;
   }
 
+  template <typename T>
+  void Phasor<T>::setParameters(double rate, double phase, double front, double back)
+  {
+    _rate = rate;
+    _phase = phase;
+    setFront(front);
+    setBack(back);
+    // if (!_phase_good)   // _phase_good was checked by setBack()
+    //   _phase = _front;
+    _phase_good = true;
+  }
+  
   template<typename T>
   void Phasor<T>::setRate(double rate)
   {
     _rate = rate;
   }
-  
+
+  template<typename T>
+  void Phasor<T>::setFront(double front)
+  {
+    _front = front > 0 ? front : 0;
+    _phase_good = _checkPhase(_phase);
+  }
+
+  template<typename T>
+  void Phasor<T>::setPhase(double phase)
+  {
+    _phase = phase;
+    _phase_good = _checkPhase(_phase);
+  }
+
+  template<typename T>
+  void Phasor<T>::setBack(double back)
+  {
+    if (back>=0)
+      _back = back;
+    else
+      _back = (double)(_wf.size()-1);
+    _phase_good = _checkPhase(_phase);
+  }
+
+  template <typename T>
+  void Phasor<T>::setCycle(bool cycle)
+  {
+    _cycle = cycle;
+  }
+
   template<typename T>
   Phasor<T>& Phasor<T>::operator=(const Phasor& other)
   {
@@ -145,7 +168,13 @@ namespace audioelectric {
     return *this;
   }
 
+  template<typename T>
+  bool Phasor<T>::_checkPhase(double phase) const
+  {
+    return phase <= _back && phase>=_front;
+  }
+
   template class Phasor<double>;
   template class Phasor<float>;
-  
+
 }

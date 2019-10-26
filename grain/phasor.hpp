@@ -35,23 +35,24 @@ namespace audioelectric {
      * \param rate  The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
      *              reverse iteration.
      * \param cycle Whether or not to cycle over the waveform.
-     * \param start The starting phase in the Waveform. If this is not between the begin and end phases then it will be
-     *              set to begin.
-     * \param begin The beginning phase in the Wavetable. Values before this in the wavetable will not be played
-     * \param end   The ending phase in the Wavetable. A negative value sets the ending at the last sample for forward 
-     *              interpolators and at the first sample for reverse interpolators.
+     * \param start The starting phase in the Waveform. If this is not between the front and back phases then it will be
+     *              set to front.
+     * \param front The front phase in the Wavetable. Values before this in the wavetable will not be played.
+     * \param back  The back phase in the Wavetable. A negative value sets the back at the last sample of the waveform.
      */
-    Phasor(Waveform<T>& wf, double rate, bool cycle=false, double start=0, double begin=0, double end=-1);
+    Phasor(Waveform<T>& wf, double rate, bool cycle=false, double start=0, double front=0, double back=-1);
 
     Phasor(const Phasor& other);
 
-    T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
+    /*!\brief Returns the value of the Waveform at the current phase
+     */
+    T value(void) const;
 
     bool generate(T **outputs, int frames, int channels=1);
 
     /*!\brief Returns true if the phasor is still running
      * 
-     * A phasor will still be running if its phase is between the begin phase and the end phase. A cycling phasor
+     * A phasor will still be running if its phase is between the front phase and the back phase. A cycling phasor
      * will always return true.
      */
     operator bool(void) const;                
@@ -68,10 +69,35 @@ namespace audioelectric {
     bool operator>=(const Phasor& other) const;
 
     void setWaveform(Waveform<T>& wf) {_wf = wf;}
-    
+
+    /*!\brief Sets all of the paramters of the waveorm
+     *
+     * \param rate  The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
+     *              reverse iteration.
+     * \param phase The current phase in the Waveform. If this is not between the front and back phases then it will be
+     *              set to front.
+     * \param front The front phase in the Wavetable. Values before this in the wavetable will not be played.
+     * \param back  The back phase in the Wavetable. A negative value sets the back at the last sample of the waveform.
+     */
+    void setParameters(double rate, double phase, double front, double back);
+
     /*!\brief Sets the rate (useful for vari-rate iterations)
      */
     void setRate(double rate);
+
+    /*!\brief Sets the current phase
+     */
+    void setPhase(double phase);
+
+    /*!\brief Sets the front phase of the wavetable
+     */
+    void setFront(double front);
+
+    /*!\brief Sets the back phase of the wavetable
+     */
+    void setBack(double back);
+
+    void setCycle(bool cycle);
 
     /*!\brief Returns the current phase of the Phasor
      */
@@ -81,7 +107,7 @@ namespace audioelectric {
      */
     void increment(void);
 
-    /*!\brief Resets the phase back to the beginning 
+    /*!\brief Resets the phase back to the front 
      */
     void reset(void);
 
@@ -89,17 +115,13 @@ namespace audioelectric {
 
     double _rate;       //!< The rate that the phase changes per iteration
     double _phase;      //!< The current phase
-    double _begin;      //!< The start of the wavetable in iterations (the units of the phase)
-    double _end;        //!< The end of the wavetable in iterations (the units of the phase)
+    double _front;      //!< The start of the wavetable in iterations (the units of the phase)
+    double _back;        //!< The back of the wavetable in iterations (the units of the phase)
     bool _cycle;        //!< Whether to cycle the Waveform
     Waveform<T>& _wf;   //!< The waveform that we're phasing
 
-    bool _phase_good;   //!< Whether the phase is between begin and end
+    bool _phase_good;   //!< Whether the phase is between front and back
 
-    /*!\brief Sets the value of the _end member.
-     */
-    void _setEnd(long end);
-    
     /*!\brief Checks whether the given phase is within the start and stop bounds
      */
     inline bool _checkPhase(double phase) const;
