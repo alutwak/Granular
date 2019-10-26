@@ -1,0 +1,24 @@
+import os
+
+Import('env')
+Import('grain_lib')
+
+source_files = ['composition.cpp'
+]
+
+include_dirs = [
+    '../grain',
+]
+
+lib_dirs = [
+]
+
+libs = [
+    'sndfile',
+    'portaudio'
+]
+
+env.Append(CPPPATH=include_dirs)
+env.Append(LIBPATH=lib_dirs)
+env.Append(LIBS=libs)
+env.Library('composition', source_files+[grain_lib])
