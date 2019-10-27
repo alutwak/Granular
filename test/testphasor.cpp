@@ -101,8 +101,8 @@ protected:
       exp_phs = non_cyc_phs - 9.0;
     else
       exp_phs = 9.0 + non_cyc_phs;
-    EXPECT_EQ(phs.getPhase(), exp_phs);
-    EXPECT_EQ(phs.value(), exp_phs);
+    EXPECT_FLOAT_EQ(phs.getPhase(), exp_phs);
+    EXPECT_FLOAT_EQ(phs.value(), exp_phs);
   }
 
 };
