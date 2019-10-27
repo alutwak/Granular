@@ -20,6 +20,8 @@ namespace audioelectric {
     length  *= 1. + other.length;
     freq    *= 1. + other.freq;
     ampl    *= 1. + other.ampl;
+    front   *= 1. + other.front;
+    back    *= 1. + other.back;
   }
 
   template <typename T>
@@ -29,6 +31,8 @@ namespace audioelectric {
     length *= rhs.length;
     freq *= rhs.freq;
     ampl *= rhs.ampl;
+    front *= rhs.front;
+    back *= rhs.back;
     return *this;
   }
 
@@ -39,6 +43,8 @@ namespace audioelectric {
     length *= rhs;
     freq *= rhs;
     ampl *= rhs;
+    front *= rhs;
+    back *= rhs;
     return *this;
   }
 
@@ -49,6 +55,8 @@ namespace audioelectric {
     length += rhs.length;
     freq += rhs.freq;
     ampl += rhs.ampl;
+    front += rhs.front;
+    back += rhs.back;
     return *this;
   }
 
@@ -133,8 +141,8 @@ namespace audioelectric {
   void GrainGenerator<T>::applyInputs(GrainParams<T> params)
   {
     _params = params;
-    if (_params.density == 0)
-      _params.density = 1e-9;
+    if (_params.density <= MIN_DENSITY)
+      _params.density = MIN_DENSITY;
     _params.length /= _shape.size();
     _params.freq *= _carrier.size();    // This assumes that the carrier length is 1 second
   }

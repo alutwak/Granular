@@ -13,6 +13,8 @@
 #include <random>
 #include "grain.hpp"
 
+#define MIN_DENSITY 1e-9
+
 namespace audioelectric {
 
   template <typename T>
