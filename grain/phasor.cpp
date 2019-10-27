@@ -144,9 +144,9 @@ namespace audioelectric {
   void Phasor<T>::setBack(double back)
   {
     if (back>=0)
-      _back = back;
+      _back = back < _wf.end() ? back : _wf.end();
     else
-      _back = (double)(_wf.size()-1);
+      _back = (double)(_wf.end());
     _phase_good = _checkPhase(_phase);
   }
 

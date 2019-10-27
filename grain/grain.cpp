@@ -51,27 +51,9 @@ namespace audioelectric {
   }
 
   template <typename T>
-  void Grain<T>::setCarrierRate(double rate)
+  void Grain<T>::setParams(double crate, double srate, T ampl, double front, double back)
   {
-    _carrier.setRate(rate);
-  }
-
-  template <typename T>
-  void Grain<T>::setShapeRate(double rate)
-  {
-    _shape.setRate(rate);
-  }
-
-  template <typename T>
-  void Grain<T>::setAmplitude(T ampl)
-  {
-    _ampl = ampl;
-  }
-
-  template <typename T>
-  void Grain<T>::setParams(double crate, double srate, T ampl)
-  {
-    setCarrierRate(crate);
+    _carrier.setParameters(crate, front, front, back);  // For now, we just set the phase to the front
     setShapeRate(srate);
     setAmplitude(ampl);
   }

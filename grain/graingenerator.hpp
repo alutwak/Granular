@@ -21,9 +21,11 @@ namespace audioelectric {
     T length;   //!< The length of the grains (in samples)
     T freq;     //!< The frequency of the carrier (normalized to the sample rate)
     T ampl;     //!< The amplitude of the grains [0,1]
+    T front;    //!< The front position of the waveform
+    T back;     //!< The back position of the waveform
 
-    GrainParams<T>(T d, T l, T f, T a) : density(d), length(l), freq(f), ampl(a) {}
-    GrainParams<T>(void) : density(0), length(0), freq(0), ampl(0) {}
+    GrainParams<T>(T d, T l, T fq, T a, T ft=0, T b=-1) : density(d), length(l), freq(fq), ampl(a), front(ft), back(b) {}
+    GrainParams<T>(void) : density(1e-9), length(0), freq(0), ampl(0), front(0), back(-1) {}
     void modulate(GrainParams<T>& other);
     GrainParams<T>& operator *=(T rhs);
     GrainParams<T>& operator *=(const GrainParams<T>& rhs);
@@ -111,7 +113,7 @@ namespace audioelectric {
 
     void _allocateGrains(void);
 
-    void _moveAndSetGrain(double crate, double srate, T ampl);
+    void _moveAndSetGrain(double crate, double srate, T ampl, double front, double back);
 
     /*!\brief Generates a random number on the interval of [-1,1]
      *

@@ -47,17 +47,17 @@ namespace audioelectric {
     
     /*!\brief Sets the carrier rate
      */
-    void setCarrierRate(double rate);
+    void setCarrierRate(double rate) {_carrier.setRate(rate);};
 
     /*!\brief Sets the shape rate
      */
-    void setShapeRate(double rate);
+    void setShapeRate(double rate) {_shape.setRate(rate);}
 
     /*!\brief Sets the amplitude
      */
-    void setAmplitude(T ampl);
+    void setAmplitude(T ampl) {_ampl = ampl;}
 
-    void setParams(double crate, double srate, T ampl);
+    void setParams(double crate, double srate, T ampl, double front=0, double back=-1);
     
     /*!\brief Resets the carrier and the shape back to their beginning phases
      */

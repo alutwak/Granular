@@ -83,7 +83,7 @@ namespace audioelectric {
 
   template <typename T>
   GrainGenerator<T>::GrainGenerator(Waveform<T>& shape, Waveform<T>& carrier) :
-    _last_grain_t(0), _rand_grain_t(0), _params({1e-9, 0, 0, 0}), _rand({0,0,0,0}), _dist(-1,1),
+    _last_grain_t(0), _rand_grain_t(0), _params(), _rand({0,0,0,0,0,0}), _dist(-1,1),
     _shape(shape), _carrier(carrier)
   {
     std::random_device rd;
@@ -121,7 +121,9 @@ namespace audioelectric {
         _allocateGrains();
       _moveAndSetGrain(_params.freq*(1. + _rand.freq*_random()),
                        (1. + _rand.length*_random())/_params.length,
-                       _params.ampl*(1. + _rand.ampl*_random()));
+                       _params.ampl*(1. + _rand.ampl*_random()),
+                       _params.front*(1. + _rand.front*_random()),
+                       _params.back*(1. + _rand.back*_random()));
     }
 
     _last_grain_t++;
@@ -144,9 +146,9 @@ namespace audioelectric {
   }
 
   template <typename T>
-  void GrainGenerator<T>::_moveAndSetGrain(double crate, double srate, T ampl)
+  void GrainGenerator<T>::_moveAndSetGrain(double crate, double srate, T ampl, double front, double back)
   {
-    _inactive.front().setParams(crate, srate, ampl);
+    _inactive.front().setParams(crate, srate, ampl, front, back);
     _inactive.front().reset();
     _active.splice(_active.end(), _inactive, _inactive.begin());
   }

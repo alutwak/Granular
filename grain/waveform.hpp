@@ -119,7 +119,7 @@ namespace audioelectric {
 
     /*!\brief Returns the end position of the Waveform
      */
-    double end(void) const {return _size-1;}
+    double end(void) const {return _end;}
 
     /*!\brief Resizes the Waveform. All data is cleared
      */

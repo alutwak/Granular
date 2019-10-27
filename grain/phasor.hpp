@@ -94,6 +94,10 @@ namespace audioelectric {
     void setFront(double front);
 
     /*!\brief Sets the back phase of the wavetable
+     * 
+     * If the value given is either negative or greater than the length of the waveform, the back phase will be set to the
+     * end of the waveform. It should be noted, however, that the back phase is not checked when the waveform is changed
+     * with the setWaveform() function. In that case, the value of _back could be greater than the new waveform's end.
      */
     void setBack(double back);
 
