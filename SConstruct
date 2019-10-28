@@ -10,7 +10,7 @@ cpppath = try_get_env('CPPPATH')
 cxxflags = try_get_env('CXXFLAGS')
 libpath = try_get_env('LD_LIBRARY_PATH')
 
-cxxflags += "-g -O0 -std=c++14".split()
+cxxflags += "-g -O0 -std=c++17".split()
 
 env = Environment(CXXFLAGS=cxxflags, CPPPATH=cpppath, LIBPATH=libpath)
 

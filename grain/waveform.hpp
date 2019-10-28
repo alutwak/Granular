@@ -3,6 +3,9 @@
 
 #include <cstdlib>
 #include <initializer_list>
+#include <string>
+
+#include <sndfile.h>
 
 namespace audioelectric {
 
@@ -47,6 +50,8 @@ namespace audioelectric {
     Waveform(T* data, std::size_t len, InterpType it=InterpType::LINEAR);
 
     Waveform(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
+
+    Waveform(std::string afile, size_t begin=0, size_t end=0, InterpType it=InterpType::LINEAR);
 
     /*!\brief Creates a new Waveform and fills it with a generator function
      *
@@ -149,6 +154,10 @@ namespace audioelectric {
      * If pos is <0 or >_size-1, this will always return 0
      */
     T interpLinear(double pos) const;
+
+    void readOneChannelFile(SNDFILE* f, SF_INFO* info, size_t begin, size_t end);
+
+    void readMultiChannelFile(SNDFILE* f, SF_INFO* info, size_t begin, size_t end);    
 
   };
 

@@ -1,6 +1,8 @@
 
 #include <cmath>
 #include <cstring>
+#include <type_traits>
+
 #include "waveform.hpp"
 #include "phasor.hpp"
 
@@ -42,6 +44,87 @@ namespace audioelectric {
     T* p = _data;
     for (auto& val : init)
       *(p++) = val;
+  }
+
+  template<typename T>
+  Waveform<T>::Waveform(std::string afile, size_t begin, size_t end, InterpType it) :
+    _interptype(it), _data(nullptr), _size(0), _end(0)
+  {
+    SF_INFO info;
+    SNDFILE* f = sf_open(afile.c_str(), SFM_READ, &info);
+    if (!f) {
+      return;
+    }
+    if (end < begin)
+      end = begin;
+    alloc(end-begin);
+
+    if (info.channels == 1)
+      readOneChannelFile(f, &info, begin, end);
+    else
+      readMultiChannelFile(f, &info, begin, end);
+    sf_close(f);
+  }
+
+  #define RDSIZE 4096
+
+  template <typename T>
+  void Waveform<T>::readOneChannelFile(SNDFILE* f, SF_INFO* info, size_t begin, size_t end)
+  {
+    sf_seek(f, begin, SEEK_SET);
+    T* buf = _data;
+    while (begin < end) {
+      size_t toread;
+      if (end - begin >= RDSIZE)
+        toread = RDSIZE;
+      else
+        toread = end - begin;
+      size_t nread;
+      // Requires c++17 to compile: 
+      if constexpr (std::is_same<T, double>::value)
+        nread = sf_read_double(f, buf, toread);
+      else if constexpr (std::is_same<T, float>::value)
+        nread = sf_read_float(f, buf, toread);
+      if (nread < toread) break; // This will happen if info.frames < end
+      begin += nread;
+    }
+  }
+
+  template <typename T>
+  void Waveform<T>::readMultiChannelFile(SNDFILE* f, SF_INFO* info, size_t begin, size_t end)
+  {
+    sf_seek(f, begin, SEEK_SET);
+    T* rdbuf = new T[info->channels*RDSIZE];
+    T* buf = _data;
+    while (begin < end) {
+      size_t toread;
+      if (end - begin >= RDSIZE)
+        toread = RDSIZE;
+      else
+        toread = end - begin;
+      size_t nread;
+      // Requires c++17 to compile:
+      if constexpr (std::is_same<T, double>::value)
+        nread = sf_readf_double(f, rdbuf, toread);
+      else if constexpr (std::is_same<T, float>::value)
+        nread = sf_readf_float(f, rdbuf, toread);
+
+      // Now, we sum (well, really we average) all of the channels
+      // TODO: write a better summing algorithm
+      T* p = rdbuf;
+      for (size_t i=0; i<nread; i++) {
+        *buf = 0;
+        for (int c=0; c<info->channels; c++) {
+          *buf += *p++;
+        }
+        *buf /= info->channels;
+        buf++;
+      }
+      if (nread < toread) break; // This will happen if info.frames < end
+      begin += nread;
+    }
+
+    delete[] rdbuf;
   }
 
   template<typename T>
