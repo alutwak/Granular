@@ -12,7 +12,7 @@ namespace audioelectric {
 
   template <typename T>
   Voice<T>::Voice(Waveform<T>& shape, Waveform<T>& carrier) :
-    _graingen(shape, carrier), _env1_mult(0, 0, 0, 0), _env2_mult(0, 0, 0, 0)
+    _graingen(shape, carrier), _env1_mult(0, 0, 0, 0, 0, 0), _env2_mult(0, 0, 0, 0, 0, 0)
   {
 
   }
