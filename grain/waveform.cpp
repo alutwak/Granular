@@ -18,51 +18,69 @@ namespace audioelectric {
   /*********************** Public Waveform *******************************/
 
   template<typename T>
-  Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0), _end(0)
+  Waveform<T>::Waveform(void) : _interptype(InterpType::LINEAR), _data(nullptr), _size(0), _end(0), _samplerate(0)
   {
     
   }
 
   template<typename T>
-  Waveform<T>::Waveform(std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
+  Waveform<T>::Waveform(std::size_t len, T sr, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     alloc(len);
     memset(_data, 0, sizeof(T)*len);
+    if (sr == 0)
+      _samplerate = len;
+    else
+      _samplerate = sr;    
   }
 
   template<typename T>
-  Waveform<T>::Waveform(T* data, std::size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(len), _end(len-1)
+  Waveform<T>::Waveform(T* data, std::size_t len, T sr, InterpType it) : _interptype(it), _data(nullptr), _size(len), _end(len-1)
   {
     alloc(len);
     memcpy(_data, data, sizeof(T)*len);
+    if (sr == 0)
+      _samplerate = len;
+    else
+      _samplerate = sr;    
   }
 
   template<typename T>
-  Waveform<T>::Waveform(std::initializer_list<T> init, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
+  Waveform<T>::Waveform(std::initializer_list<T> init, T sr, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     alloc(init.size());
     T* p = _data;
     for (auto& val : init)
       *(p++) = val;
+    if (sr == 0)
+      _samplerate = init.size();
+    else
+      _samplerate = sr;
   }
 
   template<typename T>
   Waveform<T>::Waveform(std::string afile, size_t begin, size_t end, InterpType it) :
     _interptype(it), _data(nullptr), _size(0), _end(0)
   {
+  
     SF_INFO info;
     SNDFILE* f = sf_open(afile.c_str(), SFM_READ, &info);
-    if (!f) {
-      return;
-    }
-    if (end < begin)
-      end = begin;
+    if (!f)
+      throw WaveformError("Error when reading file: " + afile + ": " + sf_strerror(f));
+    
+    if (end == 0 || end >= info.frames)
+      end = info.frames;
+    if (end <= begin)
+      throw WaveformError("Ending frame of an audio file waveform must be greater than the beginning frame");
+    else if (begin >= info.frames)
+      throw WaveformError("Beginning frame was greater than the number of frames in the audio file");
     alloc(end-begin);
 
     if (info.channels == 1)
       readOneChannelFile(f, &info, begin, end);
     else
       readMultiChannelFile(f, &info, begin, end);
+    _samplerate = info.samplerate;
     sf_close(f);
   }
 
@@ -87,6 +105,7 @@ namespace audioelectric {
         nread = sf_read_float(f, buf, toread);
       if (nread < toread) break; // This will happen if info.frames < end
       begin += nread;
+      buf += nread;
     }
   }
 
@@ -128,14 +147,19 @@ namespace audioelectric {
   }
 
   template<typename T>
-  Waveform<T>::Waveform(T (*generator)(size_t), size_t len, InterpType it) : _interptype(it), _data(nullptr), _size(0), _end(0)
+  Waveform<T>::Waveform(T (*generator)(size_t), size_t len, T sr, InterpType it) :
+    _interptype(it), _data(nullptr), _size(0), _end(0)
   {
     generate(generator, len);
+    if (sr == 0)
+      _samplerate = len;
+    else
+      _samplerate = sr;
   }
 
   template<typename T>
   Waveform<T>::Waveform(Waveform<T>& other, double rate, std::size_t len, InterpType it) :
-    _interptype(it), _data(nullptr), _size(0), _end(0)
+    _interptype(it), _data(nullptr), _size(0), _end(0), _samplerate(other._samplerate)
   {
     alloc(len);
     auto phs = Phasor<T>(other, rate);

@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <initializer_list>
 #include <string>
+#include <exception>
 
 #include <sndfile.h>
 
@@ -13,6 +14,14 @@ namespace audioelectric {
    */
   enum class InterpType {
     LINEAR,     //!< Linear interpolation
+  };
+
+  class WaveformError : public std::exception {
+  public:
+    WaveformError(std::string msg) : _msg(msg) {}
+    const char* what(void) {return _msg.c_str();}
+  private:
+    std::string _msg;
   };
 
   /*!\brief Contains and manages a set of audio data. Useful for samples, grains or any other chunk of audio data that needs
@@ -43,14 +52,23 @@ namespace audioelectric {
 
     /*!\brief Creates and allocates a waveform of size len with all values set to 0
      */
-    Waveform(std::size_t len, InterpType it=InterpType::LINEAR);
+    Waveform(std::size_t len, T sr=0, InterpType it=InterpType::LINEAR);
 
     /*!\brief Wraps an array of size len in a Waveform to allow it to be interpolated
      */
-    Waveform(T* data, std::size_t len, InterpType it=InterpType::LINEAR);
+    Waveform(T* data, std::size_t len, T sr=0, InterpType it=InterpType::LINEAR);
 
-    Waveform(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
+    Waveform(std::initializer_list<T> init, T sr=0, InterpType it=InterpType::LINEAR);
 
+    /*!\brief Construct a waveform from a section of an audio file
+     * 
+     * If the audio file does not exist, or end <= begin then a WaveformError will be thrown
+     * 
+     * \param afile  Path to the audio file to read
+     * \param begin  Beginning frame of the audio file section
+     * \param end    Ending frame of the audio file section. If end==0 then read to the last frame
+     * \param it     Interpolation type
+     */
     Waveform(std::string afile, size_t begin=0, size_t end=0, InterpType it=InterpType::LINEAR);
 
     /*!\brief Creates a new Waveform and fills it with a generator function
@@ -60,7 +78,7 @@ namespace audioelectric {
      * \param generator The generator function to use
      * \param len The length of the waveform to generate
      */
-    Waveform(T (*generator)(size_t), size_t len, InterpType it=InterpType::LINEAR);
+    Waveform(T (*generator)(size_t), size_t len, T sr=0, InterpType it=InterpType::LINEAR);
 
     /*!\brief Copies a sample to a new length using interpolation
      */
@@ -134,12 +152,15 @@ namespace audioelectric {
      */
     T* data(void) {return _data;}
 
+    T samplerate(void) {return _samplerate;}
+
   private:
 
     InterpType _interptype;     //!< The interpolation type
     size_t _size;               //!< The size of data
     size_t _end;                //!< The last index of _data
     T* _data;                   //!< The raw data
+    T _samplerate;        //!< The native samplerate of the waveform
 
     /*!\brief Allocates a data array of length len
      */

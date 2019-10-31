@@ -3,13 +3,14 @@
 #include <ctime>
 
 #include <gtest/gtest.h>
-#include <sndfile.h>
 #include <portaudio.h>
 
 #include "audioplaybacktest.hpp"
 #include "waveform.hpp"
 
 using namespace audioelectric;
+
+#define TESTFILE_LEN 441365
 
 TEST(waveform, requirements)
 {
@@ -32,9 +33,97 @@ TEST(waveform, requirements)
 
   printf("Verifying that the Waveform is 0 outside of its bounds...\n");
   EXPECT_EQ(wf.waveform(-10), 0);
+  EXPECT_EQ(wf.waveform(-0.0000000000001), 0);
   EXPECT_EQ(wf.waveform(49000), 0);
+  EXPECT_EQ(wf.waveform(48000.000000000001), 0);
 }
 
+TEST(waveform, fromfile_double)
+{
+  try {
+    Waveform<double> wf("testfile.wav");
+    EXPECT_EQ(wf.size(), TESTFILE_LEN);
+  }
+  catch (WaveformError e) {
+    FAIL() << "Exception thrown: " << e.what();
+  }
+  
+}
+
+TEST(waveform, fromfile_float)
+{
+  try {
+    Waveform<float> wf("testfile.wav");
+    EXPECT_EQ(wf.size(), TESTFILE_LEN);
+  }
+  catch (WaveformError e) {
+    FAIL() << "Exception thrown: " << e.what();
+  }
+}
+
+TEST(waveform, fromfile_endsection)
+{
+  try {
+    Waveform<double> wf("testfile.wav", 1000);
+    EXPECT_EQ(wf.size(), TESTFILE_LEN - 1000);
+  }
+  catch (WaveformError e) {
+    FAIL() << "Exception thrown: " << e.what();
+  }
+}
+
+TEST(waveform, fromfile_beginsection)
+{
+  try {
+    Waveform<double> wf("testfile.wav", 0, 1000);
+    EXPECT_EQ(wf.size(), 1000);
+  }
+  catch (WaveformError e) {
+    FAIL() << "Exception thrown: " << e.what();
+  }
+}
+
+TEST(waveform, fromfile_midsection)
+{
+  try {
+    Waveform<double> wf("testfile.wav", 1000, 2000);
+    EXPECT_EQ(wf.size(), 1000);
+  }
+  catch (WaveformError e) {
+    FAIL() << "Exception thrown: " << e.what();
+  }
+}
+
+TEST(waveform, fromfile_zerolen)
+{
+  ASSERT_THROW(Waveform<double> wf("testfile.wav", 1000, 1000), WaveformError);
+}
+
+TEST(waveform, fromfile_negativelen)
+{
+  ASSERT_THROW(Waveform<double> wf("testfile.wav", 2000, 1000), WaveformError);
+}
+
+TEST(waveform, fromfile_longend)
+{
+  try {
+    Waveform<double> wf("testfile.wav", 1000, TESTFILE_LEN + 10);
+    EXPECT_EQ(wf.size(), TESTFILE_LEN - 1000);
+  }
+  catch (WaveformError e) {
+    FAIL() << "Exception thrown: " << e.what();
+  }
+}
+
+TEST(waveform, fromfile_longbegin)
+{
+  ASSERT_THROW(Waveform<double> wf("testfile.wav", TESTFILE_LEN, TESTFILE_LEN+1), WaveformError);
+}
+
+TEST(waveform, fromfile_noexist)
+{
+  ASSERT_THROW(Waveform<double> wf("doesnt_exist.wav"), WaveformError);
+}
 
 class SimpleWaveformTest : public ::testing::Test {
 protected:
@@ -99,15 +188,8 @@ class WaveformPlaybackTest : public AudioPlaybackTest {
 protected:
 
   virtual void SetUp(void) {
-    SF_INFO info;
-    info.format = 0;
-    SNDFILE* testfile = sf_open("testfile.wav", SFM_READ, &info);
-    ASSERT_TRUE(testfile) << "unable to open testfile.wav";
-    wt = new Waveform<float>(info.frames); //We know this is just one channel
-    sf_count_t nread = sf_readf_float(testfile, wt->data(), info.frames);
-    samplerate = info.samplerate;
-    ASSERT_EQ(nread,info.frames) << "Failed to read entire testfile.wav";
-    sf_close(testfile);
+    wt = new Waveform<float>("testfile.wav"); //We know this is just one channel
+    samplerate = wt->samplerate();
   }
 
 };
@@ -141,4 +223,29 @@ TEST_F(WaveformPlaybackTest, simple) {
   printf("Playing back part of waveform backward at various rates...\n");
   playBack(-1,35229);
   playBack(-4.2,35229);
+}
+
+class WaveformPlaybackTestStereo : public AudioPlaybackTest {
+protected:
+
+  virtual void SetUp(void) {
+    wt = new Waveform<float>("testfilestereo.wav"); //We know this is just one channel
+    samplerate = wt->samplerate();
+  }
+
+};
+
+TEST_F(WaveformPlaybackTestStereo, simple) {
+  double end = wt->end();  
+  printf("Cycling over a short section at normal rate...\n");
+  playBack(1, 17850, 17850, 27850, true);
+  printf("Cycling backward over a short section at normal rate...\n");  
+  playBack(-1, 27850, 17850, 27850, true);
+  printf("Cycling over a short section at double rate...\n");  
+  playBack(2, 17850, 17850, 27850, true);
+  printf("Cycling backward over a short section at double rate...\n");    
+  playBack(-2, 27850, 17850, 27850, true);
+  printf("Playing back the whole waveform...\n");
+  playBack(1, 0);
+  
 }
