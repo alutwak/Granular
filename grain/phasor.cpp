@@ -6,8 +6,9 @@
 namespace audioelectric {
 
   template<typename T>
-  Phasor<T>::Phasor(Waveform<T>& wf, double rate, bool cycle, double start, double front, double back) :
-    _wf(wf), _cycle(cycle)
+  Phasor<T>::Phasor(const Waveform<T>& wf, double rate, bool cycle, double start, double front, double back) :
+    // Remove the const so we can copy the reference. This is a little dangerous, but the phasor does not change the Waveform
+    _wf(const_cast<Waveform<T>&>(wf)), _cycle(cycle)
   {
     setParameters(rate, start, front, back);
   }

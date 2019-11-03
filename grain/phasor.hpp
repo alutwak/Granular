@@ -40,7 +40,7 @@ namespace audioelectric {
      * \param front The front phase in the Wavetable. Values before this in the wavetable will not be played.
      * \param back  The back phase in the Wavetable. A negative value sets the back at the last sample of the waveform.
      */
-    Phasor(Waveform<T>& wf, double rate, bool cycle=false, double start=0, double front=0, double back=-1);
+    Phasor(const Waveform<T>& wf, double rate, bool cycle=false, double start=0, double front=0, double back=-1);
 
     Phasor(const Phasor& other);
 
@@ -68,7 +68,7 @@ namespace audioelectric {
     bool operator<=(const Phasor& other) const;
     bool operator>=(const Phasor& other) const;
 
-    void setWaveform(Waveform<T>& wf) {_wf = wf;}
+    void setWaveform(const Waveform<T>& wf) {_wf = wf;}
 
     /*!\brief Sets all of the paramters of the waveorm
      *
