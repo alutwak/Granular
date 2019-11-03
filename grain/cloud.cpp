@@ -122,6 +122,12 @@ namespace audioelectric {
       voice._graingen.setCarrier(_carrier);
   }
 
+  template <typename T>
+  void Cloud<T>::setCarrier(std::string afile, size_t begin, size_t end)
+  {
+    _carrier = Waveform<T>(afile, begin, end);
+  }
+
   /******************** Private Functions ********************/
   
   template <typename T>

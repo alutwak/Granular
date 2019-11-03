@@ -86,6 +86,8 @@ namespace audioelectric {
 
     void setCarrier(Carrier carrier);
 
+    void setCarrier(std::string afile, size_t begin=0, size_t end=0);
+
     GrainParams<T>& params(void) {return _params;}
     GrainParams<T>& velocityModulators(void) {return _vel_mod;}
     GrainParams<T>& rand(void) {return _rand;}
