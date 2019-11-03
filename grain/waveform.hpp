@@ -82,7 +82,11 @@ namespace audioelectric {
 
     /*!\brief Copies a sample to a new length using interpolation
      */
-    Waveform(Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
+    Waveform(const Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
+
+    Waveform(const Waveform<T>& other);
+
+    Waveform(Waveform<T>&& other);    
 
     ~Waveform(void);
 
@@ -126,9 +130,11 @@ namespace audioelectric {
      * \param channel The channel to retrieve from (ignored for now)
      * \return The interpolated value at pos
      */
-    T waveform(double pos, int channel=0);
+    T waveform(double pos, int channel=0) const;
 
     Waveform<T>& operator=(const Waveform<T>& other);
+
+    Waveform<T>& operator=(Waveform<T>&& other);    
 
     T& operator[](std::size_t pos) {return _data[pos];}
     const T& operator[](std::size_t pos) const {return _data[pos];}

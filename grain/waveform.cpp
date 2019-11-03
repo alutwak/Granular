@@ -2,6 +2,7 @@
 #include <cmath>
 #include <cstring>
 #include <type_traits>
+#include <utility>
 
 #include "waveform.hpp"
 #include "phasor.hpp"
@@ -158,7 +159,7 @@ namespace audioelectric {
   }
 
   template<typename T>
-  Waveform<T>::Waveform(Waveform<T>& other, double rate, std::size_t len, InterpType it) :
+  Waveform<T>::Waveform(const Waveform<T>& other, double rate, std::size_t len, InterpType it) :
     _interptype(it), _data(nullptr), _size(0), _end(0), _samplerate(other._samplerate)
   {
     alloc(len);
@@ -167,6 +168,22 @@ namespace audioelectric {
     phs.generate(&_data, len, 1);
   }
 
+  template <typename T>
+  Waveform<T>::Waveform(const Waveform<T>& other) :
+    _interptype(other._interptype), _data(nullptr), _size(0), _end(0), _samplerate(other._samplerate)
+  {
+    alloc(other.size());
+    memcpy(_data, other._data, _size);
+  }
+
+  template <typename T>
+  Waveform<T>::Waveform(Waveform<T>&& other) :
+    _interptype(other._interptype), _data(std::exchange(other._data, nullptr)),
+    _size(std::exchange(other._size, 0)), _end(std::exchange(other._end, 0)), _samplerate(other._samplerate)
+  {
+    
+  }
+  
   template<typename T>
   Waveform<T>::~Waveform(void)
   {
@@ -183,7 +200,7 @@ namespace audioelectric {
   }
 
   template<typename T>
-  T Waveform<T>::waveform(double pos, int channel)
+  T Waveform<T>::waveform(double pos, int channel) const
   {
     if (pos < 0 || pos > _end)
       return 0;
@@ -199,6 +216,16 @@ namespace audioelectric {
     return *this;
   }
 
+  template <typename T>
+  Waveform<T>& Waveform<T>::operator=(Waveform<T> &&other)
+  {
+    _interptype = other._interptype;
+    _data = std::exchange(other._data, nullptr);
+    _size = std::exchange(other._size, 0);
+    _end = std::exchange(other._end, 0);
+    _samplerate = other._samplerate;
+    return *this;
+  }
 
   template<typename T>
   typename Waveform<T>::iterator Waveform<T>::ibegin(void)
