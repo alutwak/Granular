@@ -50,6 +50,19 @@ namespace audioelectric {
      */
     Cloud(size_t fs, int voices, Shape shape, Carrier carrier);
 
+    /*!\brief Constructs a Cloud with a specified number of voices from an audio file
+     * 
+     * \throw WaveformError If there is an error when reading the audio file
+     * 
+     * \param fs      The samplerate
+     * \param voices  The number of voices
+     * \param shape   The shape to use
+     * \param afile   The audio file to use as the carrier
+     * \param begin   The beginning frame to capture from the audio file
+     * \param end     The ending frame to capture from the audio file. A value of 0 means to capture to the end
+     */
+    Cloud(size_t fs, int voices, Shape shape, std::string afile, size_t begin=0, size_t end=0);
+
     /*!\brief Starts a new note by adding a voice to the list of active voices
      * 
      * The velocity will be used to modulate the user parameters.

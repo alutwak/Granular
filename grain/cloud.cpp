@@ -27,6 +27,14 @@ namespace audioelectric {
   }
 
   template <typename T>
+  Cloud<T>::Cloud(size_t fs, int voices, Shape shape, std::string afile, size_t begin, size_t end) : _fs(fs)
+  {
+    setShape(shape);
+    setCarrier(afile, begin, end);
+    setVoiceNumber(voices);
+  }
+
+  template <typename T>
   void Cloud<T>::startNote(T freq, T velocity)
   {
     GrainParams<T> p = _params;
