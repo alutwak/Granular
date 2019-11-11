@@ -15,16 +15,17 @@
 namespace audioelectric {
 
   struct Note {
-    Note (float fr, float vel, float start, float stop) : freq(fr), velocity(vel), tstart(start), tstop(stop) {}
-    float freq;
-    float velocity;
-    size_t tstart;
-    size_t tstop;
+    Note (float fr, float vel, float start, float len) : freq(fr), velocity(vel), tstart(start), length_or_tstop(len) {}
+    float freq;                 //!< The frequency of the note
+    float velocity;             //!< The amplitude of the note
+    size_t tstart;              //!< The starting time of the note (relative to the previous note)
+    size_t length_or_tstop;     //!< The length of the note before it is played, the time that it will stop if it is playing
   };
 
   struct Part {
     std::list<Note> notes;
     bool loop;
+    size_t lastnote;            //!< How long it's been since the most recent note in this part was played
   };
 
   class Composition {
@@ -53,7 +54,7 @@ namespace audioelectric {
     size_t _time;
     std::vector<Cloud<float>> _instruments;
     std::vector<Part> _score;
-    std::vector<Part> _playing;
+    std::vector<std::list<Note>> _playing;
 
     /*!\brief Generates the next set of frames from the instruments
      */
