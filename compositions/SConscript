@@ -3,7 +3,7 @@ import os
 Import('env')
 Import('grain_lib')
 
-source_files = ['composition.cpp'
+source_files = ['composition.cpp',
 ]
 
 include_dirs = [
@@ -21,4 +21,6 @@ libs = [
 env.Append(CPPPATH=include_dirs)
 env.Append(LIBPATH=lib_dirs)
 env.Append(LIBS=libs)
-env.Library('composition', source_files+[grain_lib])
+comp = env.Library('composition', source_files+[grain_lib])
+
+env.Program("faery", ["faery.cpp", comp, grain_lib])

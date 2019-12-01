@@ -13,6 +13,40 @@
 
 namespace audioelectric {
 
+  Composition::Composition(float fs, int sampwidth, int chans) : _fs(fs), _sampwidth(sampwidth), _chans(chans)
+  {
+    
+  }
+
+  void Composition::write(std::string filename, double time, int bufsize)
+  {
+    SF_INFO info;
+    memset(&info, 0, sizeof(info));
+    info.channels = _chans;
+    info.samplerate = _fs;
+    info.format = SF_FORMAT_WAV | _sampwidth;
+    SNDFILE *sf = sf_open(filename.c_str(), SFM_WRITE, &info);
+
+    float *frames = new float[bufsize*_chans];
+    size_t frames_left = time*_fs;
+    while (frames_left > 0) {
+      int nframes = frames_left > bufsize ? bufsize : frames_left;
+      generate(frames, nframes);
+      sf_writef_float(sf, frames, nframes);
+      frames_left -= nframes;
+    }
+    delete[] frames;
+    sf_close(sf);
+  }
+
+  int Composition::addPart(Part part, Cloud<float> inst)
+  {
+    _score.push_back(part);
+    _instruments.push_back(inst);
+    _playing.emplace_back(std::list<Note>());
+    return _score.size() - 1;
+  }
+  
   void Composition::generate(float *frames, int nframes)
   {
     float *f = frames;
@@ -34,7 +68,7 @@ namespace audioelectric {
       auto& notes = _score[i].notes;
       auto& playing = _playing[i];
       auto& lastnote = _score[i].lastnote;
-      while (notes.front().tstart >= lastnote) {
+      while (notes.front().tstart <= lastnote) {
         lastnote = 0;
         auto note = notes.front();
         note.length_or_tstop += _time;  // Adding the current time to the length give the stop time

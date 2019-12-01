@@ -61,35 +61,6 @@ namespace audioelectric {
   }
 
   template <typename T>
-  GrainParams<T> operator*(GrainParams<T> lhs, T rhs)
-  {
-    lhs *= rhs;
-    return lhs;
-  }
-
-  template <typename T>
-  GrainParams<T> operator*(T lhs, GrainParams<T> rhs)
-  {
-    rhs *= lhs;
-    return rhs;
-  }
-
-  template <typename T>
-  GrainParams<T> operator*(GrainParams<T> lhs, const GrainParams<T>& rhs)
-  {
-    lhs *= rhs;
-    return lhs;
-  }
-
-  template <typename T>
-  GrainParams<T> operator+(GrainParams<T> lhs, const GrainParams<T>& rhs)
-  {
-    lhs += rhs;
-    return lhs;
-  }
-
-
-  template <typename T>
   GrainGenerator<T>::GrainGenerator(Waveform<T>& shape, Waveform<T>& carrier) :
     _last_grain_t(0), _rand_grain_t(0), _params(), _rand({0,0,0,0,0,0}), _dist(-1,1),
     _shape(shape), _carrier(carrier)
@@ -168,7 +139,11 @@ namespace audioelectric {
     return _dist(_gen);
   }
 
+  template class GrainParams<double>;
+  template class GrainParams<float>;
+  
   template class GrainGenerator<double>;
   template class GrainGenerator<float>;
 
 }  // audioelectric
+

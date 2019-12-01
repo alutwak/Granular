@@ -14,25 +14,44 @@
 
 namespace audioelectric {
 
+  class Composition;
+  
   struct Note {
-    Note (float fr, float vel, float start, float len) : freq(fr), velocity(vel), tstart(start), length_or_tstop(len) {}
+    Note (float fr, float vel, size_t start, size_t len) : freq(fr), velocity(vel), tstart(start), length_or_tstop(len) {}
     float freq;                 //!< The frequency of the note
     float velocity;             //!< The amplitude of the note
     size_t tstart;              //!< The starting time of the note (relative to the previous note)
     size_t length_or_tstop;     //!< The length of the note before it is played, the time that it will stop if it is playing
   };
 
-  struct Part {
+  class Part {
+  public:
+    friend class Composition;
+
+    Part(bool loop=false) : lastnote(0), loop(loop) {}
+
+    Part& append(float freq, float vel, size_t start, size_t len) {
+      notes.emplace_back(freq, vel, start, len);
+      return *this;
+    }
+    
+  private:
     std::list<Note> notes;
-    bool loop;
     size_t lastnote;            //!< How long it's been since the most recent note in this part was played
+    bool loop;
   };
+
 
   class Composition {
 
   public:
 
-    Composition(float fs);
+    /*
+     * \param sampwidth The number of bytes per sample of the file
+     * \param framerate The frame rate of the file
+     * \param chans     The number of channels to generate (only 1 is supported right now)
+     */
+    Composition(float fs, int sampwidth=3, int chans=1);
 
     /*!\brief Writes a composition to a .wav file
      * 
@@ -40,17 +59,26 @@ namespace audioelectric {
      * 
      * \param time      The maximum length of time for the composition to last (in seconds). The generated file may be shorter
      *                  than this if the composition is shorter than this. A time of 0 generates the file until it's complete.
-     * \param sampwidth The number of bytes per sample of the file
-     * \param framerate The frame rate of the file
-     * \param chans     The number of channels to generate (only 1 is supported right now)
      */
-    void write(std::string filename, double time, int sampwidth=3, int framerate=48000, int chans=1);
+    void write(std::string filename, double time, int bufsize=32768);
 
-    void play(int sampwidth=24, int framerate=48000, int chans=1);
+    /*!\brief Plays for the given amount of time (or continuously if time=0)
+     * 
+     * \param time The amount of time to play (in seconds)
+     */
+    void play(double time=0);
+
+    /*!\brief Adds a part (with an instrument) to the score
+     * 
+     * \return The index of the score
+     */
+    int addPart(Part part, Cloud<float> inst);
     
   private:
 
     const float _fs;
+    const int _sampwidth;
+    const int _chans;
     size_t _time;
     std::vector<Cloud<float>> _instruments;
     std::vector<Part> _score;

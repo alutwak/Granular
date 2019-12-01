@@ -27,17 +27,12 @@ namespace audioelectric {
     T back;     //!< The back position of the waveform
 
     GrainParams<T>(T d, T l, T fq, T a, T ft=0, T b=-1) : density(d), length(l), freq(fq), ampl(a), front(ft), back(b) {}
-    GrainParams<T>(void) : density(1e-9), length(0), freq(0), ampl(0), front(0), back(-1) {}
+    GrainParams<T>(void) : density(1e-9), length(0), freq(1), ampl(1), front(0), back(-1) {}
     void modulate(GrainParams<T>& other);
     GrainParams<T>& operator *=(T rhs);
     GrainParams<T>& operator *=(const GrainParams<T>& rhs);
     GrainParams<T>& operator +=(const GrainParams<T>& rhs);
-    friend GrainParams<T>& operator*(GrainParams<T> lhs, T rhs);
-    friend GrainParams<T>& operator*(T lhs, GrainParams<T> rhs);
-    friend GrainParams<T>& operator*(GrainParams<T> lhs, const GrainParams<T>& rhs);
-    friend GrainParams<T>& operator+(GrainParams<T> lhs, const GrainParams<T>& rhs);
   };
-
 
   /*!\brief Generates grains according to various parameters
    */
@@ -125,5 +120,34 @@ namespace audioelectric {
     inline double _random(void);
 
   };
+
+  template <typename T>
+  inline GrainParams<T> operator*(GrainParams<T> lhs, T rhs)
+  {
+    lhs *= rhs;
+    return lhs;
+  }
+
+  template <typename T>
+  inline GrainParams<T> operator*(T lhs, GrainParams<T> rhs)
+  {
+    rhs *= lhs;
+    return rhs;
+  }
+
+  template <typename T>
+  inline GrainParams<T> operator*(GrainParams<T> lhs, const GrainParams<T>& rhs)
+  {
+    lhs *= rhs;
+    return lhs;
+  }
+
+  template <typename T>
+  inline GrainParams<T> operator+(GrainParams<T> lhs, const GrainParams<T>& rhs)
+  {
+    lhs += rhs;
+    return lhs;
+  }
+  
 
 }  // audioelectric
