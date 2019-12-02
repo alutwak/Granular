@@ -91,8 +91,9 @@ namespace audioelectric {
   private:
 
     // Random
-    std::mt19937 _gen;                          //!< Random number algorithm
-    std::uniform_real_distribution<> _dist;     //!< Random number generator
+    std::ranlux48_base _gen;
+//    std::mt19937 _gen;                          //!< Random number algorithm
+    std::uniform_real_distribution<T> _dist;     //!< Random number generator
 
     // Grains
     std::list<Grain<T>> _active;       //!< The active grains
@@ -117,7 +118,7 @@ namespace audioelectric {
      * \todo Right now this uses the mt19937 algorithm, but at some point I need to run some tests to find the fastest
      *       algorithm
      */
-    inline double _random(void);
+    inline T _random(T mult=1);
 
   };
 

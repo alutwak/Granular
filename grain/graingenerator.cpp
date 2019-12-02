@@ -66,7 +66,7 @@ namespace audioelectric {
     _shape(shape), _carrier(carrier)
   {
     std::random_device rd;
-    _gen = std::mt19937(rd());
+    _gen = std::ranlux48_base(rd());
     _allocateGrains();
   }
 
@@ -98,11 +98,11 @@ namespace audioelectric {
       _last_grain_t = 0;
       if (_inactive.empty())
         _allocateGrains();
-      _moveAndSetGrain(_params.freq*(1. + _rand.freq*_random()),
-                       (1. + _rand.length*_random())/_params.length,
-                       _params.ampl*(1. + _rand.ampl*_random()),
-                       _params.front*(1. + _rand.front*_random()),
-                       _params.back*(1. + _rand.back*_random()));
+      _moveAndSetGrain(_params.freq*(1. + _random(_rand.freq)),         // crate
+                       (1. + _random(_rand.length))/_params.length,     // srate
+                       _params.ampl*(1. + _random(_rand.ampl)),         // ampl
+                       _params.front*(1. + _random(_rand.front)),       // front
+                       _params.back*(1. + _random(_rand.back)));        // back
     }
 
     _last_grain_t++;
@@ -134,9 +134,11 @@ namespace audioelectric {
 
 
   template <typename T>
-  double GrainGenerator<T>::_random(void)
+  T GrainGenerator<T>::_random(T mult)
   {
-    return _dist(_gen);
+    if (mult == 0)
+      return 0;
+    return mult*_dist(_gen);
   }
 
   template class GrainParams<double>;
