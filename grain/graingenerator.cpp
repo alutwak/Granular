@@ -114,8 +114,7 @@ namespace audioelectric {
     _params = params;
     if (_params.density <= MIN_DENSITY)
       _params.density = MIN_DENSITY;
-    _params.length /= _shape.size();
-    _params.freq *= _carrier.size();    // This assumes that the carrier length is 1 second
+    _params.length = 1/_params.length; //Assumes that the grain length = 1 second
   }
 
   template <typename T>
