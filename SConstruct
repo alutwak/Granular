@@ -6,11 +6,26 @@ def try_get_env(var):
     except:
         return []
 
+AddOption('--dbg',
+          dest='debug',
+          action='store_true',
+          help='Builds the system for debugging')
+
+AddOption('--build-test',
+          dest='build_test',
+          action='store_true',
+          help='Builds the unit tests')
+
 cpppath = try_get_env('CPPPATH')
 cxxflags = try_get_env('CXXFLAGS')
 libpath = try_get_env('LD_LIBRARY_PATH')
 
-cxxflags += "-g -O0 -std=c++17".split()
+cxxflags += "-g -std=c++17".split()
+if GetOption('debug'):
+    cxxflags += ["-O0"]
+else:
+    cxxflags += "-O3 -DNDEBUG".split()
+
 
 env = Environment(CXXFLAGS=cxxflags, CPPPATH=cpppath, LIBPATH=libpath)
 
