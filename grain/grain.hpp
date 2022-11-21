@@ -1,82 +1,72 @@
+/* \file grain.hpp
+ * \brief Defines the interface for a grain
+ *
+ * (c) AudioElectric. All rights reserved.
+ * 
+ * Author:             Ayal Lutwak <alutwak@audioelectric.com>
+ * Date:               June 26, 2019
+ * Last Modified By:   Ayal Lutwak <alutwak@audioelectric.com>
+ * Last Modified Date: June 26, 2019
+ */
 
-#pragma once
-
-#include <utility>
-#include <list>
-
-#include "wavetable.hpp"
+#include "phasor.hpp"
 
 namespace audioelectric {
 
-  /*!\brief A grain is basically a wavetable that can generate a grains of sound
-   * 
-   * The only thing special about this class is the granulator class that it contains and the gmake and rgmake
-   * functions. A Grain works by using its waveform as an envelope to modulate the amplitude of another Waveform.
-   * Typically, Grains last a short period of time (on the order of about 10 to 100ms), though there's no reason that
-   * they couldn't be longer or shorter. 
-   * 
-   * By itself, a single grain is generatlly not that interesting, but when many grains are played together, in either a 
-   * random or or structured arrangement, some very interesting things can happen. The best way to do that is with a Cloud
-   * class.
-   */
   template<typename T>
-  class Grain : public Wavetable<T> {
+  class Grain final {
   public:
-
-    /*!\brief An interpolator that also holds a phasor and 
+    /*!
+     * \param carrier The carrier waveform
+     * \param crate   The carrier rate
+     * \param shape   The modulation shape
+     * \param srate   The shape rate
+     * \param ampl    The amplitude of the grain
      */
-    class granulator : public Wavetable<T>::interpolator {
-      
-    public:
-      virtual ~granulator(void) {}
-      
-    protected:
-      friend class Grain;
-      granulator(Grain<T>& grn, double start, double rate,
-                 const typename Waveform<T>::phasor& phasor_other);
-      granulator(const granulator& other);
-      //granulator& operator=(const granulator& other);
+    Grain(Waveform<T>& carrier, double crate, Waveform<T>& shape, double srate, T ampl);
 
-      /*!\brief The product of the current interpolated values of the Grain and the phasor
-       */
-      T value(void) const;
-      operator bool(void) const;
-      typename Waveform<T>::phasor_impl* copy(void) const;
-      void increment(void);
-      
-    private:
-      typename Waveform<T>::phasor _phasor_other;
-    };
+    Grain(Phasor<T>& carrier, Phasor<T>& shape, T ampl);
 
-    /*!\brief Creates a waveform of size 0
+    Grain(Phasor<T>&& carrier, Phasor<T>&& shape, T ampl);    
+
+    /*!\brief Returns the current value of the grain
      */
-    Grain(void);
+    T value(void) const;
 
-    /*!\brief Creates and allocates a waveform of size len with all values set to 0
+    /*!\brief Increments the phases of the carrier and the shape
      */
-    Grain(std::size_t len, InterpType it=InterpType::LINEAR);
+    void increment(void);
 
-    /*!\brief Wraps an array of size len in a Grain to allow it to be interpolated
+    /*!\brief Returns true if the grain is still running
      */
-    Grain(T* data, std::size_t len, InterpType it=InterpType::LINEAR);
+    operator bool(void) const;
 
-    Grain(std::initializer_list<T> init, InterpType it=InterpType::LINEAR);
+    void setCarrier(Waveform<T>& carrier) {_carrier.setWaveform(carrier);}
+
+    void setShape(Waveform<T>& shape) {_shape.setWaveform(shape);}
     
-    /*!\brief Copies a sample to a new length using interpolation
+    /*!\brief Sets the carrier rate
      */
-    Grain(Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
+    void setCarrierRate(double rate) {_carrier.setRate(rate);};
 
-    //~Grain(void);
-    /*!\brief Generates a forward grain
-     * 
-     * \param start Starting point of the grain (in the original waveform, not the interpolated one)
-     * \param rate The rate at which to advance through the grain (>0, <1 is slower, >1 is faster)
-     * \param phasor_other A phasor to modulate with the grainulator
+    /*!\brief Sets the shape rate
      */
-    typename Waveform<T>::phasor gmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other);
+    void setShapeRate(double rate) {_shape.setRate(rate);}
 
-    typename Waveform<T>::phasor rgmake(double start, double rate, const typename Waveform<T>::phasor& phasor_other);
+    /*!\brief Sets the amplitude
+     */
+    void setAmplitude(T ampl) {_ampl = ampl;}
+
+    void setParams(double crate, double srate, T ampl, double front=0, double back=-1);
     
+    /*!\brief Resets the carrier and the shape back to their beginning phases
+     */
+    void reset(void);
+
+  private:
+    Phasor<T> _carrier;
+    Phasor<T> _shape;
+    T _ampl;
   };
-
+  
 }

@@ -1,95 +1,68 @@
+/* (c) AudioElectric. All rights reserved.
+ * 
+ * Author:             Ayal Lutwak <ayal@audioelectric.com>
+ * Date:               June 26, 2019
+ * Last Modified By:   Ayal Lutwak <ayal@audioelectric.com>
+ * Last Modified Date: June 26, 2019
+ */
 
 #include "grain.hpp"
 
 namespace audioelectric {
 
   template<typename T>
-  Grain<T>::Grain(void) : Wavetable<T>()
+  Grain<T>::Grain(Waveform<T>& carrier, double crate, Waveform<T>& shape, double srate, T ampl) :
+    _carrier(carrier, crate, true), _shape(shape, srate), _ampl(ampl)
   {
     
   }
 
-  template<typename T>
-  Grain<T>::Grain(std::size_t len, InterpType it) : Wavetable<T>(len, it)
+  template <typename T>
+  Grain<T>::Grain(Phasor<T>& carrier, Phasor<T>& shape, T ampl)
+    : _carrier(carrier), _shape(shape), _ampl(ampl)
   {
     
   }
 
-  template<typename T>
-  Grain<T>::Grain(T* data, std::size_t len, InterpType it) : Wavetable<T>(data, len, it)
+  template <typename T>
+  Grain<T>::Grain(Phasor<T>&& carrier, Phasor<T>&& shape, T ampl)
+    : _carrier(carrier), _shape(shape), _ampl(ampl)
   {
     
   }
 
-  template<typename T>
-  Grain<T>::Grain(std::initializer_list<T> init, InterpType it) : Wavetable<T>(init, it)
+  template <typename T>
+  T Grain<T>::value(void) const
   {
-    
+    return _carrier.value() * _shape.value() * _ampl;
   }
 
-  template<typename T>
-  Grain<T>::Grain(Waveform<T>& other, double rate, std::size_t len, InterpType it) : Wavetable<T>(other, rate, len, it)
+  template <typename T>
+  void Grain<T>::increment(void)
   {
-    
+    _carrier.increment();
+    _shape.increment();
   }
 
-  template<typename T>
-  typename Waveform<T>::phasor Grain<T>::gmake(double start, double rate,
-                                               const typename Waveform<T>::phasor& phasor_other)
-
+  template <typename T>
+  Grain<T>::operator bool(void) const
   {
-    auto granu = new granulator(*this,start,rate,phasor_other);
-    return Waveform<T>::make_phasor(granu);
+    return _shape;
   }
 
-  template<typename T>
-  typename Waveform<T>::phasor Grain<T>::rgmake(double start, double rate,
-                                                const typename Waveform<T>::phasor& phasor_other)
+  template <typename T>
+  void Grain<T>::setParams(double crate, double srate, T ampl, double front, double back)
   {
-    auto granu = new granulator(*this,start,-rate,phasor_other);
-    return Waveform<T>::make_phasor(granu);
+    _carrier.setParameters(crate, front, front, back);  // For now, we just set the phase to the front
+    setShapeRate(srate);
+    setAmplitude(ampl);
   }
 
-  /******************** granulator ********************/
-
-  template<typename T>
-  Grain<T>::granulator::granulator(Grain<T>& grn, double start, double rate,
-                                   const typename Waveform<T>::phasor& interp_other) :
-    Wavetable<T>::interpolator(grn,rate,start,start), _phasor_other(interp_other)
+  template <typename T>
+  void Grain<T>::reset(void)
   {
-    
-  }
-
-  template<typename T>
-  Grain<T>::granulator::granulator(const granulator& other) :
-    Wavetable<T>::interpolator(other), _phasor_other(other._phasor_other)
-  {
-    
-  }
-  
-  template<typename T>
-  T Grain<T>::granulator::value(void) const
-  {
-    return Wavetable<T>::interpolator::value()*(*_phasor_other);
-  }
-
-  template<typename T>
-  Grain<T>::granulator::operator bool(void) const
-  {
-    return Wavetable<T>::interpolator::operator bool() && _phasor_other;
-  }
-
-  template<typename T>
-  typename Waveform<T>::phasor_impl* Grain<T>::granulator::copy(void) const
-  {
-    return new granulator(*this);
-  }
-  
-  template<typename T>
-  void Grain<T>::granulator::increment(void)
-  {
-    Waveform<T>::phasor_impl::increment();
-    _phasor_other++;
+    _carrier.reset();
+    _shape.reset();
   }
 
   template class Grain<double>;

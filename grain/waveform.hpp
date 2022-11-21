@@ -2,213 +2,231 @@
 #pragma once
 
 #include <cstdlib>
-#include <vector>
-#include <utility>
+#include <initializer_list>
+#include <string>
+#include <exception>
+
+#include <sndfile.h>
 
 namespace audioelectric {
 
-  /*!\brief Provides an iterface for a variety of waveforms. These could be waveforms that get generated on the fly
-   * or wavetables, samples, envelopes, etc...
-   *
-   * \note Waveform has been purposely left as a single-channel base class in order to keep the overhead of multiple channels
-   * out of sublasses that only need one channel (like Grain, envelope or probably a handful of other potential waveforms
-   * that are used for their waveform properties rather than their pure audio properties). It should be pretty easy for
-   * subclasses to add channels though. You'll just need to make separate phasors for each channel. The more interesting
-   * challenge will be fixing operator[] so that you can use syntax like sample[chan][pos].  That's not strictly necessary,
-   * but it would be a nice touch and make indexing multi-channel waveforms much easier.
+  /*!\brief Different types of interpolation
+   */
+  enum class InterpType {
+    LINEAR,     //!< Linear interpolation
+  };
+
+  class WaveformError : public std::exception {
+  public:
+    WaveformError(std::string msg) : _msg(msg) {}
+    const char* what(void) {return _msg.c_str();}
+  private:
+    std::string _msg;
+  };
+
+  /*!\brief Contains and manages a set of audio data. Useful for samples, grains or any other chunk of audio data that needs
+   * needs to be stored and manipulated.
    */
   template<typename T>
-  class Waveform {
+  class Waveform final {
   public:
 
-    class phasor;
-    
-    /*!\brief The class that actually implements the behavior of the phasor. 
-     * 
-     * This is the class that must be inherited in order to implement new types of phasors. 
+    /*!\brief A common iterator for the Waveform. This works just like that of a vector's iterator
      */
-    class phasor_impl {
+    class iterator {
     public:
-      virtual ~phasor_impl(void) {}
-
-      /*!\brief Constructs a phasor that starts at a particular position in the waveform. 
-       * 
-       * See the discussion in the phasor_impl class documentation on how the start position relates to the phase
-       * and rate of the phasor.
-       * 
-       * \param wf The Waveform to iterate over.
-       * \param rate The rate at which to iterate over the Waveform. Positive rate -> forward iteration, negative rate -> 
-       *             reverse iteration.
-       * \param start The starting position in the Waveform
-       */
-      phasor_impl(Waveform<T>& wf, double rate, double start);
-
-      phasor_impl(const phasor_impl& other);
-
-    protected:
-      friend class phasor;
-      friend class Waveform;
-
-      double _rate;             //!< The rate that the phase changes per iteration
-      double _phase;            //!< The current phase
-      Waveform<T>& _wf;   //!< The waveform that we're phasing
-
-      virtual T value(void) const;                      //!<\brief Returns the value of the Waveform at the current phase
-      virtual operator bool(void) const;                //!<\brief Always returns true
-
-      /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
-       */
-      bool operator==(const phasor_impl& other) const;
-      bool operator!=(const phasor_impl& other) const;
-      bool operator<(const phasor_impl& other) const;
-      bool operator>(const phasor_impl& other) const;
-      bool operator<=(const phasor_impl& other) const;
-      bool operator>=(const phasor_impl& other) const;
-
-      /*!\brief Sets the rate (useful for vari-rate iterations)
-       */
-      virtual void setRate(double rate);
-
-      /*!\brief Returns the current phase of the phasor
-       */
-      double getPhase(void) const {return _phase;}
-
-      virtual void reset(void) {_phase = 0;}
-
-      /*!\brief Copies this phasor implementation
-       *
-       * This must be overridden by subclasses in order for phasor::operator++ and the phasor copy constructor
-       * to work correctly.
-       */
-      virtual phasor_impl* copy(void) const;
-      
-      /*!\brief Increments the phase
-       */
-      virtual void increment(void);
-    };
-
-    class mod_phasor : public phasor_impl {
-    public:
-      virtual ~mod_phasor(void) {}
-
-      mod_phasor(Waveform<T>& wf, const phasor& rates, double start);
-
-      mod_phasor(const mod_phasor& other);
-
-    protected:
-      friend class Waveform;
-
-      virtual void setModulator(const phasor& rates);
-
-      virtual mod_phasor* copy(void) const;
-
-      virtual void increment(void);
-
+      iterator(T* data) : _data(data) {};
+      iterator(const iterator& other) : _data(other._data) {};
+      iterator& operator++(void);
+      iterator operator++(int);
+      T& operator*(void);
+      bool operator==(const iterator& other) const;
+      bool operator!=(const iterator& other) const;
     private:
-
-      phasor _modulator;
-      
+      T* _data;
     };
 
-    /*!\brief An iterator-like class that increments the phase of the waveform at a certain rate
+    /*!\brief Creates a waveform of size 0
+     */
+    Waveform(void);
+
+    /*!\brief Creates and allocates a waveform of size len with all values set to 0
+     */
+    Waveform(std::size_t len, T sr=0, InterpType it=InterpType::LINEAR);
+
+    /*!\brief Wraps an array of size len in a Waveform to allow it to be interpolated
+     */
+    Waveform(T* data, std::size_t len, T sr=0, InterpType it=InterpType::LINEAR);
+
+    Waveform(std::initializer_list<T> init, T sr=0, InterpType it=InterpType::LINEAR);
+
+    /*!\brief Construct a waveform from a section of an audio file
      * 
-     * The phasor provides access to interpolated, modulated, or otherwise mathematically complex Waveforms with a simple,
-     * familiar interface. It is not meant to be inherited because all subclasses of Waveform deal directly in straight
-     * phasors. Instead, the phasor_impl class should be inherited and passed in in the constructor.
+     * If the audio file does not exist, or end <= begin then a WaveformError will be thrown
      * 
-     * phasors are initially created only through the Waveform::make_phasor() function. 
-     * 
-     * \note Phases are in units of **samples** and rates are in units of **samples/iteration**. It may seem strange when I
-     * talk about units of samples that are represented in floating point values. But because the phasor is meant to be used
-     * for synthesis, rather than simple audio playback and processing, samples become somewhat fuzzy untis. Even when we're
-     * using wavetables and sound samples, we're going to want to interpolate between the original samples for variable pitch
-     * sampling. In the end, it's just easier to express our waveforms as continuous functions and let the back end deal with
-     * the digital realities.
+     * \param afile  Path to the audio file to read
+     * \param begin  Beginning frame of the audio file section
+     * \param end    Ending frame of the audio file section. If end==0 then read to the last frame
+     * \param it     Interpolation type
      */
-    class phasor final {
-    public:
-      phasor(void);
-      phasor(const phasor& other);
-      phasor& operator=(const phasor& other);
-      phasor& operator++(void);                 //!<\brief Prefix increment
-      phasor operator++(int);                   //!<\brief Postfix increment
+    Waveform(std::string afile, size_t begin=0, size_t end=0, InterpType it=InterpType::LINEAR);
 
-      /*!\brief Retrieves the current value. Note that this is not a reference, as it would be with a common iterator
-       * 
-       */
-      T operator*(void) const;
-      operator bool(void) const;
-      
-      /*!\brief Compare operators compare the location in the uninterpolated waveform (essentially position*rate)
-       */
-      bool operator==(const phasor& other) const;
-      bool operator!=(const phasor& other) const;
-      bool operator<(const phasor& other) const;
-      bool operator>(const phasor& other) const;
-      bool operator<=(const phasor& other) const;
-      bool operator>=(const phasor& other) const;
-
-      /*!\brief Sets the rate (useful for vari-rate iterations)
-       */
-      void setRate(double rate) {_impl->setRate(rate);}
-
-      /*!\brief Returns the current phase of the phasor
-       */
-      double getPhase(void) const {return _impl->getPhase();}
-
-      void reset(void) {_impl->reset();}
-
-    protected:
-      friend Waveform<T>;
-      
-      /*!\brief Constructs a phasor with a phasor_impl pointer
-       * 
-       * \note This will take posession of the phasor_impl pointer so this should not be deleted anywhere else. 
-       * 
-       * \param impl The phasor_impl to wrap
-       */
-      phasor(phasor_impl* impl);
-      
-    private:
-      std::unique_ptr<phasor_impl> _impl;
-    };
-    
-    virtual ~Waveform(void) = 0;
-    
-    /*!\brief Returns the waveform at a certain phase
-     * 
-     * \param pos The position of the waveform
-     * \return The waveform at the given phase
+    /*!\brief Creates a new Waveform and fills it with a generator function
+     *
+     * \see generate()
+     *
+     * \param generator The generator function to use
+     * \param len The length of the waveform to generate
      */
-    virtual T waveform(double pos) = 0;
+    Waveform(T (*generator)(size_t), size_t len, T sr=0, InterpType it=InterpType::LINEAR);
 
-    /*!\brief Returns the number of samples of the waveform
+    /*!\brief Copies a sample to a new length using interpolation
      */
-    virtual std::size_t size(void) const = 0;
+    Waveform(const Waveform<T>& other, double rate, std::size_t len, InterpType it=InterpType::LINEAR);
 
-    /*!\brief Returns the end of the waveform
+    Waveform(const Waveform<T>& other);
+
+    Waveform(Waveform<T>&& other);    
+
+    ~Waveform(void);
+
+    /*!\brief Generates the waveform with a generator function.
+     *
+     * The generator function takes an index and generates a value at that index. generate() will use the generator function
+     * to fill the waveform data by calling the generator for each integral number from 0 to len-1.  For instance, the
+     * following generator would generate a sin function with one cycle over 44100 samples:
+     *
+     * \code{.cpp}
+     * wf.generate([](size_t i) {return sin(2.*PI*i/44100.);}, 44100);
+     * \endcode
+     *
+     * Note, that if the waveform already has data in it, it will be resized using the resize() function before calling the
+     * generator.
+     *
+     * \param generator The generator function to use
+     * \param len The length of the waveform to generate
      */
-    virtual double end(void) const = 0;
+    void generate(T (*generator)(size_t), size_t len);
 
-    /*!\brief Provides access to phasor's protected constructor
+    /*!\brief Sets the interpolation type
      */
-    phasor make_phasor(phasor_impl* impl) const {return phasor(impl);}
+    void setInterpType(InterpType it) {_interptype = it;}
 
-    virtual phasor pbegin(double rate, double start);
-    
-    /*!\brief Returns a phasor that starts at the beginning of the waveform
+    /*!\brief Returns the current interpolation type
      */
-    virtual phasor pbegin(double rate);
-    
-    // virtual phasor rpbegin(double rate, double start) const;
+    InterpType getInterpType(void) const {return _interptype;}
 
-    // /*!\brief Returns a reverse phasor that starts at the end of the waveform
-    //  */
-    // virtual phasor rpbegin(double rate) const;
+    /*!\brief Returns the interpolated value at a position in the waveform.
+     *
+     * The position is a generalized index of the samples in the waveform, such that an integer position will return
+     * the same value as that returned by Waveform[], and a non-integer position will return an interpolated value as though
+     * the waveform were continuous.
+     *
+     * Positions outside of the waveform -- those less than 0 and greater than the size of the waveform (in samples) -- will
+     * return a value of 0. This is done so that a Waveform can be easily mixed with other Waveforms without having to worry
+     * about bounds.
+     *
+     * \param pos The position on the waveform
+     * \param channel The channel to retrieve from (ignored for now)
+     * \return The interpolated value at pos
+     */
+    T waveform(double pos, int channel=0) const;
+
+    Waveform<T>& operator=(const Waveform<T>& other);
+
+    Waveform<T>& operator=(Waveform<T>&& other);    
+
+    T& operator[](std::size_t pos) {return _data[pos];}
+    const T& operator[](std::size_t pos) const {return _data[pos];}
+
+    iterator ibegin(void);
+    iterator iend(void);
+
+    /*!\brief Returns the number of samples in the Waveform
+     */
+    std::size_t size(void) const {return _size;}
+
+    /*!\brief Returns the end position of the Waveform
+     */
+    double end(void) const {return _end;}
+
+    /*!\brief Resizes the Waveform. All data is cleared
+     */
+    void resize(std::size_t len);
+
+    /*!\brief Returns a pointer to the raw data
+     */
+    T* data(void) {return _data;}
+
+    T samplerate(void) {return _samplerate;}
+
+  private:
+
+    InterpType _interptype;     //!< The interpolation type
+    size_t _size;               //!< The size of data
+    size_t _end;                //!< The last index of _data
+    T* _data;                   //!< The raw data
+    T _samplerate;        //!< The native samplerate of the waveform
+
+    /*!\brief Allocates a data array of length len
+     */
+    void alloc(std::size_t len);
+
+    /*!\brief Deallocates _data
+     */
+    void dealloc(void);
+
+    /*!\brief Performs a linear interpolation of the point at pos
+     *
+     * If pos is <0 or >_size-1, this will always return 0
+     */
+    T interpLinear(double pos) const;
+
+    void readOneChannelFile(SNDFILE* f, SF_INFO* info, size_t begin, size_t end);
+
+    void readMultiChannelFile(SNDFILE* f, SF_INFO* info, size_t begin, size_t end);    
 
   };
 
-  typedef typename Waveform<double>::phasor dphasor;
-  typedef typename Waveform<float>::phasor fphasor;  
-  
+  /*!\brief Generates a gaussian function and puts it in a wavetable
+   *
+   * The generated function is: r*(e^(-(x-len/2)^2/sigma)-y), where y is the value of the normal Gaussian at the
+   * beginning and end of the signal and r renormalizes the signal after that subtraction. This ensures that the signal
+   * begins and ends with a value of zero.
+   *
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   * \param sigma      The variance of the gaussian. Useful values are on the range of [0,1]
+   */
+  template<typename T>
+  void GenerateGaussian(Waveform<T>& wf, std::size_t len, T sigma);
+
+  /*!\brief Generates one cycle of a sine wave
+   * 
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   */
+  template <typename T>
+  void GenerateSin(Waveform<T>& wf, std::size_t len);
+
+  /*!\brief Generates one cycle of a triangle wave
+   * 
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   * \param slant      The anount of slant to the triangle. A value of 0 gives equal time to the rise and the fall. A value 
+   *                   of 1 results in all rise.
+   */
+  template <typename T>
+  void GenerateTriangle(Waveform<T>& wf, std::size_t len, T slant);
+
+  /*!\brief Generates one cycle of a square wave
+   * 
+   * \param[in,out] wf The Wavetable to fill (this will overwrite any function already in it)
+   * \param len        The length of the gaussian function
+   * \param width      The width of the square. A value of 0 results in a silent signal (all zeros). A value of 1 results in 
+   *                   all ones. Useful values are between those extremes.
+   */
+  template <typename T>
+  void GenerateSquare(Waveform<T>& wf, std::size_t len, T width);
+
 }
